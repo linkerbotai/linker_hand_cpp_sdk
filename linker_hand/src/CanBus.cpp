@@ -109,6 +109,7 @@ namespace AIMOcommunicate
         memcpy(frame.data, send_data, frame.can_dlc);
 
         if (write(socket_fd, &frame, sizeof(frame)) != sizeof(frame)) {
+            exit(1);
             throw std::runtime_error("Failed to send CAN frame");
         }
 
@@ -132,11 +133,12 @@ namespace AIMOcommunicate
 
         if (write(socket_fd, &frame, sizeof(frame)) != sizeof(frame))
         {
+            exit(1);
             throw std::runtime_error("Failed to send CAN frame");
         }
         
-        #if 0
-        std::cout << "send : ";
+        #if 1
+        std::cout << "can_id:" << std::hex << id << " data:";
         for (auto &can : data)
         {
             std::cout << std::hex << (int)can << " ";

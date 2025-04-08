@@ -42,17 +42,21 @@ int main()
     // 初始化API
     LinkerHandApi hand("right", "L10");
 
-    
+
     // 获取版本号
     auto version = hand.getVersion();
     std::cout << "版本号：" << bytesToHex(version) << std::endl;
 
+#if 1
 
     // 获取法向压力、切向压力、切向方向、接近感应
     std::vector<std::vector<double>> force_result = hand.getForce();
-    std::cout << "法向压力|切向压力|切向方向|接近感应：\n" << bytesToHex(force_result) << std::endl;
+    std::cout << "\n法向压力|切向压力|切向方向|接近感应：\n" << bytesToHex(force_result) << std::endl;
 
-#if 1
+    std::vector<std::vector<double>> pressure_result = hand.getPressure();
+    std::cout << "所有指头的压力数据：\n" << bytesToHex(pressure_result) << std::endl;
+
+
 
     // 执行动作 - 手指快速移动
     std::vector<double> pose = {};

@@ -29,10 +29,11 @@ void LinkerHandL10Can::setJointPositions(const std::vector<double> &jointAngles)
 {
     // std::vector<uint8_t> data(jointAngles.begin(), jointAngles.end());
 
-    int JointVelocity = 100;
+    int JointVelocity = 180;
 
     uint8_t send_data[8];
-    send_data[0] = 0x01;
+    
+    send_data[0] = FRAME_PROPERTY::JOINT_POSITION_RCO;
     send_data[1] = static_cast<uint8_t>(jointAngles[0]);
     send_data[2] = static_cast<uint8_t>(jointAngles[1]);
     send_data[3] = static_cast<uint8_t>(jointAngles[2]);
@@ -42,7 +43,7 @@ void LinkerHandL10Can::setJointPositions(const std::vector<double> &jointAngles)
     // CanSendDataDeal(ID, send_data, 7);
     bus.send(send_data, 7, canId);
 
-    send_data[0] = 0x04;
+    send_data[0] = FRAME_PROPERTY::JOINT_POSITION2_RCO;
     send_data[1] = static_cast<uint8_t>(jointAngles[6]);
     send_data[2] = static_cast<uint8_t>(jointAngles[7]);
     send_data[3] = static_cast<uint8_t>(jointAngles[8]);
@@ -50,7 +51,7 @@ void LinkerHandL10Can::setJointPositions(const std::vector<double> &jointAngles)
     // CanSendDataDeal(ID, send_data, 5);
     bus.send(send_data, 5, canId);
 
-    send_data[0] = 0x05;
+    send_data[0] = FRAME_PROPERTY::JOINT_SPEED;
     send_data[1] = static_cast<uint8_t>(JointVelocity);
     send_data[2] = static_cast<uint8_t>(JointVelocity);
     send_data[3] = static_cast<uint8_t>(JointVelocity);
@@ -58,29 +59,36 @@ void LinkerHandL10Can::setJointPositions(const std::vector<double> &jointAngles)
     send_data[5] = static_cast<uint8_t>(JointVelocity);
     // CanSendDataDeal(ID, send_data, 6);
     bus.send(send_data, 6, canId);
+    
+    setJointSpeed({send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5]});
 }
 
 std::vector<double> LinkerHandL10Can::getCurrentStatus()
 {
 }
 
-// 获取当前状态
+// 获取版本号
 std::vector<double> LinkerHandL10Can::getVersion()
 {
-    bus.send({0x64}, canId); // 发送请求当前状态的命令
+    bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, canId); // 发送获取版本号的命令
 
     std::unique_lock<std::mutex> lock(queueMutex);
-    queueCond.wait(lock, [this]
-                   { return !responseQueue.empty(); });
+    // queueCond.wait(lock, [this]{ return !responseQueue.empty(); });
+    // if (!queueCond.wait_for(lock, std::chrono::seconds(5), [this] { return !responseQueue.empty(); }))
+    if (!queueCond.wait_for(lock, std::chrono::milliseconds(100), [this] { return !responseQueue.empty(); }))
+    {
+        std::cout << "Timeout waiting for version response" << std::endl;
+        // throw std::runtime_error("Timeout waiting for version response");
+    }
 
     std::vector<uint8_t> response = responseQueue.front();
-    responseQueue.pop();
+    if (response.size() > 0) responseQueue.pop();
 
     return std::vector<double>(response.begin(), response.end());
 }
 
 // 设置关节速度
-void LinkerHandL10Can::setJointSpeed(const std::vector<double> &speed)
+void LinkerHandL10Can::setJointSpeed(const std::vector<int> &speed)
 {
     std::vector<uint8_t> data(speed.begin(), speed.end());
     bus.send(data, canId);
@@ -89,37 +97,77 @@ void LinkerHandL10Can::setJointSpeed(const std::vector<double> &speed)
 // 获取关节速度
 std::vector<double> LinkerHandL10Can::getSpeed()
 {
-    bus.send({0x05}, canId); // 发送请求速度的命令
+    bus.send({FRAME_PROPERTY::JOINT_SPEED}, canId); // 发送请求速度的命令
     auto response = bus.receive(canId);
     return std::vector<double>(response.begin(), response.end());
 }
 
 // 获取所有手指的压力数据
 std::vector<std::vector<double>> LinkerHandL10Can::getPressureData()
-{		
-    bus.send({0x28}, canId); // 大拇指所有压力数据
-    bus.send({0x29}, canId); // 食指所有压力数据
-    bus.send({0x30}, canId); // 中指所有压力数据
-    bus.send({0x31}, canId); // 无名指所有压力数据
-    bus.send({0x32}, canId); // 小拇指所有压力数据
+{
+    bus.send({FRAME_PROPERTY::PRESSURE_THUMB}, canId); // 大拇指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_INDEX_FINGER}, canId); // 食指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_MIDDLE_FINGER}, canId); // 中指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_RING_FINGER}, canId); // 无名指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_LITTLE_FINGER}, canId); // 小拇指所有压力数据
+
+    std::unique_lock<std::mutex> lock(pressureQueueMutex);
+    if (!pressureQueueCond.wait_for(lock, std::chrono::milliseconds(100), [this] { return !pressureQueue.empty(); }))
+    {
+        std::cout << "Timeout waiting for PressureData response" << std::endl;
+        // throw std::runtime_error("Timeout waiting for PressureData response");
+    }
+
+    PressureData pressureData = pressureQueue.front();
+
+    // 判断所有不为空
+    if (pressureData.thumb_pressure.size() > 0 && 
+        pressureData.index_finger_pressure.size() > 0 && 
+        pressureData.middle_finger_pressure.size() > 0 && 
+        pressureData.ring_finger_pressure.size() > 0 && 
+        pressureData.little_finger_pressure.size() > 0)
+    {
+        pressureQueue.pop();
+    }
+
+    return {
+        std::vector<double>(pressureData.thumb_pressure.begin(), pressureData.thumb_pressure.end()),
+        std::vector<double>(pressureData.index_finger_pressure.begin(), pressureData.index_finger_pressure.end()),
+        std::vector<double>(pressureData.middle_finger_pressure.begin(), pressureData.middle_finger_pressure.end()),
+        std::vector<double>(pressureData.ring_finger_pressure.begin(), pressureData.ring_finger_pressure.end()),
+        std::vector<double>(pressureData.little_finger_pressure.begin(), pressureData.little_finger_pressure.end())};
 }
 
 
-// 获取传感器数据
+// 获取法向压力、切向压力、切向方向、接近感应
 std::vector<std::vector<double>> LinkerHandL10Can::getForce()
 {
-    // 发送请求传感器数据的命令
-    bus.send({0x20}, canId); // 获取法向压力
-    bus.send({0x21}, canId); // 获取切向压力
-    bus.send({0x22}, canId); // 获取切向方向
-    bus.send({0x23}, canId); // 获取接近感应
+    // bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, canId); // 获取法向压力
+    // bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, canId); // 获取切向压力
+    // bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, canId); // 获取切向方向
+    // bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, canId); // 获取接近感应
+
+    getNormalForce();
+    getTangentialForce();
+    getTangentialForceDir();
+    getApproachInc();
 
     std::unique_lock<std::mutex> lock(forceQueueMutex);
-    forceQueueCond.wait(lock, [this]
-                        { return !forceQueue.empty(); });
+    if (!forceQueueCond.wait_for(lock, std::chrono::milliseconds(100), [this] { return !forceQueue.empty(); }))
+    {
+        std::cout << "Timeout waiting for force response" << std::endl;
+        // throw std::runtime_error("Timeout waiting for force response");
+    }
 
     ForceData forceData = forceQueue.front();
-    forceQueue.pop();
+    // 判断所有不为空
+    if (forceData.normal_force.size() > 0 && 
+        forceData.tangential_force.size() > 0 && 
+        forceData.tangential_force_dir.size() > 0 && 
+        forceData.approach_inc.size() > 0)
+    {
+        forceQueue.pop();
+    }
 
     return {
         std::vector<double>(forceData.normal_force.begin(), forceData.normal_force.end()),
@@ -131,25 +179,25 @@ std::vector<std::vector<double>> LinkerHandL10Can::getForce()
 // 获取法向压力
 void LinkerHandL10Can::getNormalForce()
 {
-    bus.send({0x20}, canId); // 发送请求法向力的命令
+    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, canId); // 发送请求法向力的命令
 }
 
 // 获取切向压力
 void LinkerHandL10Can::getTangentialForce()
 {
-    bus.send({0x21}, canId); // 发送请求切向力的命令
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, canId); // 发送请求切向力的命令
 }
 
 // 获取切向方向
 void LinkerHandL10Can::getTangentialForceDir()
 {
-    bus.send({0x22}, canId); // 发送请求切向力方向的命令
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, canId); // 发送请求切向力方向的命令
 }
 
 // 获取接近感应
 void LinkerHandL10Can::getApproachInc()
 {
-    bus.send({0x23}, canId); // 发送请求接近度的命令
+    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, canId); // 发送请求接近度的命令
 }
 
 void LinkerHandL10Can::receiveResponse()
@@ -160,8 +208,8 @@ void LinkerHandL10Can::receiveResponse()
         {
             auto data = bus.receive(canId);
 
-#if 0
-            std::cout << "receive : ";
+#if 1
+            std::cout << "Recv: ";
             for (auto &can : data)
             {
             	std::cout << std::hex << (int)can << " ";
@@ -177,6 +225,41 @@ void LinkerHandL10Can::receiveResponse()
                 std::lock_guard<std::mutex> lock(queueMutex);
                 responseQueue.push(data);
                 queueCond.notify_one();
+            }
+
+            if (dataType >= 0x28 && dataType <= 0x32)
+            {
+                std::vector<uint8_t> payload(data.begin(), data.end());
+                {
+                    std::lock_guard<std::mutex> lock(forceQueueMutex);
+                    switch (dataType)
+                    {
+                    case 0x28: // 大拇指所有压力数据
+                        pressureData.thumb_pressure = payload;
+                        break;
+                    case 0x29: // 食指所有压力数据
+                        pressureData.index_finger_pressure = payload;
+                        break;
+                    case 0x30: // 中指所有压力数据
+                        pressureData.middle_finger_pressure = payload;
+                        break;
+                    case 0x31: // 无名指所有压力数据
+                        pressureData.ring_finger_pressure = payload;
+                        break;
+                    case 0x32: // 小拇指所有压力数据
+                        pressureData.little_finger_pressure = payload;
+                        break;
+                    default:
+                        // 未知数据类型，忽略
+                        continue;
+                    }
+
+                    if (dataType == 0x32)
+                    {
+                        pressureQueue.push(pressureData);
+                        pressureQueueCond.notify_one();
+                    }
+                }
             }
 
 #if 1

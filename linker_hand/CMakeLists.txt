@@ -22,22 +22,22 @@ add_library(linker_hand_lib STATIC
 )
 
 # 链接库
-target_link_libraries(linker_hand_example linker_hand_lib pthread)
+target_link_libraries(linker_hand_example linker_hand_lib pthread yaml-cpp)
 
 # 安装规则
 install(TARGETS linker_hand_lib
-    DESTINATION lib
+    DESTINATION linker_hand_cpp_sdk/lib
 )
 
 install(DIRECTORY include/
-    DESTINATION include
+    DESTINATION linker_hand_cpp_sdk/include
 )
 
 install(FILES config/setting.yaml
-    DESTINATION config
+    DESTINATION linker_hand_cpp_sdk/config
 )
 
 # 安装示例程序
 install(TARGETS linker_hand_example
-    DESTINATION bin
+    DESTINATION linker_hand_cpp_sdk/bin
 )

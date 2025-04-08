@@ -10,7 +10,7 @@ public:
 
     virtual void setJointPositions(const std::vector<double> &jointAngles) = 0;
     virtual std::vector<double> getCurrentStatus() = 0;
-    virtual void setJointSpeed(const std::vector<double> &speed) = 0;
+    virtual void setJointSpeed(const std::vector<int> &speed) = 0;
     virtual std::vector<double> getSpeed() = 0;
     virtual std::vector<std::vector<double>> getForce() = 0;
     virtual std::vector<std::vector<double>> getPressureData() = 0;
