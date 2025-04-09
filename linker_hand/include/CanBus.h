@@ -18,9 +18,9 @@ namespace AIMOcommunicate
     public:
         CanBus(const std::string& interface, int bitrate);
         ~CanBus();
-
+        
         void send(const std::vector<uint8_t>& data, uint32_t id);
-        void send(const uint8_t send_data[8], const size_t size, uint32_t id);
+        // void send(const uint8_t send_data[8], const size_t size, uint32_t id);
         std::vector<uint8_t> receive(uint32_t& id);
         
         void setReceiveTimeout(int seconds, int microseconds);

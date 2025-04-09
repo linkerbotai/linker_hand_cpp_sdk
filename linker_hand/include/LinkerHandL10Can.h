@@ -3,6 +3,8 @@
 #include <thread>
 #include <mutex>
 #include <queue>
+#include <iostream>
+#include <sstream>
 #include <condition_variable>
 
 #include "IHand.h"
@@ -162,18 +164,19 @@ public:
     LinkerHandL10Can(uint32_t canId, const std::string &canChannel, int baudrate);
     ~LinkerHandL10Can();
 
-    void setJointPositions(const std::vector<double> &jointAngles) override;
-    std::vector<double> getCurrentStatus() override;
-    void setJointSpeed(const std::vector<int> &speed) override;
-    std::vector<double> getSpeed() override;
-    std::vector<std::vector<double>> getForce() override;
+    void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+    std::vector<uint8_t> getCurrentStatus() override;
+    void setJointSpeed(const std::vector<uint8_t> &speed) override;
+	void setPressure(const std::vector<uint8_t> &pressure) override;
+    std::vector<uint8_t> getSpeed() override;
+    std::vector<std::vector<uint8_t>> getForce() override;
     void getNormalForce() override;
     void getTangentialForce() override;
     void getTangentialForceDir() override;
     void getApproachInc() override;
-    std::vector<double> getVersion() override;
+    std::string getVersion() override;
 
-    std::vector<std::vector<double>> getPressureData() override;
+    std::vector<std::vector<uint8_t>> getPressureData() override;
 
 private:
     uint32_t canId;
@@ -183,7 +186,6 @@ private:
     std::mutex responseMutex;
 
     void receiveResponse();
-
 
     std::queue<std::vector<uint8_t>> responseQueue; // 通用响应队列
     std::condition_variable queueCond;              // 通用队列条件变量
@@ -199,4 +201,9 @@ private:
     std::queue<PressureData> pressureQueue;
     std::mutex pressureQueueMutex;
     std::condition_variable pressureQueueCond;
+
+	std::vector<uint8_t> joint_position;
+	std::vector<uint8_t> joint_position2;
+	std::vector<uint8_t> joint_speed;
+	
 };

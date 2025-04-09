@@ -101,7 +101,8 @@ namespace AIMOcommunicate
         // 关闭 CAN 套接字
         close(socket_fd);
     }
-
+    
+    #if 0
 	void CanBus::send(const uint8_t send_data[8], const size_t size, uint32_t id) {
         struct can_frame frame;
         frame.can_id = id;
@@ -113,8 +114,8 @@ namespace AIMOcommunicate
             throw std::runtime_error("Failed to send CAN frame");
         }
 
-        #if 0
-        std::cout << "send : ";
+        #if 1
+        std::cout << "can3_id:" << std::hex << id << " data:";
         for (size_t i = 0; i < frame.can_dlc; ++i) {
             std::cout << std::hex << (int)send_data[i] << " ";
         }
@@ -123,13 +124,14 @@ namespace AIMOcommunicate
 
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
+    #endif
 
     void CanBus::send(const std::vector<uint8_t>& data, uint32_t id)
     {
         struct can_frame frame;
-        frame.can_id = id;
+        frame.can_id = id; // 左手/右手
         frame.can_dlc = data.size();
-        memcpy(frame.data, data.data(), frame.can_dlc);
+        memcpy(frame.data, data.data(), frame.can_dlc); // 指令+数据
 
         if (write(socket_fd, &frame, sizeof(frame)) != sizeof(frame))
         {
@@ -137,8 +139,8 @@ namespace AIMOcommunicate
             throw std::runtime_error("Failed to send CAN frame");
         }
         
-        #if 1
-        std::cout << "can_id:" << std::hex << id << " data:";
+        #if 0
+        std::cout << "can2_id:" << std::hex << id << " data:";
         for (auto &can : data)
         {
             std::cout << std::hex << (int)can << " ";

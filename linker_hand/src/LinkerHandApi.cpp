@@ -33,45 +33,53 @@ LinkerHandApi::~LinkerHandApi()
 {
 }
 
-// 获取当前关节状态
-std::vector<double> LinkerHandApi::getState()
-{
-}
 
 // 获取速度
-std::vector<double> LinkerHandApi::getSpeed()
+std::vector<uint8_t> LinkerHandApi::getSpeed()
 {
+    return hand->getSpeed();
 }
-
-// 设置速度
-void LinkerHandApi::setSpeed(const std::vector<double> &speed)
-{
-}
-
 
 
 //---------------------------------------------------------------
 
+// 获取当前关节状态
+std::vector<uint8_t> LinkerHandApi::getState()
+{
+    return hand->getCurrentStatus();
+}
+
+void LinkerHandApi::setPressureData(const std::vector<uint8_t> &pressure)
+{
+    hand->setPressure(pressure);
+}
+
+// 设置速度
+void LinkerHandApi::setSpeed(const std::vector<uint8_t> &speed)
+{
+    hand->setJointSpeed(speed);
+}
+
 // 获取法向压力、切向压力、切向方向、接近感应
-std::vector<std::vector<double>> LinkerHandApi::getForce()
+std::vector<std::vector<uint8_t>> LinkerHandApi::getForce()
 {
     return hand->getForce();
 }
 
 // 获取大拇指、食指、中指、无名指、小指的所有压力数据
-std::vector<std::vector<double>> LinkerHandApi::getPressure()
+std::vector<std::vector<uint8_t>> LinkerHandApi::getPressure()
 {
     return hand->getPressureData();
 }
 
 // 设置关节位置
-void LinkerHandApi::fingerMove(const std::vector<double> &pose)
+void LinkerHandApi::fingerMove(const std::vector<uint8_t> &pose)
 {
     hand->setJointPositions(pose);
 }
 
 // 获取版本号
-std::vector<double> LinkerHandApi::getVersion()
+std::string LinkerHandApi::getVersion()
 {
     return hand->getVersion();
 }
