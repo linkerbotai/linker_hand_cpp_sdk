@@ -9,11 +9,24 @@
 #include "HandFactory.h"
 #include "YamlConfig.h"
 
+typedef enum {
+    L7,
+	L10,
+    L20,
+	L24,
+	L25
+} LINKER_HAND;
+
+typedef enum {
+    RIGHT = 0x27,
+    LEFT = 0x28
+} HAND_TYPE;
+
+
 class LinkerHandApi
 {
 public:
-	LinkerHandApi(const std::string &handType, const std::string &handJoint);
-
+	LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType);
 	~LinkerHandApi();
 
 	// 获取速度

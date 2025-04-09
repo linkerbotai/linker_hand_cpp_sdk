@@ -126,10 +126,10 @@ namespace AIMOcommunicate
     }
     #endif
 
-    void CanBus::send(const std::vector<uint8_t>& data, uint32_t id)
+    void CanBus::send(const std::vector<uint8_t>& data, uint32_t can_id)
     {
         struct can_frame frame;
-        frame.can_id = id; // 左手/右手
+        frame.can_id = can_id; // 左手/右手
         frame.can_dlc = data.size();
         memcpy(frame.data, data.data(), frame.can_dlc); // 指令+数据
 

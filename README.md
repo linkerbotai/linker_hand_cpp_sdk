@@ -25,8 +25,8 @@ LinkerHand-CPP-SDK 是灵心巧手科技有限公司开发，用于L10、L20等�
 
 int main() {
     
-    // 初始化机械手
-    LinkerHandApi hand("right", "L10");
+    // 调用API接口
+    LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
 
     // 获取版本信息
     std::cout << hand.getVersion() << std::endl;
@@ -36,7 +36,7 @@ int main() {
     hand.fingerMove(fist_pose);
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // 松手
+    // 张开
     std::vector<uint8_t> open_pose = {255, 104, 255, 255, 255, 255, 255, 255, 255, 71};
     hand.fingerMove(open_pose);
 	std::this_thread::sleep_for(std::chrono::seconds(1));

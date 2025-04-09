@@ -161,7 +161,7 @@ struct CanHand_RecvData
 class LinkerHandL10Can : public IHand
 {
 public:
-    LinkerHandL10Can(uint32_t canId, const std::string &canChannel, int baudrate);
+    LinkerHandL10Can(uint32_t handId, const std::string &canChannel, int baudrate);
     ~LinkerHandL10Can();
 
     void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
@@ -179,7 +179,7 @@ public:
     std::vector<std::vector<uint8_t>> getPressureData() override;
 
 private:
-    uint32_t canId;
+    uint32_t handId;
     AIMOcommunicate::CanBus bus;
     std::thread receiveThread;
     bool running;

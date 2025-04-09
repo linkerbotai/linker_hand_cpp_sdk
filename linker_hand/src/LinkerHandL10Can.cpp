@@ -7,8 +7,8 @@
 #include <mutex>
 
 // 构造函数
-LinkerHandL10Can::LinkerHandL10Can(uint32_t canId, const std::string &canChannel, int baudrate)
-    : canId(canId), bus(canChannel, baudrate), running(true)
+LinkerHandL10Can::LinkerHandL10Can(uint32_t handId, const std::string &canChannel, int baudrate)
+    : handId(handId), bus(canChannel, baudrate), running(true)
 {
     // 启动接收线程
     receiveThread = std::thread(&LinkerHandL10Can::receiveResponse, this);
@@ -59,7 +59,7 @@ void LinkerHandL10Can::setJointPositions(const std::vector<u_int8_t> &jointAngle
         send_data[5] = jointAngles[4];
         send_data[6] = jointAngles[5];
         std::vector<uint8_t> position_data_vector(send_data, send_data + 7);
-        bus.send(position_data_vector, canId);
+        bus.send(position_data_vector, handId);
 
         send_data[0] = FRAME_PROPERTY::JOINT_POSITION2_RCO;
         send_data[1] = jointAngles[6];
@@ -67,7 +67,7 @@ void LinkerHandL10Can::setJointPositions(const std::vector<u_int8_t> &jointAngle
         send_data[3] = jointAngles[8];
         send_data[4] = jointAngles[9];
         std::vector<uint8_t> position2_data_vector(send_data, send_data + 5);
-        bus.send(position2_data_vector, canId);
+        bus.send(position2_data_vector, handId);
 
     } else {
         std::cout << "Joint position size is not 10" << std::endl;
@@ -77,8 +77,12 @@ void LinkerHandL10Can::setJointPositions(const std::vector<u_int8_t> &jointAngle
 std::vector<uint8_t> LinkerHandL10Can::getCurrentStatus()
 {
     std::vector<uint8_t> result;
-    result.insert(result.end(), joint_position.begin() + 1, joint_position.end());
-    result.insert(result.end(), joint_position2.begin() + 1, joint_position2.end());
+
+    if (joint_position.size() > 2 && joint_position2.size() > 2)
+    {
+        result.insert(result.end(), joint_position.begin() + 1, joint_position.end());
+        result.insert(result.end(), joint_position2.begin() + 1, joint_position2.end());
+    }
 
     return result;
 }
@@ -86,7 +90,7 @@ std::vector<uint8_t> LinkerHandL10Can::getCurrentStatus()
 // 获取版本号
 std::string LinkerHandL10Can::getVersion()
 {
-    bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, canId); // 发送获取版本号的命令
+    bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, handId); // 发送获取版本号的命令
 
     std::unique_lock<std::mutex> lock(queueMutex);
     // queueCond.wait(lock, [this]{ return !responseQueue.empty(); });
@@ -97,23 +101,27 @@ std::string LinkerHandL10Can::getVersion()
     }
 
     std::vector<uint8_t> response = responseQueue.front();
-    if (response.size() > 0) responseQueue.pop();
-
+    
     std::stringstream ss;
-    ss << "————————————————————————————————————" << std::endl;
-    ss << "             版本信息" << std::endl;
-    ss << "————————————————————————————————————" << std::endl;
-    ss << "自由度       ：" << (int)response[1] << std::endl;
-    ss << "机械手版本   ：" << (int)response[2] << std::endl;
-    ss << "版本序号     ：" << (int)response[3] << std::endl;
-    if (response[4] == 0x52) {
-        ss << "手方向       ：右手" << std::endl;
-    } else if (response[4] == 0x4C) {
-        ss << "手方向       ：左手" << std::endl;
+
+    if (response.size() > 0) 
+    {
+        ss << "————————————————————————————————————" << std::endl;
+        ss << "             版本信息" << std::endl;
+        ss << "————————————————————————————————————" << std::endl;
+        ss << "自由度       ：" << (int)response[1] << std::endl;
+        ss << "机械手版本   ：" << (int)response[2] << std::endl;
+        ss << "版本序号     ：" << (int)response[3] << std::endl;
+        if (response[4] == 0x52) {
+            ss << "手方向       ：右手" << std::endl;
+        } else if (response[4] == 0x4C) {
+            ss << "手方向       ：左手" << std::endl;
+        }
+        ss << "软件版本号   ：V" << ((int)(response[5] >> 4) + (int)(response[5] & 0x0F) / 10.0) << std::endl;
+        ss << "硬件版本号   ：V" << ((int)(response[6] >> 4) + (int)(response[6] & 0x0F) / 10.0) << std::endl;
+        ss << "————————————————————————————————————" << std::endl;
+        responseQueue.pop();
     }
-    ss << "软件版本号   ：V" << ((int)(response[5] >> 4) + (int)(response[5] & 0x0F) / 10.0) << std::endl;
-    ss << "硬件版本号   ：V" << ((int)(response[6] >> 4) + (int)(response[6] & 0x0F) / 10.0) << std::endl;
-    ss << "————————————————————————————————————" << std::endl;
 
     return ss.str();
 }
@@ -123,7 +131,7 @@ void LinkerHandL10Can::setPressure(const std::vector<uint8_t> &pressure)
     std::vector<uint8_t> result = {FRAME_PROPERTY::MAX_PRESS_RCO};
     result.insert(result.end(), pressure.begin(), pressure.end());
 
-    bus.send(result, canId);
+    bus.send(result, handId);
 }
 
 // 设置关节速度
@@ -133,7 +141,7 @@ void LinkerHandL10Can::setJointSpeed(const std::vector<uint8_t> &speed)
     result.insert(result.end(), speed.begin(), speed.end());
 
     joint_speed = result;
-    bus.send(result, canId);
+    bus.send(result, handId);
 }
 
 
@@ -148,11 +156,11 @@ std::vector<uint8_t> LinkerHandL10Can::getSpeed()
 // 获取所有手指的压力数据
 std::vector<std::vector<uint8_t>> LinkerHandL10Can::getPressureData()
 {
-    bus.send({FRAME_PROPERTY::PRESSURE_THUMB}, canId); // 大拇指所有压力数据
-    bus.send({FRAME_PROPERTY::PRESSURE_INDEX_FINGER}, canId); // 食指所有压力数据
-    bus.send({FRAME_PROPERTY::PRESSURE_MIDDLE_FINGER}, canId); // 中指所有压力数据
-    bus.send({FRAME_PROPERTY::PRESSURE_RING_FINGER}, canId); // 无名指所有压力数据
-    bus.send({FRAME_PROPERTY::PRESSURE_LITTLE_FINGER}, canId); // 小拇指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_THUMB}, handId); // 大拇指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_INDEX_FINGER}, handId); // 食指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_MIDDLE_FINGER}, handId); // 中指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_RING_FINGER}, handId); // 无名指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_LITTLE_FINGER}, handId); // 小拇指所有压力数据
 
     std::unique_lock<std::mutex> lock(pressureQueueMutex);
     if (!pressureQueueCond.wait_for(lock, std::chrono::milliseconds(100), [this] { return !pressureQueue.empty(); }))
@@ -185,10 +193,10 @@ std::vector<std::vector<uint8_t>> LinkerHandL10Can::getPressureData()
 // 获取法向压力、切向压力、切向方向、接近感应
 std::vector<std::vector<uint8_t>> LinkerHandL10Can::getForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, canId); // 获取法向压力
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, canId); // 获取切向压力
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, canId); // 获取切向方向
-    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, canId); // 获取接近感应
+    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId); // 获取法向压力
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId); // 获取切向压力
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId); // 获取切向方向
+    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId); // 获取接近感应
 
     // getNormalForce();
     // getTangentialForce();
@@ -222,25 +230,25 @@ std::vector<std::vector<uint8_t>> LinkerHandL10Can::getForce()
 // 获取法向压力
 void LinkerHandL10Can::getNormalForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, canId); // 发送请求法向力的命令
+    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId); // 发送请求法向力的命令
 }
 
 // 获取切向压力
 void LinkerHandL10Can::getTangentialForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, canId); // 发送请求切向力的命令
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId); // 发送请求切向力的命令
 }
 
 // 获取切向方向
 void LinkerHandL10Can::getTangentialForceDir()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, canId); // 发送请求切向力方向的命令
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId); // 发送请求切向力方向的命令
 }
 
 // 获取接近感应
 void LinkerHandL10Can::getApproachInc()
 {
-    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, canId); // 发送请求接近度的命令
+    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId); // 发送请求接近度的命令
 }
 
 void LinkerHandL10Can::receiveResponse()
@@ -249,7 +257,7 @@ void LinkerHandL10Can::receiveResponse()
     {
         try
         {
-            auto data = bus.receive(canId);
+            auto data = bus.receive(handId);
             
             #if 0
             std::cout << "Recv: ";
@@ -265,13 +273,16 @@ void LinkerHandL10Can::receiveResponse()
             if (frame_property >= FRAME_PROPERTY::HAND_NORMAL_FORCE && FRAME_PROPERTY::HAND_APPROACH_INC <= 0x23) std::lock_guard<std::mutex> lock(forceQueueMutex);
 
             switch(frame_property) {
-                case FRAME_PROPERTY::JOINT_POSITION_RCO:
+                case FRAME_PROPERTY::JOINT_POSITION_RCO: // 关节位置
                     joint_position = payload;
                     break;
-                case FRAME_PROPERTY::JOINT_POSITION2_RCO:
+                case FRAME_PROPERTY::MAX_PRESS_RCO: // 最大压力
+                    
+                    break;
+                case FRAME_PROPERTY::JOINT_POSITION2_RCO: // 关节位置2
                     joint_position2 = payload;
                     break;
-                case FRAME_PROPERTY::JOINT_SPEED:
+                case FRAME_PROPERTY::JOINT_SPEED: // 关节速度
                     joint_speed = payload;
                     break;
                 case FRAME_PROPERTY::PRESSURE_THUMB: // 大拇指所有压力数据

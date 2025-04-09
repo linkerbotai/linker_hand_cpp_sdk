@@ -39,23 +39,23 @@ std::string bytesToHex(const std::vector<std::vector<uint8_t>> &data)
 
 int main()
 {
-    // 初始化API
-    LinkerHandApi hand("right", "L10");
+    // 调用API接口
+    LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
 
     // 获取版本号
     std::cout << hand.getVersion() << std::endl;
     
     // 获取法向压力、切向压力、切向方向、接近感应
     std::vector<std::vector<uint8_t>> force_result = hand.getForce();
-    std::cout << "\n法向压力|切向压力|切向方向|接近感应：\n" << bytesToHex(force_result) << std::endl;
+    std::cout << "获取法向压力、切向压力、切向方向、接近感应：\n" << bytesToHex(force_result) << std::endl;
 
     // 获取所有指头的压力数据
     std::vector<std::vector<uint8_t>> pressure_result = hand.getPressure();
-    std::cout << "所有指头的压力数据：\n" << bytesToHex(pressure_result) << std::endl;
+    std::cout << "获取所有指头的压力数据：\n" << bytesToHex(pressure_result) << std::endl;
 
 
-#if 0
-    // 执行动作 - 手指快速移动
+#if 1
+    // std::cout << "执行动作 - 手指快速移动" << std::endl;
     std::vector<uint8_t> pose = {};
     
     for (size_t i = 0; i < 10; i++)
@@ -72,7 +72,7 @@ int main()
 
     std::vector<std::vector<uint8_t>> poses = {};
 
-    // 执行动作 - 手指循环弯曲
+    std::cout << "执行动作 - 手指循环弯曲" << std::endl;
     poses = {
         {35,140,255,255,255,255,255,255,255,30},    // 拇指弯曲
         {255,70,255,255,255,255,255,255,255,255},   // 手掌张开
@@ -91,12 +91,12 @@ int main()
     }
 
     auto speed = hand.getSpeed();
-    std::cout << "速度：" << bytesToHex(speed) << std::endl;
+    std::cout << "获取速度数据：" << bytesToHex(speed) << std::endl;
 
     auto state = hand.getState();
-    std::cout << "状态：" << bytesToHex(state) << std::endl;
+    std::cout << "获取状态数据：" << bytesToHex(state) << std::endl;
 
-    // 执行动作 - 拇指与其他手指循环对指
+    std::cout << "执行动作 - 拇指与其他手指循环对指" << std::endl;
     poses = {
         {255, 70, 255, 255, 255, 255, 255, 255, 255, 255},  // 手掌张开
         {145, 128, 146, 255, 255, 255, 255, 255, 255, 90},  // 拇指对食指
@@ -113,7 +113,7 @@ int main()
         std::this_thread::sleep_for(std::chrono::seconds(1)); // 等待1秒
     }
 
-    // 执行动作 - 手指侧摆
+    std::cout << "执行动作 - 手指侧摆" << std::endl;
     poses = {
         {255, 255, 255, 255, 255, 255, 40, 88, 80, 63},     // 手掌张开
         {255, 0, 255, 255, 255, 255, 40, 88, 80, 63},       // 拇指侧摆
@@ -138,11 +138,11 @@ int main()
     // 握拳
     std::vector<uint8_t> fist_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
 
-    // 执行动作 - 握拳
+    std::cout << "执行动作 - 握拳" << std::endl;
     hand.fingerMove(fist_pose);
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // 执行动作 - 张开
+    std::cout << "执行动作 - 张开" << std::endl;
     hand.fingerMove(open_pose);
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
