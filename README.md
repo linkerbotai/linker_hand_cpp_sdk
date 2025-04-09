@@ -6,7 +6,6 @@ LinkerHand-CPP-SDK 是灵心巧手科技有限公司开发，用于L10、L20等�
 ## 安装
 #### 依赖环境
     sudo apt-get install yaml-cpp
-    ...
 
 #### 启动脚本
     cd linker_hand_cpp_sdk/linker_hand
@@ -25,21 +24,23 @@ LinkerHand-CPP-SDK 是灵心巧手科技有限公司开发，用于L10、L20等�
 #include "LinkerHandApi.h"
 
 int main() {
+    
     // 初始化机械手
     LinkerHandApi hand("right", "L10");
 
-    // 设置关节位置
-    std::vector<double> jointAngles = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    hand.setJointPositions(jointAngles);
+    // 获取版本信息
+    std::cout << hand.getVersion() << std::endl;
 
-    // 获取当前状态
-    auto status = hand.getState();
-    std::cout << "Current State: ";
-    for (const auto& val : status) {
-        std::cout << std::hex << (int)val << " ";
-    }
-    std::cout << std::endl;
+    // 握拳
+    std::vector<uint8_t> fist_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
+    hand.fingerMove(fist_pose);
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
+    // 松手
+    std::vector<uint8_t> open_pose = {255, 104, 255, 255, 255, 255, 255, 255, 255, 71};
+    hand.fingerMove(open_pose);
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	
     return 0;
 }
 ```
@@ -50,13 +51,27 @@ cmake_minimum_required(VERSION 3.5)
 project(MyProject)
 
 # 包含目录
-include_directories(/usr/local/include)
+include_directories(/usr/local/linker_hand_cpp_sdk/include)
+
+# 查找 liblinker_hand_lib.a 库
+find_library(LINKER_HAND_LIB
+    NAMES linker_hand_lib
+    PATHS /usr/local/linker_hand_cpp_sdk/lib
+    NO_DEFAULT_PATH
+)
+
+# 检查是否找到库
+if(NOT LINKER_HAND_LIB)
+    message(FATAL_ERROR "liblinker_hand_lib.a not found!")
+else()
+    message(STATUS "liblinker_hand_lib.a found at ${LINKER_HAND_LIB}")
+endif()
 
 # 添加可执行文件
 add_executable(my_project main.cpp)
 
 # 链接库
-target_link_libraries(my_project /usr/local/lib/liblinker_hand_lib.a pthread)
+target_link_libraries(my_project ${LINKER_HAND_LIB} pthread)
 ```
 
 #### 文件结构
@@ -77,7 +92,8 @@ target_link_libraries(my_project /usr/local/lib/liblinker_hand_lib.a pthread)
 
 
 ## API文档
+[L10 C++ API文档](linker_hand/docs/API-Reference-L10.md)
 
-[C++ API文档](https://linkerhand.github.io/LinkerHand-CPP-SDK/)
+[L20 C++ API文档](linker_hand/docs/API-Reference-L20.md)
 
 ## 版本更新

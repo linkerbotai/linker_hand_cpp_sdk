@@ -45,9 +45,6 @@ int main()
     // 获取版本号
     std::cout << hand.getVersion() << std::endl;
     
-    
-
-
     // 获取法向压力、切向压力、切向方向、接近感应
     std::vector<std::vector<uint8_t>> force_result = hand.getForce();
     std::cout << "\n法向压力|切向压力|切向方向|接近感应：\n" << bytesToHex(force_result) << std::endl;
@@ -139,10 +136,10 @@ int main()
     // 张开
     std::vector<uint8_t> open_pose = {255, 104, 255, 255, 255, 255, 255, 255, 255, 71};
     // 握拳
-    std::vector<uint8_t> close_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
+    std::vector<uint8_t> fist_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
 
     // 执行动作 - 握拳
-    hand.fingerMove(close_pose);
+    hand.fingerMove(fist_pose);
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // 执行动作 - 张开

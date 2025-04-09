@@ -104,15 +104,7 @@ function install_sdk(){
 }
 
 function uninstall_sdk(){
-    sudo rm -rf /usr/local/lib/liblinker_hand_lib.a
-    sudo rm -rf /usr/local/include/LinkerHandL10Can.h
-    sudo rm -rf /usr/local/include/CanBus.h
-    sudo rm -rf /usr/local/include/HandFactory.h
-    sudo rm -rf /usr/local/include/LinkerHandL20Can.h
-    sudo rm -rf /usr/local/include/LinkerHandApi.h
-    sudo rm -rf /usr/local/include/IHand.h
-    sudo rm -rf /usr/local/config/setting.yaml
-    sudo rm -rf /usr/local/bin/linker_hand_example
+    sudo rm -rf /usr/local/linker_hand_cpp_sdk/
 }
 
 function run_example(){
