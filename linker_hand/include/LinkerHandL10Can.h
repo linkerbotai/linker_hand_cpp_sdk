@@ -208,6 +208,8 @@ private:
     std::mutex responseMutex;
 
     void receiveResponse();
+	std::vector<uint8_t> getSubVector(const std::vector<uint8_t> &vec);
+	std::vector<uint8_t> getSubVector(const std::vector<uint8_t>& vec1, const std::vector<uint8_t>& vec2);
 
     std::queue<std::vector<uint8_t>> responseQueue; // 通用响应队列
     std::condition_variable queueCond;              // 通用队列条件变量
@@ -244,4 +246,7 @@ private:
 	// 电机故障码
     std::vector<uint8_t> motorFaultCode_1;
 	std::vector<uint8_t> motorFaultCode_2;
+
+	// 版本信息
+	std::vector<uint8_t> version;
 };

@@ -40,7 +40,7 @@ std::string bytesToHex(const std::vector<std::vector<uint8_t>> &data)
 // 定义一个函数，用于在单独的线程中不断调用 getSpeed
 void thread_function (LinkerHandApi& hand) {
     while (true) {
-        std::cout << "获取状态数据：" << bytesToHex(hand.getState()) << std::endl;
+        // std::cout << "获取状态数据：" << bytesToHex(hand.getState()) << std::endl;
 
         // 暂停一段时间，避免过快输出
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -67,7 +67,7 @@ int main()
     std::vector<std::vector<uint8_t>> force_result = hand.getForce();
     std::cout << "获取法向压力、切向压力、切向方向、接近感应：\n" << bytesToHex(force_result) << std::endl;
 
-    
+
  #if 1
     std::vector<std::vector<uint8_t>> pressure_result = hand.getPressure();
     std::cout << "获取所有指头的压力数据：\n" << bytesToHex(pressure_result) << std::endl;

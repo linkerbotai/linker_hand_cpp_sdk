@@ -76,17 +76,41 @@ void LinkerHandL10Can::setJointPositions(const std::vector<u_int8_t> &jointAngle
 
 std::vector<uint8_t> LinkerHandL10Can::getCurrentStatus()
 {
-    std::vector<uint8_t> result;
+    bus.send({FRAME_PROPERTY::JOINT_POSITION_RCO}, handId);
+    bus.send({FRAME_PROPERTY::JOINT_POSITION2_RCO}, handId);
 
-    if (joint_position.size() > 2 && joint_position2.size() > 2)
-    {
-        result.insert(result.end(), joint_position.begin() + 1, joint_position.end());
-        result.insert(result.end(), joint_position2.begin() + 1, joint_position2.end());
-    }
-
-    return result;
+    return getSubVector(joint_position, joint_position2);
 }
 
+// 获取版本号
+std::string LinkerHandL10Can::getVersion()
+{
+    bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, handId); // 发送获取版本号的命令
+    
+    std::stringstream ss;
+
+    if (version.size() > 0) 
+    {
+        ss << "————————————————————————————————————" << std::endl;
+        ss << "             版本信息" << std::endl;
+        ss << "————————————————————————————————————" << std::endl;
+        ss << "自由度       ：" << (int)version[1] << std::endl;
+        ss << "机械手版本   ：" << (int)version[2] << std::endl;
+        ss << "版本序号     ：" << (int)version[3] << std::endl;
+        if (version[4] == 0x52) {
+            ss << "手方向       ：右手" << std::endl;
+        } else if (version[4] == 0x4C) {
+            ss << "手方向       ：左手" << std::endl;
+        }
+        ss << "软件版本号   ：V" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
+        ss << "硬件版本号   ：V" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
+        ss << "————————————————————————————————————" << std::endl;
+    }
+
+    return ss.str();
+}
+
+#if 0
 // 获取版本号
 std::string LinkerHandL10Can::getVersion()
 {
@@ -123,6 +147,7 @@ std::string LinkerHandL10Can::getVersion()
 
     return ss.str();
 }
+#endif
 
 void LinkerHandL10Can::setTorque(const std::vector<uint8_t> &torque)
 {
@@ -146,9 +171,7 @@ void LinkerHandL10Can::setSpeed(const std::vector<uint8_t> &speed)
 // 获取关节速度
 std::vector<uint8_t> LinkerHandL10Can::getSpeed()
 {
-    std::vector<uint8_t> result;
-    if (joint_speed.size() > 2) result.insert(result.end(), joint_speed.begin() + 1, joint_speed.end());
-    return result;
+    return getSubVector(joint_speed);
 }
 
 // 获取所有手指的压力数据
@@ -228,10 +251,10 @@ std::vector<std::vector<uint8_t>> LinkerHandL10Can::getForce()
 {
     std::vector<std::vector<uint8_t>> result_vec;
     // 判断所有不为空
-    if (normal_force.size() > 2 && 
-        tangential_force.size() > 2 && 
-        tangential_force_dir.size() > 2 && 
-        approach_inc.size() > 2)
+    if (normal_force.size() > 1 && 
+        tangential_force.size() > 1 && 
+        tangential_force_dir.size() > 1 && 
+        approach_inc.size() > 1)
     {
         result_vec.push_back(std::vector<uint8_t>(normal_force.begin() + 1, normal_force.end()));
         result_vec.push_back(std::vector<uint8_t>(tangential_force.begin() + 1, tangential_force.end()));
@@ -272,9 +295,7 @@ void LinkerHandL10Can::getApproachInc()
 // 获取当前扭矩
 std::vector<uint8_t> LinkerHandL10Can::getTorque()
 {
-    std::vector<uint8_t> result;
-    if (max_torque.size() > 2) result.insert(result.end(), max_torque.begin() + 1, max_torque.end());
-    return result;
+    return getSubVector(max_torque);
 }
 
 // 获取电机温度
@@ -282,15 +303,22 @@ std::vector<uint8_t> LinkerHandL10Can::getMotorTemperature()
 {
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE_1}, handId);
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE_2}, handId);
-    
+
+    return getSubVector(motorTemperature_1, motorTemperature_2);
+}
+
+std::vector<uint8_t> LinkerHandL10Can::getSubVector(const std::vector<uint8_t>& vec) {
+
     std::vector<uint8_t> result;
+    if (vec.size() > 0) result.insert(result.end(), vec.begin() + 1, vec.end());
+    return result;
+}
 
-    if (motorTemperature_1.size() > 2 && motorTemperature_2.size() > 2)
-    {
-        result.insert(result.end(), motorTemperature_1.begin() + 1, motorTemperature_1.end());
-        result.insert(result.end(), motorTemperature_2.begin() + 1, motorTemperature_2.end());
-    }
-
+std::vector<uint8_t> LinkerHandL10Can::getSubVector(const std::vector<uint8_t>& vec1, const std::vector<uint8_t>& vec2)
+{
+    std::vector<uint8_t> result;
+    if (vec1.size() > 0) result.insert(result.end(), vec1.begin() + 1, vec1.end());
+    if (vec2.size() > 0) result.insert(result.end(), vec2.begin() + 1, vec2.end());
     return result;
 }
 
@@ -300,15 +328,7 @@ std::vector<uint8_t> LinkerHandL10Can::getMotorFaultCode()
     bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE_1}, handId);
     bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE_2}, handId);
     
-    std::vector<uint8_t> result;
-
-    if (motorFaultCode_1.size() > 2 && motorFaultCode_2.size() > 2)
-    {
-        result.insert(result.end(), motorFaultCode_1.begin() + 1, motorFaultCode_1.end());
-        result.insert(result.end(), motorFaultCode_2.begin() + 1, motorFaultCode_2.end());
-    }
-
-    return result;
+    return getSubVector(motorFaultCode_1, motorFaultCode_2);
 }
 
 // 获取电机电流
@@ -338,12 +358,13 @@ void LinkerHandL10Can::receiveResponse()
             std::cout << std::endl;
             #endif
 
+            if (data.size() <= 0) continue;  
             uint8_t frame_property = data[0];
             std::vector<uint8_t> payload(data.begin(), data.end());
 
-            if (frame_property == FRAME_PROPERTY::LINKER_HAND_VERSION) std::lock_guard<std::mutex> lock(queueMutex);
+            // if (frame_property == FRAME_PROPERTY::LINKER_HAND_VERSION) std::lock_guard<std::mutex> lock(queueMutex);
             if (frame_property >= FRAME_PROPERTY::PRESSURE_THUMB && frame_property <= FRAME_PROPERTY::PRESSURE_LITTLE_FINGER) std::lock_guard<std::mutex> lock(pressureQueueMutex);
-            if (frame_property >= FRAME_PROPERTY::HAND_NORMAL_FORCE && FRAME_PROPERTY::HAND_APPROACH_INC <= 0x23) std::lock_guard<std::mutex> lock(forceQueueMutex);
+            // if (frame_property >= FRAME_PROPERTY::HAND_NORMAL_FORCE && FRAME_PROPERTY::HAND_APPROACH_INC <= 0x23) std::lock_guard<std::mutex> lock(forceQueueMutex);
 
             switch(frame_property) {
                 case FRAME_PROPERTY::JOINT_POSITION_RCO: // 关节位置
@@ -389,9 +410,10 @@ void LinkerHandL10Can::receiveResponse()
                     // forceQueue.push(forceData);
                     // forceQueueCond.notify_one();
                     break;
-                case FRAME_PROPERTY::LINKER_HAND_VERSION:
-                    responseQueue.push(payload);
-                    queueCond.notify_one();
+                case FRAME_PROPERTY::LINKER_HAND_VERSION: // 版本号
+                    // responseQueue.push(payload);
+                    // queueCond.notify_one();
+                    version = payload;
                     break;
                 case FRAME_PROPERTY::MOTOR_TEMPERATURE_1: // 电机温度
                     motorTemperature_1 = payload;

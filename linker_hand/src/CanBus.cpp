@@ -128,6 +128,20 @@ namespace AIMOcommunicate
 
     void CanBus::send(const std::vector<uint8_t>& data, uint32_t can_id)
     {
+        std::lock_guard<std::mutex> lock(mutex); // 获取锁
+
+        #if 0
+        if (data[0] == 0x01 || data[0] == 0x04)
+        {
+            std::cout << "\033[1;32m# Send\033[0m can_id:" << std::hex << can_id << " can_dlc:" << data.size() << " data:";
+            for (auto &can : data)
+            {
+                std::cout << std::hex << (int)can << " ";
+            }
+            std::cout << std::endl;
+        }
+        #endif
+        
         struct can_frame frame;
         frame.can_id = can_id; // 左手/右手
         frame.can_dlc = data.size();
@@ -138,17 +152,7 @@ namespace AIMOcommunicate
             exit(1);
             throw std::runtime_error("Failed to send CAN frame");
         }
-        
-        #if 0
-        std::cout << "can2_id:" << std::hex << id << " data:";
-        for (auto &can : data)
-        {
-            std::cout << std::hex << (int)can << " ";
-        }
-        std::cout << std::endl;
-        #endif
-        
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     std::vector<uint8_t> CanBus::receive(uint32_t& id)
