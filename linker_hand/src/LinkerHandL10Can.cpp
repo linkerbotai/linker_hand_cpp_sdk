@@ -174,6 +174,7 @@ std::vector<uint8_t> LinkerHandL10Can::getSpeed()
     return getSubVector(joint_speed);
 }
 
+# if 0
 // 获取所有手指的压力数据
 std::vector<std::vector<uint8_t>> LinkerHandL10Can::getPressureData()
 {
@@ -209,7 +210,35 @@ std::vector<std::vector<uint8_t>> LinkerHandL10Can::getPressureData()
         std::vector<uint8_t>(pressureData.ring_finger_pressure.begin(), pressureData.ring_finger_pressure.end()),
         std::vector<uint8_t>(pressureData.little_finger_pressure.begin(), pressureData.little_finger_pressure.end())};
 }
+#endif
 
+
+// 获取所有手指的压力数据
+std::vector<std::vector<uint8_t>> LinkerHandL10Can::getPressureData()
+{
+    bus.send({FRAME_PROPERTY::PRESSURE_THUMB}, handId); // 大拇指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_INDEX_FINGER}, handId); // 食指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_MIDDLE_FINGER}, handId); // 中指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_RING_FINGER}, handId); // 无名指所有压力数据
+    bus.send({FRAME_PROPERTY::PRESSURE_LITTLE_FINGER}, handId); // 小拇指所有压力数据
+
+    std::vector<std::vector<uint8_t>> result_vec;
+    // 判断所有不为空
+    if (thumb_pressure.size() > 1 && 
+        index_finger_pressure.size() > 1 && 
+        middle_finger_pressure.size() > 1 && 
+        ring_finger_pressure.size() > 1 &&
+        little_finger_pressure.size() > 1)
+    {
+        result_vec.push_back(std::vector<uint8_t>(thumb_pressure.begin() + 1, thumb_pressure.end()));
+        result_vec.push_back(std::vector<uint8_t>(index_finger_pressure.begin() + 1, index_finger_pressure.end()));
+        result_vec.push_back(std::vector<uint8_t>(middle_finger_pressure.begin() + 1, middle_finger_pressure.end()));
+        result_vec.push_back(std::vector<uint8_t>(ring_finger_pressure.begin() + 1, ring_finger_pressure.end()));
+        result_vec.push_back(std::vector<uint8_t>(little_finger_pressure.begin() + 1, little_finger_pressure.end()));
+    }
+
+    return result_vec;
+}
 
 
 #if 0
@@ -363,7 +392,7 @@ void LinkerHandL10Can::receiveResponse()
             std::vector<uint8_t> payload(data.begin(), data.end());
 
             // if (frame_property == FRAME_PROPERTY::LINKER_HAND_VERSION) std::lock_guard<std::mutex> lock(queueMutex);
-            if (frame_property >= FRAME_PROPERTY::PRESSURE_THUMB && frame_property <= FRAME_PROPERTY::PRESSURE_LITTLE_FINGER) std::lock_guard<std::mutex> lock(pressureQueueMutex);
+            // if (frame_property >= FRAME_PROPERTY::PRESSURE_THUMB && frame_property <= FRAME_PROPERTY::PRESSURE_LITTLE_FINGER) std::lock_guard<std::mutex> lock(pressureQueueMutex);
             // if (frame_property >= FRAME_PROPERTY::HAND_NORMAL_FORCE && FRAME_PROPERTY::HAND_APPROACH_INC <= 0x23) std::lock_guard<std::mutex> lock(forceQueueMutex);
 
             switch(frame_property) {
@@ -380,21 +409,21 @@ void LinkerHandL10Can::receiveResponse()
                     joint_speed = payload;
                     break;
                 case FRAME_PROPERTY::PRESSURE_THUMB: // 大拇指所有压力数据
-                    pressureData.thumb_pressure = payload;
+                    thumb_pressure = payload;
                     break;
                 case FRAME_PROPERTY::PRESSURE_INDEX_FINGER: // 食指所有压力数据
-                    pressureData.index_finger_pressure = payload;
+                    index_finger_pressure = payload;
                     break;
                 case FRAME_PROPERTY::PRESSURE_MIDDLE_FINGER: // 中指所有压力数据
-                    pressureData.middle_finger_pressure = payload;
+                    middle_finger_pressure = payload;
                     break;
                 case FRAME_PROPERTY::PRESSURE_RING_FINGER: // 无名指所有压力数据
-                    pressureData.ring_finger_pressure = payload;
+                    ring_finger_pressure = payload;
                     break;
                 case FRAME_PROPERTY::PRESSURE_LITTLE_FINGER: // 小拇指所有压力数据
-                    pressureData.little_finger_pressure = payload;
-                    pressureQueue.push(pressureData);
-                    pressureQueueCond.notify_one();
+                    little_finger_pressure = payload;
+                    // pressureQueue.push(pressureData);
+                    // pressureQueueCond.notify_one();
                     break;
                 case FRAME_PROPERTY::HAND_NORMAL_FORCE: // 法向压力
                     normal_force = payload;

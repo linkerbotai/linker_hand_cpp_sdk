@@ -236,6 +236,12 @@ private:
     std::vector<uint8_t> tangential_force_dir;
     std::vector<uint8_t> approach_inc;
 
+	std::vector<uint8_t> thumb_pressure;
+    std::vector<uint8_t> index_finger_pressure;
+    std::vector<uint8_t> middle_finger_pressure;
+    std::vector<uint8_t> ring_finger_pressure;
+    std::vector<uint8_t> little_finger_pressure;
+
 	// 最大扭矩
     std::vector<uint8_t> max_torque;
 

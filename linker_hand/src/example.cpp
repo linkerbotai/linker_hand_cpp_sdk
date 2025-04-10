@@ -39,7 +39,7 @@ std::string bytesToHex(const std::vector<std::vector<uint8_t>> &data)
 
 // 定义一个函数，用于在单独的线程中不断调用 getSpeed
 void thread_function (LinkerHandApi& hand) {
-    while (true) {
+    while (running) {
         // std::cout << "获取状态数据：" << bytesToHex(hand.getState()) << std::endl;
 
         // 暂停一段时间，避免过快输出
@@ -52,7 +52,7 @@ int main()
     // 调用API接口
     LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
 
-    // 创建一个线程，用于不断调用 getSpeed
+    // 线程
     std::thread speedThread(thread_function, std::ref(hand));
     
     // 获取版本号
@@ -64,13 +64,12 @@ int main()
 
     std::cout << "获取电机电流：" << bytesToHex(hand.getMotorCurrent()) << std::endl;
     
-    std::vector<std::vector<uint8_t>> force_result = hand.getForce();
-    std::cout << "获取法向压力、切向压力、切向方向、接近感应：\n" << bytesToHex(force_result) << std::endl;
 
+    #if 1
 
- #if 1
-    std::vector<std::vector<uint8_t>> pressure_result = hand.getPressure();
-    std::cout << "获取所有指头的压力数据：\n" << bytesToHex(pressure_result) << std::endl;
+    std::cout << "获取法向压力、切向压力、切向方向、接近感应：\n" << bytesToHex(hand.getForce()) << std::endl;
+
+    std::cout << "获取所有指头的压力数据：\n" << bytesToHex(hand.getPressure()) << std::endl;
 
 
     // std::cout << "执行动作 - 手指快速移动" << std::endl;
@@ -168,6 +167,8 @@ int main()
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+
+    speedThread.join();
 
     return 0;
 }

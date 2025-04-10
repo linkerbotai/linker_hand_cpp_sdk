@@ -92,8 +92,6 @@ target_link_libraries(my_project ${LINKER_HAND_LIB} pthread)
 
 
 ## API文档
-[L10 C++ API文档](linker_hand/docs/API-Reference-L10.md)
-
-[L20 C++ API文档](linker_hand/docs/API-Reference-L20.md)
+[C++ API文档](linker_hand/docs/API-Reference.md)
 
 ## 版本更新
