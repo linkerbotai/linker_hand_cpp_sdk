@@ -54,7 +54,7 @@ typedef enum
     MAX_PRESS_RCO = 0x02,				// 五根手指的转矩限制		
     JOINT_POSITION2_RCO = 0x04,			// 关节7-10的关节位置
     JOINT_SPEED = 0x05,					// 五根手指的速度
-    // REQUEST_DATA_RETURN = 0x09,
+    REQUEST_DATA_RETURN = 0x09,			// 获取所有关节位置和压力
     // JOINT_POSITION_N = 0x11,
     // MAX_PRESS_N = 0x12,
     HAND_NORMAL_FORCE = 0X20,			// 五个手指的法向压力
@@ -67,6 +67,11 @@ typedef enum
 	PRESSURE_MIDDLE_FINGER = 0x30,		// 中指所有压力数据		
 	PRESSURE_RING_FINGER = 0x31,		// 无名指所有压力数据		
 	PRESSURE_LITTLE_FINGER = 0x32,		// 小拇指所有压力数据		
+
+	MOTOR_TEMPERATURE_1 = 0x33,			// 电机温度1
+    MOTOR_TEMPERATURE_2 = 0x34,			// 电机温度2
+	MOTOR_FAULT_CODE_1 = 0x35,			// 电机故障码1
+	MOTOR_FAULT_CODE_2 = 0x36,			// 电机故障码2
 
 	LINKER_HAND_VERSION = 0X64			// 版本号
 }FRAME_PROPERTY;
@@ -164,19 +169,36 @@ public:
     LinkerHandL10Can(uint32_t handId, const std::string &canChannel, int baudrate);
     ~LinkerHandL10Can();
 
+	// 设置关节位置
     void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+	// 获取当前关节状态
     std::vector<uint8_t> getCurrentStatus() override;
-    void setJointSpeed(const std::vector<uint8_t> &speed) override;
-	void setPressure(const std::vector<uint8_t> &pressure) override;
+	// 设置最大扭矩
+	void setTorque(const std::vector<uint8_t> &torque) override;
+	// 设置关节速度
+    void setSpeed(const std::vector<uint8_t> &speed) override;
+	// 获取当前速度
     std::vector<uint8_t> getSpeed() override;
+	// 获取压感数据
     std::vector<std::vector<uint8_t>> getForce() override;
     void getNormalForce() override;
     void getTangentialForce() override;
     void getTangentialForceDir() override;
     void getApproachInc() override;
+	// 获取版本信息
     std::string getVersion() override;
-
-    std::vector<std::vector<uint8_t>> getPressureData() override;
+	// 获取五个手指的压力数据
+    std::vector<std::vector<uint8_t>> getPressureData() override; // python版没有用到
+	// 获取电机温度
+    std::vector<uint8_t> getMotorTemperature() override;
+	// 获取电机故障码
+    std::vector<uint8_t> getMotorFaultCode() override;
+	// 获取电机电流
+    std::vector<uint8_t> getMotorCurrent() override;	// 暂时无用
+	// 获取所有关节位置和压力
+    std::vector<uint8_t> requestAllStatus(); // 暂时无用
+	// 获取当前扭矩
+	std::vector<uint8_t> getTorque() override;
 
 private:
     uint32_t handId;
@@ -206,4 +228,20 @@ private:
 	std::vector<uint8_t> joint_position2;
 	std::vector<uint8_t> joint_speed;
 	
+
+	std::vector<uint8_t> normal_force;
+    std::vector<uint8_t> tangential_force;
+    std::vector<uint8_t> tangential_force_dir;
+    std::vector<uint8_t> approach_inc;
+
+	// 最大扭矩
+    std::vector<uint8_t> max_torque;
+
+	// 电机温度
+    std::vector<uint8_t> motorTemperature_1;
+	std::vector<uint8_t> motorTemperature_2;
+	
+	// 电机故障码
+    std::vector<uint8_t> motorFaultCode_1;
+	std::vector<uint8_t> motorFaultCode_2;
 };

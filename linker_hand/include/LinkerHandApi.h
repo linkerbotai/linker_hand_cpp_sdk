@@ -9,20 +9,6 @@
 #include "HandFactory.h"
 #include "YamlConfig.h"
 
-typedef enum {
-    L7,
-	L10,
-    L20,
-	L24,
-	L25
-} LINKER_HAND;
-
-typedef enum {
-    RIGHT = 0x27,
-    LEFT = 0x28
-} HAND_TYPE;
-
-
 class LinkerHandApi
 {
 public:
@@ -35,8 +21,8 @@ public:
 	std::vector<uint8_t> getState();
 	// 设置速度
 	void setSpeed(const std::vector<uint8_t> &speed);
-	// 设置五根手指的转矩限制 - 力度
-	void setPressureData(const std::vector<uint8_t> &pressure);
+	// 设置扭矩
+	void setTorque(const std::vector<uint8_t> &torque);
 	// 获取法向压力、切向压力、切向方向、接近感应
 	std::vector<std::vector<uint8_t>> getForce();
 	// 获取大拇指、食指、中指、无名指、小指的所有压力数据
@@ -45,6 +31,27 @@ public:
 	void fingerMove(const std::vector<uint8_t> &pose);
 	// 获取版本号
 	std::string getVersion();
+
+	// ----------------------------------------------------------
+
+	// 获取电机温度
+	std::vector<uint8_t> getMotorTemperature();
+	// 获取电机故障码
+	std::vector<uint8_t> getMotorFaultCode();
+	// 获取当前电流
+	std::vector<uint8_t> getMotorCurrent();
+	// 获取当前最大扭矩
+	std::vector<uint8_t> getMotorTorque();
+	// ------------------------- 待开发 --------------------------
+	
+	// 设置电流 目前仅支持L20 
+	void setMotorCurrent(const std::vector<uint8_t> &current);
+	// 设置电机使能 目前仅支持L25
+	void setMotorEnable(const std::vector<uint8_t> &enable);
+	// 设置电机使能 目前仅支持L25
+	void setMotorDisable(const std::vector<uint8_t> &disable);
+	// 清除电机故障码 目前仅支持L20
+	void clearMotorFaultCode();
 
 private:
 	// 获取法向压力
@@ -59,6 +66,9 @@ private:
 private:
 	std::unique_ptr<IHand> hand;
 	uint32_t handId;
+
+	LINKER_HAND handJoint_;
+	HAND_TYPE handType_;
 };
 
 #endif

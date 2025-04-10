@@ -1,4 +1,4 @@
-VERSION: 1.3.5 # 版本号，L7 O7支持
+VERSION: 1.0.1 # 版本号
 LINKER_HAND:  # 手部配置信息
   LEFT_HAND:
     EXISTS: False # 是否存在左手

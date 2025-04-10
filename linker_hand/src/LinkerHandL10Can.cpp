@@ -40,7 +40,7 @@ void LinkerHandL10Can::setJointPositions(const std::vector<u_int8_t> &jointAngle
         send_data[3] = static_cast<uint8_t>(JointEffort);
         send_data[4] = static_cast<uint8_t>(JointEffort);
         std::vector<uint8_t> pressure_data_vector(send_data, send_data + 5);
-        setPressure(pressure_data_vector);
+        setTorque(pressure_data_vector);
 
         send_data[0] = static_cast<uint8_t>(JointVelocity);
         send_data[1] = static_cast<uint8_t>(JointVelocity);
@@ -48,7 +48,7 @@ void LinkerHandL10Can::setJointPositions(const std::vector<u_int8_t> &jointAngle
         send_data[3] = static_cast<uint8_t>(JointVelocity);
         send_data[4] = static_cast<uint8_t>(JointVelocity);
         std::vector<uint8_t> speed_data_vector(send_data, send_data + 5);
-        setJointSpeed(speed_data_vector);
+        setSpeed(speed_data_vector);
 
         
         send_data[0] = FRAME_PROPERTY::JOINT_POSITION_RCO;
@@ -93,8 +93,6 @@ std::string LinkerHandL10Can::getVersion()
     bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, handId); // 发送获取版本号的命令
 
     std::unique_lock<std::mutex> lock(queueMutex);
-    // queueCond.wait(lock, [this]{ return !responseQueue.empty(); });
-    // if (!queueCond.wait_for(lock, std::chrono::seconds(5), [this] { return !responseQueue.empty(); }))
     if (!queueCond.wait_for(lock, std::chrono::milliseconds(100), [this] { return !responseQueue.empty(); }))
     {
         std::cout << "Timeout waiting for version response" << std::endl;
@@ -126,16 +124,16 @@ std::string LinkerHandL10Can::getVersion()
     return ss.str();
 }
 
-void LinkerHandL10Can::setPressure(const std::vector<uint8_t> &pressure)
+void LinkerHandL10Can::setTorque(const std::vector<uint8_t> &torque)
 {
     std::vector<uint8_t> result = {FRAME_PROPERTY::MAX_PRESS_RCO};
-    result.insert(result.end(), pressure.begin(), pressure.end());
+    result.insert(result.end(), torque.begin(), torque.end());
 
     bus.send(result, handId);
 }
 
 // 设置关节速度
-void LinkerHandL10Can::setJointSpeed(const std::vector<uint8_t> &speed)
+void LinkerHandL10Can::setSpeed(const std::vector<uint8_t> &speed)
 {
     std::vector<uint8_t> result = {FRAME_PROPERTY::JOINT_SPEED};
     result.insert(result.end(), speed.begin(), speed.end());
@@ -149,7 +147,7 @@ void LinkerHandL10Can::setJointSpeed(const std::vector<uint8_t> &speed)
 std::vector<uint8_t> LinkerHandL10Can::getSpeed()
 {
     std::vector<uint8_t> result;
-    result.insert(result.end(), joint_speed.begin() + 1, joint_speed.end());
+    if (joint_speed.size() > 2) result.insert(result.end(), joint_speed.begin() + 1, joint_speed.end());
     return result;
 }
 
@@ -190,18 +188,15 @@ std::vector<std::vector<uint8_t>> LinkerHandL10Can::getPressureData()
 }
 
 
+
+#if 0
 // 获取法向压力、切向压力、切向方向、接近感应
 std::vector<std::vector<uint8_t>> LinkerHandL10Can::getForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId); // 获取法向压力
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId); // 获取切向压力
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId); // 获取切向方向
-    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId); // 获取接近感应
-
-    // getNormalForce();
-    // getTangentialForce();
-    // getTangentialForceDir();
-    // getApproachInc();
+    // bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId); // 获取法向压力
+    // bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId); // 获取切向压力
+    // bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId); // 获取切向方向
+    // bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId); // 获取接近感应
 
     std::unique_lock<std::mutex> lock(forceQueueMutex);
     if (!forceQueueCond.wait_for(lock, std::chrono::milliseconds(100), [this] { return !forceQueue.empty(); }))
@@ -212,20 +207,41 @@ std::vector<std::vector<uint8_t>> LinkerHandL10Can::getForce()
 
     ForceData forceData = forceQueue.front();
     // 判断所有不为空
-    if (forceData.normal_force.size() > 0 && 
-        forceData.tangential_force.size() > 0 && 
-        forceData.tangential_force_dir.size() > 0 && 
-        forceData.approach_inc.size() > 0)
+    if (forceData.normal_force.size() > 2 && 
+        forceData.tangential_force.size() > 2 && 
+        forceData.tangential_force_dir.size() > 2 && 
+        forceData.approach_inc.size() > 2)
     {
         forceQueue.pop();
     }
 
     return {
-        std::vector<uint8_t>(forceData.normal_force.begin(), forceData.normal_force.end()),
-        std::vector<uint8_t>(forceData.tangential_force.begin(), forceData.tangential_force.end()),
-        std::vector<uint8_t>(forceData.tangential_force_dir.begin(), forceData.tangential_force_dir.end()),
-        std::vector<uint8_t>(forceData.approach_inc.begin(), forceData.approach_inc.end())};
+        std::vector<uint8_t>(forceData.normal_force.begin() + 1, forceData.normal_force.end()),
+        std::vector<uint8_t>(forceData.tangential_force.begin() + 1, forceData.tangential_force.end()),
+        std::vector<uint8_t>(forceData.tangential_force_dir.begin() + 1, forceData.tangential_force_dir.end()),
+        std::vector<uint8_t>(forceData.approach_inc.begin() + 1, forceData.approach_inc.end())};
 }
+#endif 
+
+// 获取法向压力、切向压力、切向方向、接近感应
+std::vector<std::vector<uint8_t>> LinkerHandL10Can::getForce()
+{
+    std::vector<std::vector<uint8_t>> result_vec;
+    // 判断所有不为空
+    if (normal_force.size() > 2 && 
+        tangential_force.size() > 2 && 
+        tangential_force_dir.size() > 2 && 
+        approach_inc.size() > 2)
+    {
+        result_vec.push_back(std::vector<uint8_t>(normal_force.begin() + 1, normal_force.end()));
+        result_vec.push_back(std::vector<uint8_t>(tangential_force.begin() + 1, tangential_force.end()));
+        result_vec.push_back(std::vector<uint8_t>(tangential_force_dir.begin() + 1, tangential_force_dir.end()));
+        result_vec.push_back(std::vector<uint8_t>(approach_inc.begin() + 1, approach_inc.end()));
+    }
+
+    return result_vec;
+}
+
 
 // 获取法向压力
 void LinkerHandL10Can::getNormalForce()
@@ -249,6 +265,63 @@ void LinkerHandL10Can::getTangentialForceDir()
 void LinkerHandL10Can::getApproachInc()
 {
     bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId); // 发送请求接近度的命令
+}
+
+// -----------------------------------------------------------------------
+
+// 获取当前扭矩
+std::vector<uint8_t> LinkerHandL10Can::getTorque()
+{
+    std::vector<uint8_t> result;
+    if (max_torque.size() > 2) result.insert(result.end(), max_torque.begin() + 1, max_torque.end());
+    return result;
+}
+
+// 获取电机温度
+std::vector<uint8_t> LinkerHandL10Can::getMotorTemperature()
+{
+    bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE_1}, handId);
+    bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE_2}, handId);
+    
+    std::vector<uint8_t> result;
+
+    if (motorTemperature_1.size() > 2 && motorTemperature_2.size() > 2)
+    {
+        result.insert(result.end(), motorTemperature_1.begin() + 1, motorTemperature_1.end());
+        result.insert(result.end(), motorTemperature_2.begin() + 1, motorTemperature_2.end());
+    }
+
+    return result;
+}
+
+// 获取电机故障码
+std::vector<uint8_t> LinkerHandL10Can::getMotorFaultCode()
+{
+    bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE_1}, handId);
+    bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE_2}, handId);
+    
+    std::vector<uint8_t> result;
+
+    if (motorFaultCode_1.size() > 2 && motorFaultCode_2.size() > 2)
+    {
+        result.insert(result.end(), motorFaultCode_1.begin() + 1, motorFaultCode_1.end());
+        result.insert(result.end(), motorFaultCode_2.begin() + 1, motorFaultCode_2.end());
+    }
+
+    return result;
+}
+
+// 获取电机电流
+std::vector<uint8_t> LinkerHandL10Can::getMotorCurrent()
+{
+    return {0,0,0,0,0,0,0,0,0,0};
+}
+
+// 获取所有关节位置和压力
+std::vector<uint8_t> LinkerHandL10Can::requestAllStatus()
+{
+    bus.send({FRAME_PROPERTY::REQUEST_DATA_RETURN}, handId);
+    return {0,0,0,0,0,0,0,0,0,0};
 }
 
 void LinkerHandL10Can::receiveResponse()
@@ -277,7 +350,7 @@ void LinkerHandL10Can::receiveResponse()
                     joint_position = payload;
                     break;
                 case FRAME_PROPERTY::MAX_PRESS_RCO: // 最大压力
-                    
+                    max_torque = payload;
                     break;
                 case FRAME_PROPERTY::JOINT_POSITION2_RCO: // 关节位置2
                     joint_position2 = payload;
@@ -303,22 +376,37 @@ void LinkerHandL10Can::receiveResponse()
                     pressureQueueCond.notify_one();
                     break;
                 case FRAME_PROPERTY::HAND_NORMAL_FORCE: // 法向压力
-                    forceData.normal_force = payload;
+                    normal_force = payload;
                     break;
                 case FRAME_PROPERTY::HAND_TANGENTIAL_FORCE: // 切向压力
-                    forceData.tangential_force = payload;
+                    tangential_force = payload;
                     break;
                 case FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR: // 切向方向
-                    forceData.tangential_force_dir = payload;
+                    tangential_force_dir = payload;
                     break;
                 case FRAME_PROPERTY::HAND_APPROACH_INC: // 接近感应
-                    forceData.approach_inc = payload;
-                    forceQueue.push(forceData);
-                    forceQueueCond.notify_one();
+                    approach_inc = payload;
+                    // forceQueue.push(forceData);
+                    // forceQueueCond.notify_one();
                     break;
                 case FRAME_PROPERTY::LINKER_HAND_VERSION:
                     responseQueue.push(payload);
                     queueCond.notify_one();
+                    break;
+                case FRAME_PROPERTY::MOTOR_TEMPERATURE_1: // 电机温度
+                    motorTemperature_1 = payload;
+                    break;
+                case FRAME_PROPERTY::MOTOR_TEMPERATURE_2:
+                    motorTemperature_2 = payload;
+                    break;
+                case FRAME_PROPERTY::MOTOR_FAULT_CODE_1: // 电机故障码
+                    motorFaultCode_1 = payload;
+                    break;
+                case FRAME_PROPERTY::MOTOR_FAULT_CODE_2:
+                    motorFaultCode_2 = payload;
+                    break;
+                case FRAME_PROPERTY::REQUEST_DATA_RETURN:
+                    
                     break;
                 default:
                     std::cout << "未知数据类型: " << std::hex << (int)frame_property << std::endl;
