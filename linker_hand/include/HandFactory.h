@@ -1,6 +1,8 @@
 #pragma once
 
 #include "IHand.h"
+#include "LinkerHandL10.h"
+#include "LinkerHandL20.h"
 
 typedef enum {
     L7,
@@ -20,9 +22,9 @@ public:
     static std::unique_ptr<IHand> createHand(LINKER_HAND type, uint32_t handId, const std::string& canChannel, int baudrate) {
         switch (type) {
             case LINKER_HAND::L10:
-                return std::make_unique<LinkerHandL10Can>(handId, canChannel, baudrate);
+                return std::make_unique<LinkerHandL10::LinkerHand>(handId, canChannel, baudrate);
             case LINKER_HAND::L20:
-                return std::make_unique<LinkerHandL10Can>(handId, canChannel, baudrate);
+                return std::make_unique<LinkerHandL20::LinkerHand>(handId, canChannel, baudrate);
             default:
                 throw std::invalid_argument("Unknown hand type");
         }

@@ -63,15 +63,12 @@ int main()
     std::cout << "获取故障码：" << bytesToHex(hand.getMotorFaultCode()) << std::endl;
 
     std::cout << "获取电机电流：" << bytesToHex(hand.getMotorCurrent()) << std::endl;
-    
 
-    #if 1
+    std::cout << "获取五指的法向压力、切向压力、切向方向、接近感应数据：\n" << bytesToHex(hand.getForce(1)) << std::endl;
 
-    std::cout << "获取法向压力、切向压力、切向方向、接近感应：\n" << bytesToHex(hand.getForce()) << std::endl;
+    std::cout << "获取每个手指的压感数据：\n" << bytesToHex(hand.getForce()) << std::endl;
 
-    std::cout << "获取所有指头的压力数据：\n" << bytesToHex(hand.getPressure()) << std::endl;
-
-
+    #if 0
     // std::cout << "执行动作 - 手指快速移动" << std::endl;
     std::vector<uint8_t> pose = {};
     

@@ -5,7 +5,6 @@
 #include <vector>
 #include <memory>
 
-#include "LinkerHandL10Can.h"
 #include "HandFactory.h"
 #include "YamlConfig.h"
 
@@ -22,13 +21,11 @@ public:
 	// 设置扭矩
 	void setTorque(const std::vector<uint8_t> &torque);
 	// 获取法向压力、切向压力、切向方向、接近感应
-	std::vector<std::vector<uint8_t>> getForce();
+	std::vector<std::vector<uint8_t>> getForce(const int dataType = 0);
 	// 获取速度
 	std::vector<uint8_t> getSpeed();
 	// 获取当前关节状态
 	std::vector<uint8_t> getState();
-	// 获取大拇指、食指、中指、无名指、小指的所有压力数据
-	std::vector<std::vector<uint8_t>> getPressure();
 	// 获取版本号
 	std::string getVersion();
 

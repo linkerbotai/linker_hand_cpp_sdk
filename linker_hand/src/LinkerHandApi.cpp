@@ -87,20 +87,10 @@ std::vector<uint8_t> LinkerHandApi::getState()
     return hand->getCurrentStatus();
 }
 
-std::vector<std::vector<uint8_t>> LinkerHandApi::getForce()
+std::vector<std::vector<uint8_t>> LinkerHandApi::getForce(const int type)
 {
     // 获取所有压感数据
-    hand->getNormalForce();
-    hand->getTangentialForce();
-    hand->getTangentialForceDir();
-    hand->getApproachInc();
-    return hand->getForce();
-}
-
-std::vector<std::vector<uint8_t>> LinkerHandApi::getPressure()
-{
-    // 获取大拇指、食指、中指、无名指、小指的所有压力数据
-    return hand->getPressureData();
+    return hand->getForce(type);
 }
 
 std::string LinkerHandApi::getVersion()
