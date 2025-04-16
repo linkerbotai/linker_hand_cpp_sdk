@@ -51,7 +51,6 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
         std::vector<uint8_t> speed_data_vector(send_data, send_data + 5);
         setSpeed(speed_data_vector);
 
-        
         send_data[0] = FRAME_PROPERTY::JOINT_POSITION_RCO;
         send_data[1] = jointAngles[0];
         send_data[2] = jointAngles[1];
@@ -80,7 +79,7 @@ std::vector<uint8_t> LinkerHand::getCurrentStatus()
     bus.send({FRAME_PROPERTY::JOINT_POSITION_RCO}, handId);
     bus.send({FRAME_PROPERTY::JOINT_POSITION2_RCO}, handId);
 
-    return getSubVector(joint_position, joint_position2);
+    return IHand::getSubVector(joint_position, joint_position2);
 }
 
 // 获取版本号
@@ -113,7 +112,7 @@ std::string LinkerHand::getVersion()
 
 void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
 {
-    std::vector<uint8_t> result = {FRAME_PROPERTY::MAX_PRESS_RCO};
+    std::vector<uint8_t> result = {FRAME_PROPERTY::TORQUE_LIMIT};
     result.insert(result.end(), torque.begin(), torque.end());
 
     bus.send(result, handId);
@@ -133,7 +132,8 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 // 获取关节速度
 std::vector<uint8_t> LinkerHand::getSpeed()
 {
-    return getSubVector(joint_speed);
+    bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
+    return IHand::getSubVector(joint_speed);
 }
 
 // 获取所有压感数据
@@ -142,21 +142,20 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
     std::vector<std::vector<uint8_t>> result_vec;
     if (type == 0)
     {
-        result_vec.push_back(getSubVector(getThumbForce()));
-        result_vec.push_back(getSubVector(getIndexForce()));
-        result_vec.push_back(getSubVector(getMiddleForce()));
-        result_vec.push_back(getSubVector(getRingForce()));
-        result_vec.push_back(getSubVector(getLittleForce()));
+        result_vec.push_back(IHand::getSubVector(getThumbForce()));
+        result_vec.push_back(IHand::getSubVector(getIndexForce()));
+        result_vec.push_back(IHand::getSubVector(getMiddleForce()));
+        result_vec.push_back(IHand::getSubVector(getRingForce()));
+        result_vec.push_back(IHand::getSubVector(getLittleForce()));
     } else {
-        result_vec.push_back(getSubVector(getNormalForce()));
-        result_vec.push_back(getSubVector(getTangentialForce()));
-        result_vec.push_back(getSubVector(getTangentialForceDir()));
-        result_vec.push_back(getSubVector(getApproachInc()));
+        result_vec.push_back(IHand::getSubVector(getNormalForce()));
+        result_vec.push_back(IHand::getSubVector(getTangentialForce()));
+        result_vec.push_back(IHand::getSubVector(getTangentialForceDir()));
+        result_vec.push_back(IHand::getSubVector(getApproachInc()));
     }
 
     return result_vec;
 }
-
 
 // 获取五指法向压力
 std::vector<uint8_t> LinkerHand::getNormalForce()
@@ -191,7 +190,8 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
 // 获取当前扭矩
 std::vector<uint8_t> LinkerHand::getTorque()
 {
-    return getSubVector(max_torque);
+    bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
+    return IHand::getSubVector(max_torque);
 }
 
 // 获取电机温度
@@ -200,22 +200,7 @@ std::vector<uint8_t> LinkerHand::getMotorTemperature()
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE_1}, handId);
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE_2}, handId);
 
-    return getSubVector(motorTemperature_1, motorTemperature_2);
-}
-
-std::vector<uint8_t> LinkerHand::getSubVector(const std::vector<uint8_t>& vec) {
-
-    std::vector<uint8_t> result;
-    if (vec.size() > 1) result.insert(result.end(), vec.begin() + 1, vec.end());
-    return result;
-}
-
-std::vector<uint8_t> LinkerHand::getSubVector(const std::vector<uint8_t>& vec1, const std::vector<uint8_t>& vec2)
-{
-    std::vector<uint8_t> result;
-    if (vec1.size() > 0) result.insert(result.end(), vec1.begin() + 1, vec1.end());
-    if (vec2.size() > 0) result.insert(result.end(), vec2.begin() + 1, vec2.end());
-    return result;
+    return IHand::getSubVector(motorTemperature_1, motorTemperature_2);
 }
 
 // 获取电机故障码
@@ -224,7 +209,7 @@ std::vector<uint8_t> LinkerHand::getMotorFaultCode()
     bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE_1}, handId);
     bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE_2}, handId);
     
-    return getSubVector(motorFaultCode_1, motorFaultCode_2);
+    return IHand::getSubVector(motorFaultCode_1, motorFaultCode_2);
 }
 
 // 获取电机电流
@@ -298,7 +283,7 @@ void LinkerHand::receiveResponse()
                 case FRAME_PROPERTY::JOINT_POSITION_RCO: // 关节位置
                     joint_position = payload;
                     break;
-                case FRAME_PROPERTY::MAX_PRESS_RCO: // 最大压力
+                case FRAME_PROPERTY::TORQUE_LIMIT: // 扭矩限制
                     max_torque = payload;
                     break;
                 case FRAME_PROPERTY::JOINT_POSITION2_RCO: // 关节位置2
@@ -358,7 +343,7 @@ void LinkerHand::receiveResponse()
         }
         catch (const std::runtime_error &e)
         {
-            std::cerr << "Error receiving data: " << e.what() << std::endl;
+            // std::cerr << "Error receiving data: " << e.what() << std::endl;
         }
     }
 }

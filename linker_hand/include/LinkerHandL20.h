@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LINKER_HAND_L20_H
+#define LINKER_HAND_L20_H
 
 #include <thread>
 #include <mutex>
@@ -25,6 +26,7 @@ typedef enum
     JOINT_FAULT_R = 0x07,           // 短帧故障 电机运行故障 1清除 0查询 | 返回本类型数据
     ROTOR_LOCK_COUNT = 0x08,        // 手指堵转或过流判断计数阀值 | 返回本类型数据
     REQUEST_DATA_RETURN = 0x09,      // 请求数据返回 | 返回所有手指控制数据，返回数据会分若干帧发出。
+    
     JOINT_PITCH_NR = 0x11,           // 俯仰角-手指根部弯曲 | 不返回本类型数据
     JOINT_YAW_NR = 0x12,             // 航向角-手指横摆，控制间隙 | 不返回本类型数据
     JOINT_ROLL_NR = 0x13,            // 横滚角-只有大拇指副用到了 | 不返回本类型数据
@@ -36,11 +38,13 @@ typedef enum
     HAND_TANGENTIAL_FORCE = 0X21,		// 返回五个手指的切向压力
     HAND_TANGENTIAL_FORCE_DIR = 0X22,	// 返回五个手指的切向方向 数值0-127对应实际切向力角度0-359,无切向力保持255
     HAND_APPROACH_INC = 0X23,			// 返回五个手指指接近感应
+
     THUMB_ALL_DATA = 0x30,              // 大拇指所有数据 | 返回 1法向压力 2切向压力 3切向方向 4接近感应
     INDEX_FINGER_ALL_DATA = 0x31,       // 食指所有数据 | 返回 1法向压力 2切向压力 3切向方向 4接近感应
     MIDDLE_FINGER_ALL_DATA = 0x32,      // 中指所有数据 | 返回 1法向压力 2切向压力 3切向方向 4接近感应
     RING_FINGER_ALL_DATA = 0x33,        // 无名指所有数据 | 返回 1法向压力 2切向压力 3切向方向 4接近感应
     LITTLE_FINGER_ALL_DATA = 0x34,      // 小拇指所有数据 | 返回 1法向压力 2切向压力 3切向方向 4接近感应
+    
     HAND_UID = 0xC0,                 // 设备唯一标识码 只读 --------
     HAND_HARDWARE_VERSION = 0xC1,    // 硬件版本 只读 --------
     HAND_SOFTWARE_VERSION = 0xC2,    // 软件版本 只读 --------
@@ -65,6 +69,15 @@ public:
 	//--------------------------------------------------------------------
 	// 获取所有压感数据
     std::vector<std::vector<uint8_t>> getForce(const int type = 0) override;
+    // 获取五个手指的法向压力
+    std::vector<uint8_t> getNormalForce() override;
+	// 获取五个手指的切向压力
+    std::vector<uint8_t> getTangentialForce() override;
+	// 获取五个手指的切向方向
+    std::vector<uint8_t> getTangentialForceDir() override;
+	// 获取五个手指指接近感应
+    std::vector<uint8_t> getApproachInc() override;
+    #if 0
 	// 获取大拇指压感数据
     std::vector<uint8_t> getThumbForce() override;
     // 获取食指压感数据
@@ -75,15 +88,6 @@ public:
     std::vector<uint8_t> getRingForce() override;
     // 获取小拇指压感数据
     std::vector<uint8_t> getLittleForce() override;
-    #if 0
-	// 获取五个手指的法向压力
-    std::vector<uint8_t> getNormalForce() override;
-	// 获取五个手指的切向压力
-    std::vector<uint8_t> getTangentialForce() override;
-	// 获取五个手指的切向方向
-    std::vector<uint8_t> getTangentialForceDir() override;
-	// 获取五个手指指接近感应
-    std::vector<uint8_t> getApproachInc() override;
     #endif
     //--------------------------------------------------------------------
     // 获取电机故障码
@@ -91,9 +95,15 @@ public:
     // 获取电机电流
     std::vector<uint8_t> getMotorCurrent() override;
     // 清除电机故障码
-    void clearMotorFaultCode(const std::vector<uint8_t> &torque) override;
+    void clearMotorFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1)) override;
     // 设置电流
     void setMotorCurrent(const std::vector<uint8_t> &current) override;
+    // 获取版本号
+    std::string getVersion() override;
+    // 获取设备唯一标志
+    std::vector<uint8_t> getUID() override;
+    // 获取堵转计数
+    std::vector<uint8_t> getRotorLockCount() override;
 
 private:
     uint32_t handId;
@@ -103,5 +113,49 @@ private:
     std::mutex responseMutex;
 
     void receiveResponse();
+
+    // 故障码
+    std::vector<uint8_t> motor_fault_code;
+    // 电流
+    std::vector<uint8_t> motor_current;
+    // 速度
+    std::vector<uint8_t> motor_speed;
+
+    // 压感数据
+    std::vector<std::vector<uint8_t>> force_data;
+    // 大拇指压感数据
+    std::vector<uint8_t> thumb_force_data;
+    // 食指压感数据
+    std::vector<uint8_t> index_force_data;
+    // 中指压感数据
+    std::vector<uint8_t> middle_force_data;
+    // 无名指压感数据
+    std::vector<uint8_t> ring_force_data;
+    // 小拇指压感数据
+    std::vector<uint8_t> little_force_data;
+
+    std::vector<uint8_t> normal_force;
+    std::vector<uint8_t> tangential_force;
+    std::vector<uint8_t> tangential_force_dir;
+    std::vector<uint8_t> approach_inc;
+    
+    // 关节位置
+    std::vector<uint8_t> joint_position1;
+	std::vector<uint8_t> joint_position2;
+    std::vector<uint8_t> joint_position3;
+    std::vector<uint8_t> joint_position4;
+
+    // 版本号
+    std::vector<uint8_t> hand_hardware_version;
+    std::vector<uint8_t> hand_software_version;
+    // 设备ID
+    std::vector<uint8_t> hand_comm_id;
+
+    // 设备唯一标志
+    std::vector<uint8_t> hand_uid;
+
+    // 堵转计数
+    std::vector<uint8_t> rotor_lock_count;
 };
 }
+#endif // LINKER_HAND_L20_H

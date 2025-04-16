@@ -48,7 +48,7 @@ public:
 	// 设置电机使能 目前仅支持L25
 	void setMotorDisable(const std::vector<uint8_t> &disable);
 	// 清除电机故障码 目前仅支持L20
-	void clearMotorFaultCode();
+	void clearMotorFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1));
 
 private:
 	// 获取法向压力
@@ -63,7 +63,7 @@ private:
 private:
 	std::unique_ptr<IHand> hand;
 	uint32_t handId;
-
+public:
 	LINKER_HAND handJoint_;
 	HAND_TYPE handType_;
 };

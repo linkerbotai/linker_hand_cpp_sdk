@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LINKER_HAND_L10_H
+#define LINKER_HAND_L10_H
 
 #include <thread>
 #include <mutex>
@@ -17,7 +18,7 @@ typedef enum
 {									  
 	// INVALID_FRAME_PROPERTY = 0x00,	// 无效的can帧属性
     JOINT_POSITION_RCO = 0x01,			// 关节1-6的关节位置
-    MAX_PRESS_RCO = 0x02,				// 五根手指的转矩限制		
+    TORQUE_LIMIT = 0x02,				// 五根手指的转矩限制		
     JOINT_POSITION2_RCO = 0x04,			// 关节7-10的关节位置
     JOINT_SPEED = 0x05,					// 五根手指的速度
     REQUEST_DATA_RETURN = 0x09,			// 获取所有关节位置和压力
@@ -98,8 +99,6 @@ private:
     std::mutex responseMutex;
 
     void receiveResponse();
-	std::vector<uint8_t> getSubVector(const std::vector<uint8_t> &vec);
-	std::vector<uint8_t> getSubVector(const std::vector<uint8_t>& vec1, const std::vector<uint8_t>& vec2);
 
     std::queue<std::vector<uint8_t>> responseQueue; // 通用响应队列
     std::condition_variable queueCond;              // 通用队列条件变量
@@ -136,3 +135,4 @@ private:
 	std::vector<uint8_t> version;
 };
 } // namespace LinkerHandL10
+#endif // LINKER_HAND_L10_H

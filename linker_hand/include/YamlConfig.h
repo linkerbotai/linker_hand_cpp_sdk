@@ -1,3 +1,6 @@
+#ifndef YAML_CONFIG_H
+#define YAML_CONFIG_H
+
 #include <yaml-cpp/yaml.h>
 #include <iostream>
 #include <string>
@@ -60,3 +63,5 @@ private:
     YAML::Node config;
     mutable std::mutex mutex_;
 };
+
+#endif // YAML_CONFIG_H
