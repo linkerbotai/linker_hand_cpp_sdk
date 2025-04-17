@@ -17,8 +17,10 @@ add_executable(linker_hand_example src/example.cpp)
 add_library(linker_hand_lib STATIC
     src/CanBus.cpp
     src/LinkerHandApi.cpp
+    src/LinkerHandL7.cpp
     src/LinkerHandL10.cpp
     src/LinkerHandL20.cpp
+    src/LinkerHandL25.cpp
 )
 
 # 链接库

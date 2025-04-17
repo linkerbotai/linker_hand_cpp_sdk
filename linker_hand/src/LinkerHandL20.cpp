@@ -248,7 +248,7 @@ void LinkerHand::receiveResponse()
         {
             auto data = bus.receive(handId);
             
-            #if 1
+            #if 0
             std::cout << "Recv: ";
             for (auto &can : data) std::cout << std::hex << (int)can << " ";
             std::cout << std::endl;

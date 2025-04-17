@@ -22,13 +22,21 @@ LinkerHandApi::LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &hand
         handId = handType;
     }
 
-    if (handJoint == LINKER_HAND::L10)
+    if (handJoint == LINKER_HAND::L7)
+    {
+        hand = HandFactory::createHand(LINKER_HAND::L7, handId, "can0", 1000000);
+    }
+    else if (handJoint == LINKER_HAND::L10)
     {
         hand = HandFactory::createHand(LINKER_HAND::L10, handId, "can0", 1000000);
     }
     else if (handJoint == LINKER_HAND::L20)
     {
         hand = HandFactory::createHand(LINKER_HAND::L20, handId, "can0", 1000000);
+    }
+    else if (handJoint == LINKER_HAND::L25)
+    {
+        hand = HandFactory::createHand(LINKER_HAND::L25, handId, "can0", 1000000);
     }
     else
     {
@@ -71,7 +79,7 @@ void LinkerHandApi::fingerMove(const std::vector<uint8_t> &pose)
     }
     else
     {
-        std::cout << "当前LinkerHand型号为：" << handJoint_ << " " << (handType_ != HAND_TYPE::LEFT ? "右手" : "左手") << "动作序列不匹配！" << std::endl;
+        std::cout << "提示：LinkerHand型号或动作序列长度不匹配！" << std::endl;
     }
 }
 
@@ -126,10 +134,13 @@ std::vector<uint8_t> LinkerHandApi::getMotorCurrent()
 // 设置电流 目前仅支持L20
 void LinkerHandApi::setMotorCurrent(const std::vector<uint8_t> &current)
 {
-    std::cout << "目前仅支持L20!" << std::endl;
     if (handJoint_ == LINKER_HAND::L20)
     {
-        // hand->setMotorCurrent(current);
+        hand->setMotorCurrent(current);
+    }
+    else
+    {
+        std::cout << "目前仅支持L20!" << std::endl;
     }
 }
 
@@ -154,11 +165,15 @@ void LinkerHandApi::setMotorDisable(const std::vector<uint8_t> &disable)
 }
 
 // 清除电机故障码 目前仅支持L20
-void LinkerHandApi::clearMotorFaultCode()
+void LinkerHandApi::clearMotorFaultCode(const std::vector<uint8_t> &torque)
 {
-    std::cout << "目前仅支持L20!" << std::endl;
+    
     if (handJoint_ == LINKER_HAND::L20)
     {
-        // hand->clearMotorFaultCode();
+        hand->clearMotorFaultCode(torque);
+    }
+    else
+    {
+        std::cout << "目前仅支持L20!" << std::endl;
     }
 }

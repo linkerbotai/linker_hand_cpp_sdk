@@ -40,7 +40,7 @@ std::string bytesToHex(const std::vector<std::vector<uint8_t>> &data)
 // 定义一个函数，用于在单独的线程中不断调用 getSpeed
 void thread_function (LinkerHandApi& hand) {
     while (running) {
-        // std::cout << "获取状态数据：" << bytesToHex(hand.getState()) << std::endl;
+        std::cout << "获取状态数据：" << bytesToHex(hand.getState()) << std::endl;
 
         // 暂停一段时间，避免过快输出
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -50,11 +50,15 @@ void thread_function (LinkerHandApi& hand) {
 int main()
 {
     // 调用API接口
-    LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
+    LinkerHandApi hand(LINKER_HAND::L7, HAND_TYPE::LEFT);
 
     // 线程
-    std::thread speedThread(thread_function, std::ref(hand));
-    
+    // std::thread speedThread(thread_function, std::ref(hand));
+
+
+
+
+
     // 获取版本号
     std::cout << hand.getVersion() << std::endl;
 
@@ -62,13 +66,52 @@ int main()
     
     std::cout << "获取故障码：" << bytesToHex(hand.getMotorFaultCode()) << std::endl;
 
-    std::cout << "获取电机电流：" << bytesToHex(hand.getMotorCurrent()) << std::endl;
-
     std::cout << "获取五指的法向压力、切向压力、切向方向、接近感应数据：\n" << bytesToHex(hand.getForce(1)) << std::endl;
 
     std::cout << "获取每个手指的压感数据：\n" << bytesToHex(hand.getForce()) << std::endl;
 
+    std::cout << "获取速度数据：" << bytesToHex(hand.getSpeed()) << std::endl;
+
+
+    // L7 --------------------------------------------------------
+    // 设置速度
+    hand.setSpeed({200,200,200,200,200,200,200});
+
+    // 手掌握拳
+    std::vector<std::vector<uint8_t>> poses = {
+        {255, 255, 255, 255, 255, 255, 255},
+        {255, 255, 0, 255, 255, 255, 255},
+        {255, 255, 0, 0, 255, 255, 255},
+        {255, 255, 0, 0, 0, 255, 255},
+        {255, 255, 0, 0, 0, 0, 255},
+        {72, 90, 0, 0, 0, 0, 55}
+    };
+
+    for (const auto& pose : poses) {
+        hand.fingerMove(pose);
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // 等待1秒
+    }
+    
+    std::vector<uint8_t> open = {255, 255, 255, 255, 255, 255, 255};
+
+    std::cout << "L7-执行动作 - 张开" << std::endl;
+    hand.fingerMove(open);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // --------------------------------------------------------
+
     #if 0
+    
+    std::cout << "获取电机电流：" << bytesToHex(hand.getMotorCurrent()) << std::endl;
+    // 握拳
+    std::vector<uint8_t> fist_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51, 101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
+
+    std::cout << "执行动作 - 握拳" << std::endl;
+    hand.fingerMove(fist_pose);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+
+    
     // std::cout << "执行动作 - 手指快速移动" << std::endl;
     std::vector<uint8_t> pose = {};
     
@@ -165,7 +208,7 @@ int main()
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    speedThread.join();
+    // speedThread.join();
 
     return 0;
 }
