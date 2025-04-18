@@ -157,17 +157,19 @@ namespace AIMOcommunicate
 
     std::vector<uint8_t> CanBus::receive(uint32_t& id)
     {
-    	#if 1
         struct can_frame frame;
         if (read(socket_fd, &frame, sizeof(frame)) != sizeof(frame))
         {
             throw std::runtime_error("Failed to receive CAN frame");
         }
 
-        id = frame.can_id;
-        return std::vector<uint8_t>(frame.data, frame.data + frame.can_dlc);
-    	#endif
-
+		if(frame.can_id == id){
+			// std::cout << id << "==" << frame.can_id << std::endl;
+			return std::vector<uint8_t>(frame.data, frame.data + frame.can_dlc);
+		} else {
+			// std::cout << id << "!=" << frame.can_id << std::endl;
+			return {};
+		}
     }
     
     void CanBus::setReceiveTimeout(int seconds, int microseconds)

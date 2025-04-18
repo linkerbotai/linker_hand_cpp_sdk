@@ -248,13 +248,15 @@ void LinkerHand::receiveResponse()
         {
             auto data = bus.receive(handId);
             
-            #if 0
-            std::cout << "Recv: ";
+            if (data.size() <= 0) continue;
+            
+            #if 1
+            std::cout << "L20-Recv: ";
             for (auto &can : data) std::cout << std::hex << (int)can << " ";
             std::cout << std::endl;
             #endif
 
-            if (data.size() <= 0) continue;  
+              
             uint8_t frame_property = data[0];
             std::vector<uint8_t> payload(data.begin(), data.end());
 
@@ -323,7 +325,7 @@ void LinkerHand::receiveResponse()
                     rotor_lock_count = payload;
                     break;
                 default:
-                    std::cout << "未知数据类型: " << std::hex << (int)frame_property << std::endl;
+                    std::cout << "L20 未知数据类型: " << std::hex << (int)frame_property << std::endl;
                     continue;
             }
         }

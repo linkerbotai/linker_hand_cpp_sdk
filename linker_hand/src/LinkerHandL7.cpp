@@ -78,20 +78,31 @@ std::string LinkerHand::getVersion()
 
     if (version.size() > 0) 
     {
-        ss << "————————————————————————————————————" << std::endl;
-        ss << "             版本信息" << std::endl;
-        ss << "————————————————————————————————————" << std::endl;
-        ss << "自由度       ：" << (int)version[1] << std::endl;
-        ss << "机械手版本   ：" << (int)version[2] << std::endl;
-        ss << "版本序号     ：" << (int)version[3] << std::endl;
+        // ss << "————————————————————————————————————" << std::endl;
+        // ss << "             版本信息" << std::endl;
+        // ss << "————————————————————————————————————" << std::endl;
+        // ss << "自由度       ：" << (int)version[1] << std::endl;
+        // ss << "机械手版本   ：" << (int)version[2] << std::endl;
+        // ss << "版本序号     ：" << (int)version[3] << std::endl;
+        // if (version[4] == 0x52) {
+        //     ss << "手方向       ：右手" << std::endl;
+        // } else if (version[4] == 0x4C) {
+        //     ss << "手方向       ：左手" << std::endl;
+        // }
+        // ss << "软件版本号   ：V" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
+        // ss << "硬件版本号   ：V" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
+        // ss << "————————————————————————————————————" << std::endl;
+
+        ss << "自由度：" << (int)version[1] << std::endl;
+        ss << "机械手版本：" << (int)version[2] << std::endl;
+        ss << "版本序号：" << (int)version[3] << std::endl;
         if (version[4] == 0x52) {
-            ss << "手方向       ：右手" << std::endl;
+            ss << "手方向：右手" << std::endl;
         } else if (version[4] == 0x4C) {
-            ss << "手方向       ：左手" << std::endl;
+            ss << "手方向：左手" << std::endl;
         }
-        ss << "软件版本号   ：V" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
-        ss << "硬件版本号   ：V" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
-        ss << "————————————————————————————————————" << std::endl;
+        ss << "软件版本号：" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
+        ss << "硬件版本号：" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
     }
 
     return ss.str();
@@ -238,13 +249,14 @@ void LinkerHand::receiveResponse()
         {
             auto data = bus.receive(handId);
             
-            #if 0
-            std::cout << "Recv: ";
+            if (data.size() <= 0) continue;
+            
+            #if 1
+            std::cout << "L7-Recv: ";
             for (auto &can : data) std::cout << std::hex << (int)can << " ";
             std::cout << std::endl;
             #endif
 
-            if (data.size() <= 0) continue;  
             uint8_t frame_property = data[0];
             std::vector<uint8_t> payload(data.begin(), data.end());
 
@@ -295,7 +307,7 @@ void LinkerHand::receiveResponse()
                     motorFaultCode_1 = payload;
                     break;
                 default:
-                    std::cout << "未知数据类型: " << std::hex << (int)frame_property << std::endl;
+                    std::cout << "L7 未知数据类型: " << std::hex << (int)frame_property << std::endl;
                     continue;
             }
         }

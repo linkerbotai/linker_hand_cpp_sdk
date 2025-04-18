@@ -460,15 +460,14 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
             try
             {
                 auto data = bus.receive(handId);
+                if (data.size() <= 0) continue;
 
-#if 0
-            std::cout << "Recv: ";
-            for (auto &can : data) std::cout << std::hex << (int)can << " ";
-            std::cout << std::endl;
-#endif
+				#if 1
+		        std::cout << "Recv: ";
+		        for (auto &can : data) std::cout << std::hex << (int)can << " ";
+		        std::cout << std::endl;
+				#endif
 
-                if (data.size() <= 0)
-                    continue;
                 uint8_t frame_property = data[0];
                 std::vector<uint8_t> payload(data.begin(), data.end());
 
@@ -571,7 +570,7 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
                     hand_uid = payload;
                     break;
                 default:
-                    std::cout << "未知数据类型: " << std::hex << (int)frame_property << std::endl;
+                    std::cout << "L25 未知数据类型: " << std::hex << (int)frame_property << std::endl;
                     continue;
             }
         }

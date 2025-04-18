@@ -35,6 +35,7 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 
         uint8_t send_data[8];
 
+        #if 0
         send_data[0] = static_cast<uint8_t>(JointEffort);
         send_data[1] = static_cast<uint8_t>(JointEffort);
         send_data[2] = static_cast<uint8_t>(JointEffort);
@@ -50,6 +51,7 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
         send_data[4] = static_cast<uint8_t>(JointVelocity);
         std::vector<uint8_t> speed_data_vector(send_data, send_data + 5);
         setSpeed(speed_data_vector);
+        #endif
 
         send_data[0] = FRAME_PROPERTY::JOINT_POSITION_RCO;
         send_data[1] = jointAngles[0];
@@ -268,14 +270,14 @@ void LinkerHand::receiveResponse()
         try
         {
             auto data = bus.receive(handId);
+            if (data.size() <= 0) continue;
             
-            #if 0
+            #if 1
             std::cout << "Recv: ";
             for (auto &can : data) std::cout << std::hex << (int)can << " ";
             std::cout << std::endl;
             #endif
 
-            if (data.size() <= 0) continue;  
             uint8_t frame_property = data[0];
             std::vector<uint8_t> payload(data.begin(), data.end());
 
@@ -337,7 +339,7 @@ void LinkerHand::receiveResponse()
                 case FRAME_PROPERTY::REQUEST_DATA_RETURN:
                     break;
                 default:
-                    std::cout << "未知数据类型: " << std::hex << (int)frame_property << std::endl;
+                    std::cout << "L10 未知数据类型: " << std::hex << (int)frame_property << std::endl;
                     continue;
             }
         }

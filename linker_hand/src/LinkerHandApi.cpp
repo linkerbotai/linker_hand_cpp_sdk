@@ -55,7 +55,18 @@ void LinkerHandApi::setTorque(const std::vector<uint8_t> &torque)
 
 void LinkerHandApi::setSpeed(const std::vector<uint8_t> &speed)
 {
-    hand->setSpeed(speed);
+    if (handJoint_ == LINKER_HAND::L7 && speed.size() == 7)
+    {
+        hand->setSpeed(speed);
+    }
+    else if (handJoint_ == LINKER_HAND::L10 && speed.size() == 5)
+    {
+        hand->setSpeed(speed);
+    }
+    else
+    {
+        std::cout << "setSpeed提示：LinkerHand型号或动作序列长度不匹配！" << std::endl;
+    }
 }
 
 void LinkerHandApi::fingerMove(const std::vector<uint8_t> &pose)
@@ -79,7 +90,7 @@ void LinkerHandApi::fingerMove(const std::vector<uint8_t> &pose)
     }
     else
     {
-        std::cout << "提示：LinkerHand型号或动作序列长度不匹配！" << std::endl;
+        std::cout << "fingerMove提示：LinkerHand型号或动作序列长度不匹配！" << std::endl;
     }
 }
 

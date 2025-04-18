@@ -6,7 +6,6 @@
 #include <memory>
 
 #include "HandFactory.h"
-#include "YamlConfig.h"
 
 class LinkerHandApi
 {
