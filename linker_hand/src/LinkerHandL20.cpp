@@ -167,21 +167,21 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
 }
 //--------------------------------------------------------------------
 // 获取电机故障码
-std::vector<uint8_t> LinkerHand::getMotorFaultCode()
+std::vector<uint8_t> LinkerHand::getFaultCode()
 {
     bus.send({FRAME_PROPERTY::JOINT_FAULT_R}, handId);
     return IHand::getSubVector(motor_fault_code);
 }
 
 // 获取电机电流
-std::vector<uint8_t> LinkerHand::getMotorCurrent()
+std::vector<uint8_t> LinkerHand::getCurrent()
 {
     bus.send({FRAME_PROPERTY::JOINT_CURRENT_R}, handId);
     return IHand::getSubVector(motor_current);
 }
 
 // 清除电机故障码
-void LinkerHand::clearMotorFaultCode(const std::vector<uint8_t> &torque)
+void LinkerHand::clearFaultCode(const std::vector<uint8_t> &torque)
 {
     std::vector<uint8_t> data;
     data.push_back(FRAME_PROPERTY::JOINT_FAULT_R);
@@ -190,7 +190,7 @@ void LinkerHand::clearMotorFaultCode(const std::vector<uint8_t> &torque)
 }
 
 // 设置电流
-void LinkerHand::setMotorCurrent(const std::vector<uint8_t> &current)
+void LinkerHand::setCurrent(const std::vector<uint8_t> &current)
 {
     std::vector<uint8_t> data;
     data.push_back(FRAME_PROPERTY::JOINT_CURRENT_R);
@@ -204,26 +204,35 @@ std::string LinkerHand::getVersion()
     bus.send({FRAME_PROPERTY::HAND_SOFTWARE_VERSION}, handId);
     bus.send({FRAME_PROPERTY::HAND_COMM_ID}, handId);
 
-    IHand::getSubVector(hand_software_version, hand_hardware_version);
+    // IHand::getSubVector(hand_software_version, hand_hardware_version);
 
     std::stringstream ss;
 
     if (hand_software_version.size() > 0)
     {
-        ss << "————————————————————————————————————" << std::endl;
-        ss << "             版本信息" << std::endl;
-        ss << "————————————————————————————————————" << std::endl;
-        if (hand_comm_id[1] == 0x27)
-        {
-            ss << "手方向       ：右手" << std::endl;
+        // ss << "————————————————————————————————————" << std::endl;
+        // ss << "             版本信息" << std::endl;
+        // ss << "————————————————————————————————————" << std::endl;
+        // if (hand_comm_id[1] == 0x27)
+        // {
+        //     ss << "手方向       ：右手" << std::endl;
+        // }
+        // else if (hand_comm_id[1] == 0x28)
+        // {
+        //     ss << "手方向       ：左手" << std::endl;
+        // }
+        // ss << "软件版本号   ：V" << ((int)(hand_software_version[0] >> 4) + (int)(hand_software_version[0] & 0x0F) / 10.0) << std::endl;
+        // ss << "硬件版本号   ：V" << ((int)(hand_hardware_version[0] >> 4) + (int)(hand_hardware_version[0] & 0x0F) / 10.0) << std::endl;
+        // ss << "————————————————————————————————————" << std::endl;
+
+
+        if (hand_comm_id[1] == 0x27) {
+            ss << "手方向：右手" << std::endl;
+        } else if (hand_comm_id[1] == 0x28) {
+            ss << "手方向：左手" << std::endl;
         }
-        else if (hand_comm_id[1] == 0x28)
-        {
-            ss << "手方向       ：左手" << std::endl;
-        }
-        ss << "软件版本号   ：V" << ((int)(hand_software_version[0] >> 4) + (int)(hand_software_version[0] & 0x0F) / 10.0) << std::endl;
-        ss << "硬件版本号   ：V" << ((int)(hand_hardware_version[0] >> 4) + (int)(hand_hardware_version[0] & 0x0F) / 10.0) << std::endl;
-        ss << "————————————————————————————————————" << std::endl;
+        ss << "软件版本号：v" << ((int)(hand_software_version[0] >> 4) + (int)(hand_software_version[0] & 0x0F) / 10.0) << std::endl;
+        ss << "硬件版本号：v" << ((int)(hand_hardware_version[0] >> 4) + (int)(hand_hardware_version[0] & 0x0F) / 10.0) << std::endl;
     }
     return ss.str();
 }
@@ -250,11 +259,12 @@ void LinkerHand::receiveResponse()
             
             if (data.size() <= 0) continue;
             
-            #if 1
-            std::cout << "L20-Recv: ";
-            for (auto &can : data) std::cout << std::hex << (int)can << " ";
-            std::cout << std::endl;
-            #endif
+            if (RECV_DEBUG)
+            {
+                std::cout << "L20-Recv: ";
+                for (auto &can : data) std::cout << std::hex << (int)can << " ";
+                std::cout << std::endl;
+            }
 
               
             uint8_t frame_property = data[0];

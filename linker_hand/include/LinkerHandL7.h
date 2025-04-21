@@ -79,16 +79,16 @@ public:
     std::vector<uint8_t> getLittleForce() override;
 	//--------------------------------------------------------------------
 	// 获取电机温度
-    std::vector<uint8_t> getMotorTemperature() override;
+    std::vector<uint8_t> getTemperature() override;
 	// 获取电机故障码
-    std::vector<uint8_t> getMotorFaultCode() override;
+    std::vector<uint8_t> getFaultCode() override;
     // 获取版本信息
     std::string getVersion() override;
 	
 
 private:
     uint32_t handId;
-    AIMOcommunicate::CanBus bus;
+    Communication::CanBus bus;
     std::thread receiveThread;
     bool running;
 

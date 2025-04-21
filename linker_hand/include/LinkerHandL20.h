@@ -91,13 +91,13 @@ public:
     #endif
     //--------------------------------------------------------------------
     // 获取电机故障码
-    std::vector<uint8_t> getMotorFaultCode() override;
+    std::vector<uint8_t> getFaultCode() override;
     // 获取电机电流
-    std::vector<uint8_t> getMotorCurrent() override;
+    std::vector<uint8_t> getCurrent() override;
     // 清除电机故障码
-    void clearMotorFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1)) override;
+    void clearFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1)) override;
     // 设置电流
-    void setMotorCurrent(const std::vector<uint8_t> &current) override;
+    void setCurrent(const std::vector<uint8_t> &current) override;
     // 获取版本号
     std::string getVersion() override;
     // 获取设备唯一标志
@@ -107,7 +107,7 @@ public:
 
 private:
     uint32_t handId;
-    AIMOcommunicate::CanBus bus;
+    Communication::CanBus bus;
     std::thread receiveThread;
     bool running;
     std::mutex responseMutex;

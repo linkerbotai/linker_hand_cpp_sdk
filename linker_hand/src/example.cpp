@@ -62,9 +62,9 @@ int main()
     // 获取版本号
     std::cout << hand.getVersion() << std::endl;
 
-    std::cout << "获取电机温度：" << bytesToHex(hand.getMotorTemperature()) << std::endl;
+    std::cout << "获取电机温度：" << bytesToHex(hand.getTemperature()) << std::endl;
     
-    std::cout << "获取故障码：" << bytesToHex(hand.getMotorFaultCode()) << std::endl;
+    std::cout << "获取故障码：" << bytesToHex(hand.getFaultCode()) << std::endl;
 
     std::cout << "获取五指的法向压力、切向压力、切向方向、接近感应数据：\n" << bytesToHex(hand.getForce(1)) << std::endl;
 

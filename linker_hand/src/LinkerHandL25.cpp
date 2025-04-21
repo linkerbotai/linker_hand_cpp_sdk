@@ -272,7 +272,7 @@ std::vector<uint8_t> LinkerHand::getTorque()
     std::vector<uint8_t> getLittleTorque() override;
 #endif
 // 获取故障码-有合并指令待确认
-std::vector<uint8_t> LinkerHand::getMotorFaultCode() 
+std::vector<uint8_t> LinkerHand::getFaultCode() 
 {
     bus.send({FRAME_PROPERTY::THUMB_FAULT}, handId);
     bus.send({FRAME_PROPERTY::INDEX_FAULT}, handId);
@@ -290,7 +290,7 @@ std::vector<uint8_t> LinkerHand::getMotorFaultCode()
     return fault_code;
 }
 // 清除电机故障码
-void LinkerHand::clearMotorFaultCode(const std::vector<uint8_t> &torque) 
+void LinkerHand::clearFaultCode(const std::vector<uint8_t> &torque) 
 {
     
 }
@@ -321,7 +321,7 @@ void LinkerHand::clearMotorFaultCode(const std::vector<uint8_t> &torque)
 #endif
 //--------------------------------------------------------------------
 // 获取温度
-std::vector<uint8_t> LinkerHand::getMotorTemperature()
+std::vector<uint8_t> LinkerHand::getTemperature()
 {
     bus.send({FRAME_PROPERTY::THUMB_TEMPERATURE}, handId);
     bus.send({FRAME_PROPERTY::INDEX_TEMPERATURE}, handId);
@@ -462,11 +462,12 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
                 auto data = bus.receive(handId);
                 if (data.size() <= 0) continue;
 
-				#if 1
-		        std::cout << "Recv: ";
-		        for (auto &can : data) std::cout << std::hex << (int)can << " ";
-		        std::cout << std::endl;
-				#endif
+				if (RECV_DEBUG)
+		        {
+                    std::cout << "Recv: ";
+                    for (auto &can : data) std::cout << std::hex << (int)can << " ";
+                    std::cout << std::endl;
+		        }
 
                 uint8_t frame_property = data[0];
                 std::vector<uint8_t> payload(data.begin(), data.end());

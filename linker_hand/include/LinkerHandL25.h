@@ -213,9 +213,9 @@ public:
     std::vector<uint8_t> getLittleTorque() override;
     #endif
     // 获取故障码-有合并指令待确认
-    std::vector<uint8_t> getMotorFaultCode() override;
+    std::vector<uint8_t> getFaultCode() override;
     // 清除电机故障码
-    void clearMotorFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 0)) override;
+    void clearFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 0)) override;
     #if 0
     // 大拇指故障码
     std::vector<uint8_t> getThumbFaultCode() override;
@@ -243,7 +243,7 @@ public:
     #endif
     //--------------------------------------------------------------------
     // 获取温度
-    std::vector<uint8_t> getMotorTemperature() override;
+    std::vector<uint8_t> getTemperature() override;
     #if 0
     // 大拇指温度
     std::vector<uint8_t> getThumbTemperature() override;
@@ -314,7 +314,7 @@ public:
 
 private:
     uint32_t handId;
-    AIMOcommunicate::CanBus bus;
+    Communication::CanBus bus;
     std::thread receiveThread;
     bool running;
     std::mutex responseMutex;

@@ -6,7 +6,7 @@
 #include <thread>
 #include <chrono>
 
-namespace AIMOcommunicate
+namespace Communication
 {
     CanBus::CanBus(const std::string& interface, int bitrate)
         : interface(interface), bitrate(bitrate)
@@ -130,8 +130,9 @@ namespace AIMOcommunicate
     {
         std::lock_guard<std::mutex> lock(mutex); // 获取锁
 
-        #if 0
-        if (data[0] == 0x01 || data[0] == 0x04)
+        
+        // if (data[0] == 0x01 || data[0] == 0x04)
+        if (SEND_DEBUG)
         {
             std::cout << "\033[1;32m# Send\033[0m can_id:" << std::hex << can_id << " can_dlc:" << data.size() << " data:";
             for (auto &can : data)
@@ -140,7 +141,6 @@ namespace AIMOcommunicate
             }
             std::cout << std::endl;
         }
-        #endif
         
         struct can_frame frame;
         frame.can_id = can_id; // 左手/右手

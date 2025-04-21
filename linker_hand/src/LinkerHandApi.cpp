@@ -63,6 +63,10 @@ void LinkerHandApi::setSpeed(const std::vector<uint8_t> &speed)
     {
         hand->setSpeed(speed);
     }
+    else if (handJoint_ == LINKER_HAND::L20 && speed.size() == 5)
+    {
+        hand->setSpeed(speed);
+    }
     else
     {
         std::cout << "setSpeed提示：LinkerHand型号或动作序列长度不匹配！" << std::endl;
@@ -118,36 +122,36 @@ std::string LinkerHandApi::getVersion()
     return hand->getVersion();
 }
 
-std::vector<uint8_t> LinkerHandApi::getMotorTorque()
+std::vector<uint8_t> LinkerHandApi::getTorque()
 {
     // 获取当前扭矩
     return hand->getTorque();
 }
 
-std::vector<uint8_t> LinkerHandApi::getMotorTemperature()
+std::vector<uint8_t> LinkerHandApi::getTemperature()
 {
     // 获取温度
-    return hand->getMotorTemperature();
+    return hand->getTemperature();
 }
 
-std::vector<uint8_t> LinkerHandApi::getMotorFaultCode()
+std::vector<uint8_t> LinkerHandApi::getFaultCode()
 {
     // 获取故障码
-    return hand->getMotorFaultCode();
+    return hand->getFaultCode();
 }
 
-std::vector<uint8_t> LinkerHandApi::getMotorCurrent()
+std::vector<uint8_t> LinkerHandApi::getCurrent()
 {
     // 获取当前电流
-    return hand->getMotorCurrent();
+    return hand->getCurrent();
 }
 
 // 设置电流 目前仅支持L20
-void LinkerHandApi::setMotorCurrent(const std::vector<uint8_t> &current)
+void LinkerHandApi::setCurrent(const std::vector<uint8_t> &current)
 {
     if (handJoint_ == LINKER_HAND::L20)
     {
-        hand->setMotorCurrent(current);
+        hand->setCurrent(current);
     }
     else
     {
@@ -176,12 +180,12 @@ void LinkerHandApi::setMotorDisable(const std::vector<uint8_t> &disable)
 }
 
 // 清除电机故障码 目前仅支持L20
-void LinkerHandApi::clearMotorFaultCode(const std::vector<uint8_t> &torque)
+void LinkerHandApi::clearFaultCode(const std::vector<uint8_t> &torque)
 {
     
     if (handJoint_ == LINKER_HAND::L20)
     {
-        hand->clearMotorFaultCode(torque);
+        hand->clearFaultCode(torque);
     }
     else
     {

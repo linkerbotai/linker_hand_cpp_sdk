@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#define RECV_DEBUG 0
+
 class IHand
 {
 public:
@@ -17,11 +19,11 @@ public:
     // 获取当前关节位置
     virtual std::vector<uint8_t> getCurrentStatus() = 0;
     // 获取电机故障码
-    virtual std::vector<uint8_t> getMotorFaultCode() = 0;
+    virtual std::vector<uint8_t> getFaultCode() = 0;
     // 获取电机电流
-    virtual std::vector<uint8_t> getMotorCurrent()
+    virtual std::vector<uint8_t> getCurrent()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getCurrent");
         return {};
     }
     // ------------------------------------------------------
@@ -30,110 +32,113 @@ public:
     // 获取大拇指压感数据
     virtual std::vector<uint8_t> getThumbForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getThumbForce");
         return {};
     }
     // 获取食指压感数据
     virtual std::vector<uint8_t> getIndexForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getIndexForce");
         return {};
     }
     // 获取中指压感数据
     virtual std::vector<uint8_t> getMiddleForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getMiddleForce");
         return {};
     }
     // 获取无名指压感数据
     virtual std::vector<uint8_t> getRingForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getRingForce");
         return {};
     }
     // 获取小拇指压感数据
     virtual std::vector<uint8_t> getLittleForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getLittleForce");
         return {};
     }
     // ------------------------------------------------------
     // 获取五指法向力
     virtual std::vector<uint8_t> getNormalForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getNormalForce");
         return {};
     }
     // 获取五指切向力
     virtual std::vector<uint8_t> getTangentialForce()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getTangentialForce");
         return {};
     }
     // 获取五指法向力方向
     virtual std::vector<uint8_t> getTangentialForceDir()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getTangentialForceDir");
         return {};
     }
     // 获取五指接近感应
     virtual std::vector<uint8_t> getApproachInc()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getApproachInc");
         return {};
     }
     // ------------------------------------------------------
     // 设置扭矩 L20暂不支持
     virtual void setTorque(const std::vector<uint8_t> &torque)
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("setTorque");
     }
     // 获取电机扭矩 L20暂不支持
     virtual std::vector<uint8_t> getTorque()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getTorque");
         return {};
     }
     // 获取电机温度 L20暂不支持
-    virtual std::vector<uint8_t> getMotorTemperature()
+    virtual std::vector<uint8_t> getTemperature()
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("getTemperature");
         return {};
     }
     // 获取版本号   目前仅支持L10
     virtual std::string getVersion()
     {
-        return "Not currently supported!";
+        printUnsupportedFeature("getVersion");
+        return "";
     }
     // 获取设备ID L20协议
     virtual std::vector<uint8_t> getUID()
     {
+        printUnsupportedFeature("getUID");
         return {};
     }
     // 手指堵转或过流判断计数阀值 L20协议
     virtual std::vector<uint8_t> getRotorLockCount()
     {
+        printUnsupportedFeature("getRotorLockCount");
         return {};
     }
     // 清除电机故障码 目前仅支持L20
-	virtual void clearMotorFaultCode(const std::vector<uint8_t> &torque)
+	virtual void clearFaultCode(const std::vector<uint8_t> &torque)
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("clearFaultCode");
     }
     // 设置电流 目前仅支持L20 
-	virtual void setMotorCurrent(const std::vector<uint8_t> &current)
+	virtual void setCurrent(const std::vector<uint8_t> &current)
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("setCurrent");
     }
 	// 设置电机使能 目前仅支持L25
 	virtual void setMotorEnable(const std::vector<uint8_t> &enable)
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("setMotorEnable");
     }
 	// 设置电机使能 目前仅支持L25
 	virtual void setMotorDisable(const std::vector<uint8_t> &disable)
     {
-        std::cout << "Not currently supported!" << std::endl;
+        printUnsupportedFeature("setMotorDisable");
     }
 
     // ---------------------------------------------------------------------
@@ -151,6 +156,11 @@ public:
         if (vec1.size() > 0) result.insert(result.end(), vec1.begin() + 1, vec1.end());
         if (vec2.size() > 0) result.insert(result.end(), vec2.begin() + 1, vec2.end());
         return result;
+    }
+protected:
+    void printUnsupportedFeature(const std::string &featureName) const
+    {
+        std::cout << featureName << " Not currently supported!" << std::endl;
     }
 };
 #endif // I_HAND_H

@@ -31,23 +31,22 @@ public:
 	// ----------------------------------------------------------
 
 	// 获取电机温度
-	std::vector<uint8_t> getMotorTemperature();
+	std::vector<uint8_t> getTemperature();
 	// 获取电机故障码
-	std::vector<uint8_t> getMotorFaultCode();
+	std::vector<uint8_t> getFaultCode();
 	// 获取当前电流
-	std::vector<uint8_t> getMotorCurrent();
+	std::vector<uint8_t> getCurrent();
 	// 获取当前最大扭矩
-	std::vector<uint8_t> getMotorTorque();
+	std::vector<uint8_t> getTorque();
 	// ------------------------- 待开发 --------------------------
-	
 	// 设置电流 目前仅支持L20 
-	void setMotorCurrent(const std::vector<uint8_t> &current);
+	void setCurrent(const std::vector<uint8_t> &current);
+	// 清除电机故障码 目前仅支持L20
+	void clearFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1));
 	// 设置电机使能 目前仅支持L25
 	void setMotorEnable(const std::vector<uint8_t> &enable);
 	// 设置电机使能 目前仅支持L25
 	void setMotorDisable(const std::vector<uint8_t> &disable);
-	// 清除电机故障码 目前仅支持L20
-	void clearMotorFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1));
 
 private:
 	// 获取法向压力

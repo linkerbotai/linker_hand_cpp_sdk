@@ -101,8 +101,8 @@ std::string LinkerHand::getVersion()
         } else if (version[4] == 0x4C) {
             ss << "手方向：左手" << std::endl;
         }
-        ss << "软件版本号：" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
-        ss << "硬件版本号：" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
+        ss << "软件版本号：v" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
+        ss << "硬件版本号：v" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
     }
 
     return ss.str();
@@ -193,14 +193,14 @@ std::vector<uint8_t> LinkerHand::getTorque()
 }
 
 // 获取电机温度
-std::vector<uint8_t> LinkerHand::getMotorTemperature()
+std::vector<uint8_t> LinkerHand::getTemperature()
 {
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE}, handId);
     return IHand::getSubVector(motorTemperature_1);
 }
 
 // 获取电机故障码
-std::vector<uint8_t> LinkerHand::getMotorFaultCode()
+std::vector<uint8_t> LinkerHand::getFaultCode()
 {
     bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE}, handId);
     return IHand::getSubVector(motorFaultCode_1);
@@ -251,11 +251,12 @@ void LinkerHand::receiveResponse()
             
             if (data.size() <= 0) continue;
             
-            #if 1
-            std::cout << "L7-Recv: ";
-            for (auto &can : data) std::cout << std::hex << (int)can << " ";
-            std::cout << std::endl;
-            #endif
+            if (RECV_DEBUG)
+            {
+                std::cout << "L7-Recv: ";
+                for (auto &can : data) std::cout << std::hex << (int)can << " ";
+                std::cout << std::endl;
+            }
 
             uint8_t frame_property = data[0];
             std::vector<uint8_t> payload(data.begin(), data.end());

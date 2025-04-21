@@ -12,7 +12,9 @@
 #include <sys/ioctl.h>  // 包含 ioctl
 #include <mutex>
 
-namespace AIMOcommunicate
+#define SEND_DEBUG 0
+
+namespace Communication
 {
     class CanBus
     {
