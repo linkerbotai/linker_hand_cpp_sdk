@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.0.0"
+VERSION="1.1.6"
 
 function LoadedColor_information()
 {
@@ -80,18 +80,16 @@ RUN1() {
 	local launch=$1
 	local command package launch_file
 
-    # 分割launch参数为三个字段
     IFS=' ' read -r command package launch_file <<< "$launch"
 	
 	gnome-terminal -- bash -c "source devel/setup.sh; $launch; $CLOSE_RESERVE"  > /dev/null 2>&1
 	
 	echo "Node: $package"
-	# 等待节点启动
     while ! rosnode list | grep -q $package; do
-      echo -e "  启动中..."
+      echo -e "  starting..."
       sleep 1
     done
-    echo -e "  启动完成"
+    echo -e "  Startup completed"
 }
 
 
@@ -111,78 +109,72 @@ function run_example(){
     cd build; ./linker_hand_example
 }
 
-#------------------------------------------------ 选择菜单 ------------------------------------------
+#------------------------------------------------ Select Menu ------------------------------------------
 
 function select_menu(){
   cd $current_dir
-  echo -e "${GREEN}请根据菜单栏输入你的选择：${RESET}"
+  echo -e "${GREEN}Please enter options: ${RESET}"
   read -p "" select_num
   case $select_num in
       1)
-        echo "编译SDK"
+        echo "Build SDK"
         build_sdk
         ;;
       2)
-      	echo "安装SDK"
+      	echo "Install SDK"
         build_sdk
         install_sdk
         ;;
       3)
-        echo "卸载SDK"
+        echo "Uninstall SDK"
         uninstall_sdk
         ;;
       6)
-        echo "执行示例"
+        echo "Execution Example"
         run_example
         ;;
       0)
-        echo "退出"
+        echo "Exit"
         exit
         ;;
       *)
-        echo -e "${RED}输入错误，请重新输入！${RESET}"
+        echo -e "${RED}Input error, please re-enter！${RESET}"
         sleep 1
         ;;
   esac
 }
 
-#------------------------------------------------ 菜单栏 ------------------------------------------
+#------------------------------------------------ Menu ------------------------------------------
 function show_Info(){
-  # 打印顶部边框
   echo -e "${YELLOW}"
   echo "================================================"
-  echo -e "${YELLOW} 灵心巧手CPP-SDK  版本：${VERSION} ${RESET}"
+  echo -e "${YELLOW} LinkerHand CPP-SDK  Version：${VERSION} ${RESET}"
   echo -e "${YELLOW}================================================${RESET}"
 
-  # 打印菜单
   echo -e "${GREEN}"
-  echo "RUN Choose Task:[请输入括号内的数字]"
+  echo "RUN Choose Task:"
   echo -e "${YELLOW}————————————————————————————————————————————————${RESET}"
-  echo -e "${BLUE}[1]: 编译SDK;${RESET}"
+  echo -e "${BLUE}[1]: Build SDK${RESET}"
   echo -e "${YELLOW}————————————————————————————————————————————————${RESET}"
-  echo -e "${BLUE}[2]: 安装SDK;${RESET}"
+  echo -e "${BLUE}[2]: Install SDK${RESET}"
   echo -e "${YELLOW}————————————————————————————————————————————————${RESET}"
-  echo -e "${BLUE}[3]: 卸载SDK;${RESET}"
+  echo -e "${BLUE}[3]: Uninstall SDK${RESET}"
   echo -e "${YELLOW}————————————————————————————————————————————————${RESET}"
-  echo -e "${RED}[0]: 退出;${RESET}"
+  echo -e "${RED}[0]: Exit${RESET}"
   echo -e "${YELLOW}————————————————————————————————————————————————${RESET}"
   # sudo make DESTDIR=/home/lst/Desktop/install install
 }
 
-#------------------------------------------------ 初始化 ------------------------------------------
+#------------------------------------------------ Init ------------------------------------------
 
-#初始化
 function Init()
 {
-	
-    # 加载颜色信息
     LoadedColor_information
-	# 获取当前文件路径
   	current_dir=$(pwd)
     sleep 1
 }
 
-#------------------------------------------------ 主程序 ------------------------------------------
+#------------------------------------------------ Main ------------------------------------------
 
 Init
 while true
