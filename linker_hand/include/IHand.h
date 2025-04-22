@@ -1,8 +1,10 @@
 #ifndef I_HAND_H
 #define I_HAND_H
 
+#include <set>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #define RECV_DEBUG 0
 
@@ -160,7 +162,12 @@ public:
 protected:
     void printUnsupportedFeature(const std::string &featureName) const
     {
-        std::cout << featureName << " Not currently supported!" << std::endl;
+        static std::set<std::string> printedFeatures;
+        if (printedFeatures.find(featureName) == printedFeatures.end())
+        {
+            std::cout << featureName << " Not currently supported!" << std::endl;
+            printedFeatures.insert(featureName);
+        }
     }
 };
 #endif // I_HAND_H
