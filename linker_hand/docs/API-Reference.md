@@ -99,7 +99,7 @@ std::string getVersion();
 
 ### 获取电机温度
 ```cpp
-std::vector<uint8_t> getMotorTemperature();
+std::vector<uint8_t> getTemperature();
 ```
 **Description**:  
 获取电机的温度数据。  
@@ -110,7 +110,7 @@ std::vector<uint8_t> getMotorTemperature();
 
 ### 获取电机故障码
 ```cpp
-std::vector<uint8_t> getMotorFaultCode();
+std::vector<uint8_t> getFaultCode();
 ```
 **Description**:  
 获取电机的故障码。  
@@ -121,7 +121,7 @@ std::vector<uint8_t> getMotorFaultCode();
 
 ### 获取当前电流
 ```cpp
-std::vector<uint8_t> getMotorCurrent();
+std::vector<uint8_t> getCurrent();
 ```
 **Description**:  
 获取电机的当前电流值。  
@@ -132,7 +132,7 @@ std::vector<uint8_t> getMotorCurrent();
 
 ### 获取当前最大扭矩
 ```cpp
-std::vector<uint8_t> getMotorTorque();
+std::vector<uint8_t> getTorque();
 ```
 **Description**:  
 获取电机的当前最大扭矩值。  
@@ -143,7 +143,7 @@ std::vector<uint8_t> getMotorTorque();
 
 ### 设置电流（目前仅支持 L20）
 ```cpp
-void setMotorCurrent(const std::vector<uint8_t> &current);
+void setCurrent(const std::vector<uint8_t> &current);
 ```
 **Description**:  
 设置电机的电流值。  
@@ -154,7 +154,7 @@ void setMotorCurrent(const std::vector<uint8_t> &current);
 
 ### 设置电机使能（目前仅支持 L25）
 ```cpp
-void setMotorEnable(const std::vector<uint8_t> &enable);
+void setEnable(const std::vector<uint8_t> &enable);
 ```
 **Description**:  
 使能电机。  
@@ -165,7 +165,7 @@ void setMotorEnable(const std::vector<uint8_t> &enable);
 
 ### 设置电机禁用（目前仅支持 L25）
 ```cpp
-void setMotorDisable(const std::vector<uint8_t> &disable);
+void setDisable(const std::vector<uint8_t> &disable);
 ```
 **Description**:  
 禁用电机。  
@@ -176,7 +176,7 @@ void setMotorDisable(const std::vector<uint8_t> &disable);
 
 ### 清除电机故障码（目前仅支持 L20）
 ```cpp
-void clearMotorFaultCode();
+void clearFaultCode();
 ```
 **Description**:  
 清除电机的故障码。
