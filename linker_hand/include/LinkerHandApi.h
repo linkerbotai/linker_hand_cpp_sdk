@@ -44,9 +44,9 @@ public:
 	// 清除电机故障码 目前仅支持L20
 	void clearFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1));
 	// 设置电机使能 目前仅支持L25
-	void setMotorEnable(const std::vector<uint8_t> &enable);
+	void setEnable(const std::vector<uint8_t> &enable = std::vector<uint8_t>(5, 0));
 	// 设置电机使能 目前仅支持L25
-	void setMotorDisable(const std::vector<uint8_t> &disable);
+	void setDisable(const std::vector<uint8_t> &disable = std::vector<uint8_t>(5, 1));
 
 private:
 	// 获取法向压力

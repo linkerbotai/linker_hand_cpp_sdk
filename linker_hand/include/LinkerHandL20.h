@@ -95,7 +95,7 @@ public:
     // 获取电机电流
     std::vector<uint8_t> getCurrent() override;
     // 清除电机故障码
-    void clearFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 1)) override;
+    void clearFaultCode(const std::vector<uint8_t> &code = std::vector<uint8_t>(5, 1)) override;
     // 设置电流
     void setCurrent(const std::vector<uint8_t> &current) override;
     // 获取版本号

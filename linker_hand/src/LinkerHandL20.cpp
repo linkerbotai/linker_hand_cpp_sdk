@@ -181,11 +181,11 @@ std::vector<uint8_t> LinkerHand::getCurrent()
 }
 
 // 清除电机故障码
-void LinkerHand::clearFaultCode(const std::vector<uint8_t> &torque)
+void LinkerHand::clearFaultCode(const std::vector<uint8_t> &code)
 {
     std::vector<uint8_t> data;
     data.push_back(FRAME_PROPERTY::JOINT_FAULT_R);
-    data.insert(data.end(), torque.begin(), torque.end());
+    data.insert(data.end(), code.begin(), code.end());
     bus.send(data, handId);
 }
 

@@ -1,4 +1,3 @@
 build
 .vscode/
 linker_hand/build
-linker_hand/.vscode/*

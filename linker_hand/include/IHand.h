@@ -90,6 +90,7 @@ public:
     // 设置扭矩 L20暂不支持
     virtual void setTorque(const std::vector<uint8_t> &torque)
     {
+        (void)torque;
         printUnsupportedFeature("setTorque");
     }
     // 获取电机扭矩 L20暂不支持
@@ -123,23 +124,27 @@ public:
         return {};
     }
     // 清除电机故障码 目前仅支持L20
-	virtual void clearFaultCode(const std::vector<uint8_t> &torque)
+	virtual void clearFaultCode(const std::vector<uint8_t> &code)
     {
+        (void)code;
         printUnsupportedFeature("clearFaultCode");
     }
     // 设置电流 目前仅支持L20 
 	virtual void setCurrent(const std::vector<uint8_t> &current)
     {
+        (void)current;
         printUnsupportedFeature("setCurrent");
     }
 	// 设置电机使能 目前仅支持L25
 	virtual void setMotorEnable(const std::vector<uint8_t> &enable)
     {
+        (void)enable;
         printUnsupportedFeature("setMotorEnable");
     }
 	// 设置电机使能 目前仅支持L25
 	virtual void setMotorDisable(const std::vector<uint8_t> &disable)
     {
+        (void)disable;
         printUnsupportedFeature("setMotorDisable");
     }
 

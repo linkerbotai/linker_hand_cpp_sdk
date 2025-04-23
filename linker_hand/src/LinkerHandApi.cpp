@@ -67,6 +67,10 @@ void LinkerHandApi::setSpeed(const std::vector<uint8_t> &speed)
     {
         hand->setSpeed(speed);
     }
+    else if (handJoint_ == LINKER_HAND::L25 && speed.size() == 25)
+    {
+        hand->setSpeed(speed);
+    }
     else
     {
         std::cout << "setSpeed提示：LinkerHand型号或动作序列长度不匹配！" << std::endl;
@@ -160,7 +164,7 @@ void LinkerHandApi::setCurrent(const std::vector<uint8_t> &current)
 }
 
 // 设置电机使能 目前仅支持L25
-void LinkerHandApi::setMotorEnable(const std::vector<uint8_t> &enable)
+void LinkerHandApi::setEnable(const std::vector<uint8_t> &enable)
 {
     std::cout << "目前仅支持L25!" << std::endl;
     if (handJoint_ == LINKER_HAND::L25)
@@ -170,7 +174,7 @@ void LinkerHandApi::setMotorEnable(const std::vector<uint8_t> &enable)
 }
 
 // 设置电机使能 目前仅支持L25
-void LinkerHandApi::setMotorDisable(const std::vector<uint8_t> &disable)
+void LinkerHandApi::setDisable(const std::vector<uint8_t> &disable)
 {
     std::cout << "目前仅支持L25!" << std::endl;
     if (handJoint_ == LINKER_HAND::L25)

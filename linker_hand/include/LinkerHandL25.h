@@ -90,7 +90,7 @@ typedef enum
     FINGER_SPEED = 0x81, // 手指速度 | 返回本类型数据
     FINGER_TORQUE = 0x82, // 转矩 | 返回本类型数据
     FINGER_FAULT = 0x83, // 手指故障码 | 返回本类型数据
-
+    MOTOR_ENABLE = 0x85, // 使能 | 返回本类型数据
     // 指尖传感器数据组
     HAND_NORMAL_FORCE = 0x90, // 五指法向压力
     HAND_TANGENTIAL_FORCE = 0x91, // 五指切向压力
@@ -214,9 +214,9 @@ public:
     #endif
     // 获取故障码-有合并指令待确认
     std::vector<uint8_t> getFaultCode() override;
+    #if 0
     // 清除电机故障码
     void clearFaultCode(const std::vector<uint8_t> &torque = std::vector<uint8_t>(5, 0)) override;
-    #if 0
     // 大拇指故障码
     std::vector<uint8_t> getThumbFaultCode() override;
     // 食指故障码
@@ -294,20 +294,27 @@ public:
     std::vector<uint8_t> getApproachInc() override;
     #endif
     //--------------------------------------------------------------------
+    // 获取版本号
+    std::string getVersion() override;
+    // 设置电机使能 目前仅支持L25
+	void setMotorEnable(const std::vector<uint8_t> &enable = std::vector<uint8_t>(5, 0));
+	// 设置电机使能 目前仅支持L25
+	void setMotorDisable(const std::vector<uint8_t> &disable = std::vector<uint8_t>(5, 1));
+    // 设备唯一标识码
+    std::vector<uint8_t> getUID();
+    // 设备id
+    std::vector<uint8_t> getCommID();
+    // 恢复出厂设置
+    void factoryReset();
+    // 保存参数
+    void saveParameter();
+
+
     #if 0
     // 动作，预设动作指令
     void playAction(const std::vector<uint8_t> &action) override;
     //--------------------------------------------------------------------
-    // 设备唯一标识码
-    std::vector<uint8_t> getUID() override;
-    // 获取版本号
-    std::string getVersion() override;
-    // 设备id
-    uint32_t getCommID() override;
-    // 恢复出厂设置
-    void factoryReset() override;
-    // 保存参数
-    void saveParameter() override;
+    
     // 整帧传输
     void setWholeFrame(bool wholeFrame) override;
     #endif
@@ -400,6 +407,7 @@ private:
 
     // 设备唯一标志
     std::vector<uint8_t> hand_uid;
+    std::vector<uint8_t> hand_comm_id;
 
     // 堵转计数
     std::vector<uint8_t> rotor_lock_count;
