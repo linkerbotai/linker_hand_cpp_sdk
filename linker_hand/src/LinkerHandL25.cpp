@@ -7,31 +7,6 @@ LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudr
 {
     // 启动接收线程
     receiveThread = std::thread(&LinkerHand::receiveResponse, this);
-
-    // joint_pos = std::vector<u_int8_t>(25, 0);
-
-    // joint_pos.erase(joint_pos.begin() + 0, joint_pos.begin() + 5);
-    // joint_pos.insert(joint_pos.begin() + 0, sub_vector.begin(), sub_vector.end());
-
-    // joint_pos.erase(joint_pos.begin() + 5, joint_pos.begin() + 10);
-    // joint_pos.insert(joint_pos.begin() + 5, sub_vector.begin(), sub_vector.end());
-
-    // joint_pos.erase(joint_pos.begin() + 10, joint_pos.begin() + 15);
-    // joint_pos.insert(joint_pos.begin() + 10, sub_vector.begin(), sub_vector.end());
-
-    // joint_pos.erase(joint_pos.begin() + 15, joint_pos.begin() + 20);
-    // joint_pos.insert(joint_pos.begin() + 15, sub_vector.begin(), sub_vector.end());
-
-    // joint_pos.erase(joint_pos.begin() + 20, joint_pos.begin() + 25);
-    // joint_pos.insert(joint_pos.begin() + 20, sub_vector.begin(), sub_vector.end());
-
-    // // 打印修改后的 joint_pos
-    // for (int num : joint_pos) {
-    //     std::cout << num << " ";
-    // }
-    // std::cout << std::endl;
-
-
 }
 
 LinkerHand::~LinkerHand()
@@ -46,6 +21,7 @@ LinkerHand::~LinkerHand()
 // 设置关节位置
 void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 {
+    #if 0
     // 将数组拆成五个部分
     std::vector<uint8_t> joint_position1(jointAngles.begin(), jointAngles.begin() + 5);
     std::vector<uint8_t> joint_position2(jointAngles.begin() + 5, jointAngles.begin() + 10);
@@ -65,6 +41,79 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
     bus.send(joint_position3, handId);
     bus.send(joint_position4, handId);
     bus.send(joint_position5, handId);
+    #endif
+
+    std::vector<uint8_t> joint_array;
+    joint_array.push_back(jointAngles[10]);
+    joint_array.push_back(jointAngles[5]);
+    joint_array.push_back(jointAngles[0]);
+    joint_array.push_back(jointAngles[15]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[20]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[6]);
+    joint_array.push_back(jointAngles[1]);
+    joint_array.push_back(jointAngles[16]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[21]);
+    joint_array.push_back(0);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[2]);
+    joint_array.push_back(jointAngles[17]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[22]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[8]);
+    joint_array.push_back(jointAngles[3]);
+    joint_array.push_back(jointAngles[18]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[23]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[9]);
+    joint_array.push_back(jointAngles[4]);
+    joint_array.push_back(jointAngles[19]);
+    joint_array.push_back(0);
+    joint_array.push_back(jointAngles[24]);
+
+
+    std::cout << "---------------------------------------" << std::endl;
+
+    int i = 0;
+    // 使用列表推导式将列表每6个元素切成一个子数组
+    for (auto it = joint_array.begin(); it != joint_array.end(); it += 6)
+    {
+        // std::vector<uint8_t> joint_position;
+        std::vector<uint8_t> joint_position(it, it + 6);
+
+        switch(i / 6)
+        {
+            case 0:
+                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::THUMB_POS);
+                break;
+            case 1:
+                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::INDEX_POS);
+                break;
+            case 2:
+                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::MIDDLE_POS);
+                break;
+            case 3:
+                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::RING_POS);
+                break;
+            case 4:
+                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::LITTLE_POS);
+                break;
+        }
+        
+        bus.send(joint_position, handId);
+
+        i += 6;
+
+        for (auto &item : joint_position)
+        {
+            std::cout << std::hex << (int)item << " ";
+        }
+    }
+    std::cout << std::endl;
 }
 
 #if 0
@@ -93,17 +142,26 @@ std::vector<uint8_t> LinkerHand::getCurrentStatus()
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> joint_position;
 
-    std::vector<uint8_t> joint_position1_ = IHand::getSubVector(thumb_pos);
-    std::vector<uint8_t> joint_position2_ = IHand::getSubVector(index_pos);
-    std::vector<uint8_t> joint_position3_ = IHand::getSubVector(middle_pos);
-    std::vector<uint8_t> joint_position4_ = IHand::getSubVector(ring_pos);
-    std::vector<uint8_t> joint_position5_ = IHand::getSubVector(little_pos);
+    // std::vector<uint8_t> joint_position1_ = IHand::getSubVector(thumb_pos);
+    // std::vector<uint8_t> joint_position2_ = IHand::getSubVector(index_pos);
+    // std::vector<uint8_t> joint_position3_ = IHand::getSubVector(middle_pos);
+    // std::vector<uint8_t> joint_position4_ = IHand::getSubVector(ring_pos);
+    // std::vector<uint8_t> joint_position5_ = IHand::getSubVector(little_pos);
 
-    joint_position.insert(joint_position.end(), joint_position1_.begin(), joint_position1_.end());
-    joint_position.insert(joint_position.end(), joint_position2_.begin(), joint_position2_.end());
-    joint_position.insert(joint_position.end(), joint_position3_.begin(), joint_position3_.end());
-    joint_position.insert(joint_position.end(), joint_position4_.begin(), joint_position4_.end());
-    joint_position.insert(joint_position.end(), joint_position5_.begin(), joint_position5_.end());
+    // joint_position.insert(joint_position.end(), joint_position1_.begin(), joint_position1_.end());
+    // joint_position.insert(joint_position.end(), joint_position2_.begin(), joint_position2_.end());
+    // joint_position.insert(joint_position.end(), joint_position3_.begin(), joint_position3_.end());
+    // joint_position.insert(joint_position.end(), joint_position4_.begin(), joint_position4_.end());
+    // joint_position.insert(joint_position.end(), joint_position5_.begin(), joint_position5_.end());
+
+    if (thumb_pos.size() > 0 && index_pos.size() > 0 && middle_pos.size() > 0 && ring_pos.size() > 0 && little_pos.size() > 0)
+    {
+        joint_position.insert(joint_position.end(), thumb_pos.begin() + 1, thumb_pos.end());
+        joint_position.insert(joint_position.end(), index_pos.begin() + 1, index_pos.end());
+        joint_position.insert(joint_position.end(), middle_pos.begin() + 1, middle_pos.end());
+        joint_position.insert(joint_position.end(), ring_pos.begin() + 1, ring_pos.end());
+        joint_position.insert(joint_position.end(), little_pos.begin() + 1, little_pos.end());
+    }
 
     return joint_position;
 }
@@ -130,11 +188,11 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
     std::vector<uint8_t> joint_speed4(speed.begin() + 15, speed.begin() + 20);
     std::vector<uint8_t> joint_speed5(speed.begin() + 20, speed.begin() + 25);
 
-    joint_speed1.insert(joint_speed1.begin(), FRAME_PROPERTY::THUMB_POS);
-    joint_speed2.insert(joint_speed2.begin(), FRAME_PROPERTY::INDEX_POS);
-    joint_speed3.insert(joint_speed3.begin(), FRAME_PROPERTY::MIDDLE_POS);
-    joint_speed4.insert(joint_speed4.begin(), FRAME_PROPERTY::RING_POS);
-    joint_speed5.insert(joint_speed5.begin(), FRAME_PROPERTY::LITTLE_POS);
+    joint_speed1.insert(joint_speed1.begin(), FRAME_PROPERTY::THUMB_SPEED);
+    joint_speed2.insert(joint_speed2.begin(), FRAME_PROPERTY::INDEX_SPEED);
+    joint_speed3.insert(joint_speed3.begin(), FRAME_PROPERTY::MIDDLE_SPEED);
+    joint_speed4.insert(joint_speed4.begin(), FRAME_PROPERTY::RING_SPEED);
+    joint_speed5.insert(joint_speed5.begin(), FRAME_PROPERTY::LITTLE_SPEED);
 
     // 发送数据
     bus.send(joint_speed1, handId);
@@ -170,17 +228,25 @@ std::vector<uint8_t> LinkerHand::getSpeed()
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> joint_speed;
 
-    std::vector<uint8_t> joint_speed1 = IHand::getSubVector(thumb_speed);
-    std::vector<uint8_t> joint_speed2 = IHand::getSubVector(index_speed);
-    std::vector<uint8_t> joint_speed3 = IHand::getSubVector(middle_speed);
-    std::vector<uint8_t> joint_speed4 = IHand::getSubVector(ring_speed);
-    std::vector<uint8_t> joint_speed5 = IHand::getSubVector(little_speed);
+    // std::vector<uint8_t> joint_speed1 = IHand::getSubVector(thumb_speed);
+    // std::vector<uint8_t> joint_speed2 = IHand::getSubVector(index_speed);
+    // std::vector<uint8_t> joint_speed3 = IHand::getSubVector(middle_speed);
+    // std::vector<uint8_t> joint_speed4 = IHand::getSubVector(ring_speed);
+    // std::vector<uint8_t> joint_speed5 = IHand::getSubVector(little_speed);
 
-    joint_speed.insert(joint_speed.end(), joint_speed1.begin(), joint_speed1.end());
-    joint_speed.insert(joint_speed.end(), joint_speed2.begin(), joint_speed2.end());
-    joint_speed.insert(joint_speed.end(), joint_speed3.begin(), joint_speed3.end());
-    joint_speed.insert(joint_speed.end(), joint_speed4.begin(), joint_speed4.end());
-    joint_speed.insert(joint_speed.end(), joint_speed5.begin(), joint_speed5.end());
+    // joint_speed.insert(joint_speed.end(), joint_speed1.begin(), joint_speed1.end());
+    // joint_speed.insert(joint_speed.end(), joint_speed2.begin(), joint_speed2.end());
+    // joint_speed.insert(joint_speed.end(), joint_speed3.begin(), joint_speed3.end());
+    // joint_speed.insert(joint_speed.end(), joint_speed4.begin(), joint_speed4.end());
+    // joint_speed.insert(joint_speed.end(), joint_speed5.begin(), joint_speed5.end());
+    if (thumb_speed.size() > 0 && index_speed.size() > 0 && middle_speed.size() > 0 && ring_speed.size() > 0 && little_speed.size() > 0)
+    {
+        joint_speed.insert(joint_speed.end(), thumb_speed.begin() + 1, thumb_speed.end());
+        joint_speed.insert(joint_speed.end(), index_speed.begin() + 1, index_speed.end());
+        joint_speed.insert(joint_speed.end(), middle_speed.begin() + 1, middle_speed.end());
+        joint_speed.insert(joint_speed.end(), ring_speed.begin() + 1, ring_speed.end());
+        joint_speed.insert(joint_speed.end(), little_speed.begin() + 1, little_speed.end());
+    }
 
     return joint_speed;
 }
@@ -245,17 +311,26 @@ std::vector<uint8_t> LinkerHand::getTorque()
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> joint_torque;
 
-    std::vector<uint8_t> joint_torque1 = IHand::getSubVector(thumb_torque);
-    std::vector<uint8_t> joint_torque2 = IHand::getSubVector(index_torque);
-    std::vector<uint8_t> joint_torque3 = IHand::getSubVector(middle_torque);
-    std::vector<uint8_t> joint_torque4 = IHand::getSubVector(ring_torque);
-    std::vector<uint8_t> joint_torque5 = IHand::getSubVector(little_torque);
+    // std::vector<uint8_t> joint_torque1 = IHand::getSubVector(thumb_torque);
+    // std::vector<uint8_t> joint_torque2 = IHand::getSubVector(index_torque);
+    // std::vector<uint8_t> joint_torque3 = IHand::getSubVector(middle_torque);
+    // std::vector<uint8_t> joint_torque4 = IHand::getSubVector(ring_torque);
+    // std::vector<uint8_t> joint_torque5 = IHand::getSubVector(little_torque);
 
-    joint_torque.insert(joint_torque.end(), joint_torque1.begin(), joint_torque1.end());
-    joint_torque.insert(joint_torque.end(), joint_torque2.begin(), joint_torque2.end());
-    joint_torque.insert(joint_torque.end(), joint_torque3.begin(), joint_torque3.end());
-    joint_torque.insert(joint_torque.end(), joint_torque4.begin(), joint_torque4.end());
-    joint_torque.insert(joint_torque.end(), joint_torque5.begin(), joint_torque5.end());
+    // joint_torque.insert(joint_torque.end(), joint_torque1.begin(), joint_torque1.end());
+    // joint_torque.insert(joint_torque.end(), joint_torque2.begin(), joint_torque2.end());
+    // joint_torque.insert(joint_torque.end(), joint_torque3.begin(), joint_torque3.end());
+    // joint_torque.insert(joint_torque.end(), joint_torque4.begin(), joint_torque4.end());
+    // joint_torque.insert(joint_torque.end(), joint_torque5.begin(), joint_torque5.end());
+
+    if (thumb_torque.size() > 0 && index_torque.size() > 0 && middle_torque.size() > 0 && ring_torque.size() > 0 && little_torque.size() > 0)
+    {
+        joint_torque.insert(joint_torque.end(), thumb_torque.begin() + 1, thumb_torque.end());
+        joint_torque.insert(joint_torque.end(), index_torque.begin() + 1, index_torque.end());
+        joint_torque.insert(joint_torque.end(), middle_torque.begin() + 1, middle_torque.end());
+        joint_torque.insert(joint_torque.end(), ring_torque.begin() + 1, ring_torque.end());
+        joint_torque.insert(joint_torque.end(), little_torque.begin() + 1, little_torque.end());
+    }
 
     return joint_torque;
 }
@@ -282,19 +357,24 @@ std::vector<uint8_t> LinkerHand::getFaultCode()
 
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> fault_code;
-    fault_code.insert(fault_code.end(), thumb_fault.begin(), thumb_fault.end());
-    fault_code.insert(fault_code.end(), index_fault.begin(), index_fault.end());
-    fault_code.insert(fault_code.end(), middle_fault.begin(), middle_fault.end());
-    fault_code.insert(fault_code.end(), ring_fault.begin(), ring_fault.end());
-    fault_code.insert(fault_code.end(), little_fault.begin(), little_fault.end());
+    if (thumb_fault.size() > 0 && index_fault.size() > 0 && middle_fault.size() > 0 && ring_fault.size() > 0 && little_fault.size() > 0)
+    {
+        fault_code.insert(fault_code.end(), thumb_fault.begin() + 1, thumb_fault.end());
+        fault_code.insert(fault_code.end(), index_fault.begin() + 1, index_fault.end());
+        fault_code.insert(fault_code.end(), middle_fault.begin() + 1, middle_fault.end());
+        fault_code.insert(fault_code.end(), ring_fault.begin() + 1, ring_fault.end());
+        fault_code.insert(fault_code.end(), little_fault.begin() + 1, little_fault.end());
+    }
     return fault_code;
 }
+
+#if 0
 // 清除电机故障码
 void LinkerHand::clearFaultCode(const std::vector<uint8_t> &torque) 
 {
     
 }
-#if 0
+
     // 大拇指故障码
     std::vector<uint8_t> getThumbFaultCode() override;
     // 食指故障码
@@ -331,11 +411,14 @@ std::vector<uint8_t> LinkerHand::getTemperature()
 
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> temperature;
-    temperature.insert(temperature.end(), thumb_temperature.begin(), thumb_temperature.end());
-    temperature.insert(temperature.end(), index_temperature.begin(), index_temperature.end());
-    temperature.insert(temperature.end(), middle_temperature.begin(), middle_temperature.end());
-    temperature.insert(temperature.end(), ring_temperature.begin(), ring_temperature.end());
-    temperature.insert(temperature.end(), little_temperature.begin(), little_temperature.end());
+    if (thumb_temperature.size() > 0 && index_temperature.size() > 0 && middle_temperature.size() > 0 && ring_temperature.size() > 0 && little_temperature.size() > 0)
+    {
+        temperature.insert(temperature.end(), thumb_temperature.begin() + 1, thumb_temperature.end());
+        temperature.insert(temperature.end(), index_temperature.begin() + 1, index_temperature.end());
+        temperature.insert(temperature.end(), middle_temperature.begin() + 1, middle_temperature.end());
+        temperature.insert(temperature.end(), ring_temperature.begin() + 1, ring_temperature.end());
+        temperature.insert(temperature.end(), little_temperature.begin() + 1, little_temperature.end());
+    }
     return temperature;
 }
 #if 0
@@ -435,20 +518,83 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
     return approach_inc;
 }
 //--------------------------------------------------------------------
+// 获取版本号
+std::string LinkerHand::getVersion()
+{
+    bus.send({FRAME_PROPERTY::HAND_HARDWARE_VERSION}, handId);
+    bus.send({FRAME_PROPERTY::HAND_SOFTWARE_VERSION}, handId);
+
+    // getUID();
+    getCommID();
+
+    std::cout << "handware_version size : " << hand_hardware_version.size() << std::endl;
+    std::cout << "hand_software_version size : " << hand_software_version.size() << std::endl;
+
+    std::stringstream ss;
+
+    if (hand_comm_id.size() >= 2)
+    {
+        if (hand_comm_id[1] == 0x28) {
+            ss << "手方向：左手" << std::endl;
+        } else if (hand_comm_id[1] == 0x27) {
+            ss << "手方向：右手" << std::endl;
+        } else {
+            ss << "手方向：未知" << std::endl;
+        }
+    }
+    if (hand_hardware_version.size() == 5)
+    {
+        ss << "软件版本号：v" << std::hex << (int)hand_hardware_version[1] << "." << (int)hand_hardware_version[2] << "." << (int)hand_hardware_version[3] << "." << (int)hand_hardware_version[4] << std::endl;
+    }
+    if (hand_software_version.size() == 5)
+    {
+        ss << "硬件版本号：v" << std::hex << (int)hand_software_version[1] << "." << (int)hand_software_version[2] << "." << (int)hand_software_version[3] << "." << (int)hand_software_version[4] << std::endl;
+    }
+    return ss.str();
+}
+
+void LinkerHand::setMotorEnable(const std::vector<uint8_t> &enable)
+{
+    std::vector<uint8_t> result = {FRAME_PROPERTY::MOTOR_ENABLE};
+    result.insert(result.end(), enable.begin(), enable.end());
+    bus.send(result, handId);
+}
+
+void LinkerHand::setMotorDisable(const std::vector<uint8_t> &disable)
+{
+    std::vector<uint8_t> result = {FRAME_PROPERTY::MOTOR_ENABLE};
+    result.insert(result.end(), disable.begin(), disable.end());
+    bus.send(result, handId);
+}
+
+// 设备唯一标识码
+std::vector<uint8_t> LinkerHand::getUID()
+{
+    bus.send({FRAME_PROPERTY::HAND_UID}, handId);
+    return hand_uid;
+}
+
+std::vector<uint8_t> LinkerHand::getCommID()
+{
+    bus.send({FRAME_PROPERTY::HAND_COMM_ID}, handId);
+    return hand_comm_id;
+}
+
+// 恢复出厂设置
+void LinkerHand::factoryReset()
+{
+    bus.send({FRAME_PROPERTY::HAND_FACTORY_RESET}, handId);
+}
+// 保存参数
+void LinkerHand::saveParameter()
+{
+    bus.send({FRAME_PROPERTY::HAND_SAVE_PARAMETER}, handId);
+}
+
 #if 0
     // 动作，预设动作指令
     void playAction(const std::vector<uint8_t> &action) override;
     //--------------------------------------------------------------------
-    // 设备唯一标识码
-    std::vector<uint8_t> getUID() override;
-    // 获取版本号
-    std::string getVersion() override;
-    // 设备id
-    uint32_t getCommID() override;
-    // 恢复出厂设置
-    void factoryReset() override;
-    // 保存参数
-    void saveParameter() override;
     // 整帧传输
     void setWholeFrame(bool wholeFrame) override;
 #endif
@@ -462,7 +608,7 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
                 auto data = bus.receive(handId);
                 if (data.size() <= 0) continue;
 
-				if (RECV_DEBUG)
+				if (true)
 		        {
                     std::cout << "Recv: ";
                     for (auto &can : data) std::cout << std::hex << (int)can << " ";
@@ -569,6 +715,9 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
                     break;
                 case FRAME_PROPERTY::HAND_UID: // 软件版本
                     hand_uid = payload;
+                    break;
+                case FRAME_PROPERTY::HAND_COMM_ID: // 设备id
+                    hand_comm_id = payload;
                     break;
                 default:
                     std::cout << "L25 未知数据类型: " << std::hex << (int)frame_property << std::endl;
