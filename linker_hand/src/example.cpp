@@ -31,6 +31,9 @@ const std::string BOLD = "\033[1m";
 const std::string UNDERLINE = "\033[4m";
 const std::string REVERSE = "\033[7m";
 
+#define HAND_SPEED 100
+#define HAND_TORQUE 255
+
 // 用于标记程序是否应该退出
 std::atomic<bool> running(true);
 
@@ -79,555 +82,6 @@ std::map<std::string, int> hand = {
     {"joint16", 250}, {"joint17", 250}, {"joint18", 250}, {"joint19", 250}, {"joint20", 250},
     {"joint21", 250}, {"joint22", 250}, {"joint23", 250}, {"joint24", 250}, {"joint25", 250}
 };
-
-// 更新关节状态
-std::vector<uint8_t> show_left() {
-
-    std::cout << "show_step: " << show_step << std::endl;
-    std::cout << "show_count: " << show_count << std::endl;
-    std::cout << "show_count_obj: " << show_count_obj << std::endl;
-
-    show_count++;
-    if (show_count >= show_count_obj) {
-        show_count = 0;
-        switch (show_step) {
-            case 0: // 张开手掌
-                show_step++;
-                show_count_obj = 50;
-                hand["joint1"] = 75;
-                hand["joint2"] = 255;
-                hand["joint3"] = 255;
-                hand["joint4"] = 255;
-                hand["joint5"] = 255;
-                hand["joint6"] = 176;
-                hand["joint7"] = 51;
-                hand["joint8"] = 51;
-                hand["joint9"] = 125;
-                hand["joint10"] = 202;
-                hand["joint11"] = 202;
-                hand["joint12"] = 255;
-                hand["joint13"] = 255;
-                hand["joint14"] = 255;
-                hand["joint15"] = 255;
-                hand["joint16"] = 255;
-                hand["joint17"] = 255;
-                hand["joint18"] = 255;
-                hand["joint19"] = 255;
-                hand["joint20"] = 255;
-                hand["joint21"] = 255;
-                hand["joint22"] = 255;
-                hand["joint23"] = 255;
-                hand["joint24"] = 255;
-                hand["joint25"] = 255;
-                break;
-            case 1: // 收小指与无名指
-                show_step++;
-                show_count_obj = 10;
-                hand["joint4"] = 0;
-                hand["joint5"] = 0;
-                hand["joint7"] = 128;
-                hand["joint8"] = 128;
-                hand["joint9"] = 128;
-                hand["joint10"] = 128;
-                hand["joint11"] = 250;
-                hand["joint16"] = 250;
-                hand["joint17"] = 250;
-                hand["joint18"] = 250;
-                hand["joint19"] = 0;
-                hand["joint20"] = 0;
-                hand["joint21"] = 250;
-                hand["joint22"] = 250;
-                hand["joint23"] = 250;
-                hand["joint24"] = 0;
-                hand["joint25"] = 0;
-                break;
-            case 2: // 将拇指搭到小指与无名指上面
-                show_step++;
-                show_count_obj = 30;
-                hand["joint1"] = 100;
-                hand["joint6"] = 180;
-                hand["joint16"] = 0;
-                hand["joint21"] = 0;
-                break;
-            case 3: // 食指和中指向一侧倾斜
-                show_step++;
-                show_count_obj = 10;
-                hand["joint7"] = 200;
-                hand["joint8"] = 200;
-                hand["joint11"] = 200;
-                break;
-            case 4: // 另一侧
-                show_step++;
-                show_count_obj = 13;
-                hand["joint7"] = 50;
-                hand["joint8"] = 50;
-                break;
-            case 5: // 两支回中
-                show_step++;
-                show_count_obj = 13;
-                hand["joint7"] = 128;
-                hand["joint8"] = 128;
-                break;
-            case 6: // 食指和中指做 Y
-                show_step++;
-                show_count_obj = 2;
-                hand["joint7"] = 50;
-                hand["joint8"] = 200;
-                break;
-            case 7: // 收 Y
-                show_step++;
-                show_count_obj = 10;
-                hand["joint7"] = 128;
-                hand["joint8"] = 128;
-                break;
-            case 8: // 食指和中指做 Y
-                show_step++;
-                show_count_obj = 10;
-                hand["joint7"] = 50;
-                hand["joint8"] = 200;
-                break;
-            case 9: // 收 Y
-                show_step++;
-                show_count_obj = 10;
-                hand["joint7"] = 128;
-                hand["joint8"] = 128;
-                break;
-            case 10: // 中指和食指弯曲伸直交替两遍
-                show_step++;
-                show_count_obj = 15;
-                hand["joint2"] = 100;
-                hand["joint3"] = 100;
-                hand["joint17"] = 100;
-                hand["joint18"] = 100;
-                hand["joint22"] = 100;
-                hand["joint23"] = 100;
-                break;
-            case 11: // 中指和食指弯曲伸直交替两遍
-                show_step++;
-                show_count_obj = 15;
-                hand["joint2"] = 250;
-                hand["joint3"] = 250;
-                hand["joint17"] = 250;
-                hand["joint18"] = 250;
-                hand["joint22"] = 250;
-                hand["joint23"] = 250;
-                break;
-            case 12: // 中指和食指弯曲伸直交替两遍
-                show_step++;
-                show_count_obj = 15;
-                hand["joint2"] = 100;
-                hand["joint3"] = 100;
-                hand["joint17"] = 100;
-                hand["joint18"] = 100;
-                hand["joint22"] = 100;
-                hand["joint23"] = 100;
-                break;
-            case 13: // 中指和食指弯曲伸直交替两遍
-                show_step++;
-                show_count_obj = 15;
-                hand["joint2"] = 250;
-                hand["joint3"] = 250;
-                hand["joint17"] = 250;
-                hand["joint18"] = 250;
-                hand["joint22"] = 250;
-                hand["joint23"] = 250;
-                break;
-            case 14: // 蜷曲拇指
-                show_step++;
-                show_count_obj = 40;
-                hand["joint1"] = 250;
-                hand["joint6"] = 150;
-                hand["joint11"] = 250;
-                hand["joint23"] = 250;
-                break;
-            case 15: // 拇指收于掌内
-                show_step++;
-                show_count_obj = 10;
-                hand["joint6"] = 5;
-                break;
-            case 16: // 收4指
-                show_step++;
-                show_count_obj = 30;
-                hand["joint2"] = 100;
-                hand["joint3"] = 100;
-                hand["joint4"] = 100;
-                hand["joint5"] = 100;
-                hand["joint17"] = 100;
-                hand["joint18"] = 100;
-                hand["joint19"] = 100;
-                hand["joint20"] = 100;
-                hand["joint22"] = 100;
-                hand["joint23"] = 100;
-                hand["joint24"] = 100;
-                hand["joint25"] = 100;
-                break;
-            case 17: // 依次放开4指和拇指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint5"] = 250;
-                hand["joint20"] = 250;
-                hand["joint25"] = 250;
-                break;
-            case 18: // 1
-                show_step++;
-                show_count_obj = 15;
-                hand["joint4"] = 250;
-                hand["joint19"] = 250;
-                hand["joint24"] = 250;
-                break;
-            case 19: // 2
-                show_step++;
-                show_count_obj = 15;
-                hand["joint3"] = 250;
-                hand["joint18"] = 250;
-                hand["joint23"] = 250;
-                break;
-            case 20: // 3
-                show_step++;
-                show_count_obj = 15;
-                hand["joint2"] = 250;
-                hand["joint17"] = 250;
-                hand["joint22"] = 250;
-                break;
-            case 21: // 40
-                show_step++;
-                show_count_obj = 10;
-                hand["joint6"] = 250;
-                hand["joint16"] = 250;
-                hand["joint21"] = 250;
-                break;
-            case 22: // 并拢拇指
-                show_step++;
-                show_count_obj = 20;
-                hand["joint11"] = 10;
-                break;
-            case 23: // 反转拇指指掌心
-                show_step++;
-                show_count_obj = 40;
-                hand["joint1"] = 0;
-                break;
-            case 24: // 分两步回到初始位置
-                show_step++;
-                show_count_obj = 30;
-                hand["joint11"] = 250;
-                break;
-            case 25: // 1
-                show_step++;
-                show_count_obj = 50;
-                hand["joint11"] = 250;
-                break;
-            case 26: // 2
-                show_step++;
-                show_count_obj = 10;
-                hand["joint7"] = 200;
-                hand["joint8"] = 200;
-                hand["joint9"] = 200;
-                hand["joint10"] = 200;
-                break;
-            case 27: // 3
-                show_step++;
-                show_count_obj = 15;
-                hand["joint7"] = 80;
-                hand["joint8"] = 80;
-                hand["joint9"] = 80;
-                hand["joint10"] = 80;
-                break;
-            case 28: // 4
-                show_step++;
-                show_count_obj = 20;
-                hand["joint7"] = 128;
-                hand["joint8"] = 128;
-                hand["joint9"] = 128;
-                hand["joint10"] = 128;
-                break;
-            case 29: // 依次蜷曲4小指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint17"] = 0;
-                hand["joint22"] = 0;
-                break;
-            case 30: // 蜷曲4指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint18"] = 0;
-                hand["joint23"] = 0;
-                break;
-            case 31: // 4
-                show_step++;
-                show_count_obj = 15;
-                hand["joint19"] = 0;
-                hand["joint24"] = 0;
-                break;
-            case 32: // 4
-                show_step++;
-                show_count_obj = 15;
-                hand["joint20"] = 0;
-                hand["joint25"] = 0;
-                break;
-            case 33: // 依次蜷曲4小指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint2"] = 0;
-                break;
-            case 34: // 依次蜷曲4小指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint3"] = 0;
-                break;
-            case 35: // 依次蜷曲4小指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint4"] = 0;
-                break;
-            case 36: // 依次蜷曲4小指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint5"] = 0;
-                break;
-            case 37: // 蜷曲拇指
-                show_step++;
-                show_count_obj = 40;
-                hand["joint1"] = 0;
-                hand["joint16"] = 200;
-                break;
-            case 38: // 打开食指和小指
-                show_step++;
-                show_count_obj = 40;
-                hand["joint1"] = 250;
-                hand["joint16"] = 250;
-                break;
-            case 39: // 打开食指和小指
-                show_step++;
-                show_count_obj = 30;
-                hand["joint2"] = 250;
-                hand["joint5"] = 250;
-                hand["joint17"] = 250;
-                hand["joint20"] = 250;
-                hand["joint22"] = 250;
-                hand["joint25"] = 250;
-                break;
-            case 40: // 将拇指搭上666
-                show_step++;
-                show_count_obj = 40;
-                hand["joint1"] = 100;
-                hand["joint6"] = 200;
-                hand["joint11"] = 100;
-                hand["joint16"] = 100;
-                break;
-            case 41: // 左右动手指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint7"] = 80;
-                hand["joint10"] = 200;
-                break;
-            case 42: // 左右动手指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint7"] = 200;
-                hand["joint10"] = 80;
-                break;
-            case 43: // 左右动手指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint7"] = 80;
-                hand["joint10"] = 200;
-                break;
-            case 44: // 左右动手指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint7"] = 200;
-                hand["joint10"] = 80;
-                break;
-            case 45: // 左右动手指
-                show_step++;
-                show_count_obj = 15;
-                hand["joint7"] = 128;
-                hand["joint10"] = 128;
-                break;
-            case 46: // 展开
-                show_step++;
-                show_count_obj = 50;
-                hand["joint1"] = 250;
-                hand["joint3"] = 250;
-                hand["joint4"] = 250;
-                hand["joint6"] = 250;
-                hand["joint11"] = 250;
-                hand["joint16"] = 250;
-                hand["joint18"] = 250;
-                hand["joint19"] = 250;
-                hand["joint21"] = 250;
-                hand["joint23"] = 250;
-                hand["joint24"] = 250;
-                break;
-            case 47: // 拇指和食指捏
-                show_step++;
-                show_count_obj = 50;
-                hand["joint1"] = 40;
-                hand["joint2"] = 0;
-                hand["joint6"] = 100;
-                hand["joint11"] = 70;
-                hand["joint17"] = 240;
-                hand["joint22"] = 240;
-                break;
-            case 48: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint2"] = 250;
-                hand["joint6"] = 220;
-                hand["joint11"] = 100;
-                hand["joint17"] = 250;
-                hand["joint22"] = 250;
-                break;
-            case 49: // 拇指和中指捏
-                show_step++;
-                show_count_obj = 35;
-                hand["joint3"] = 0;
-                hand["joint6"] = 70;
-                hand["joint11"] = 60;
-                hand["joint18"] = 220;
-                hand["joint23"] = 220;
-                break;
-            case 50: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint3"] = 250;
-                hand["joint6"] = 100;
-                hand["joint11"] = 100;
-                hand["joint18"] = 250;
-                hand["joint23"] = 250;
-                break;
-            case 51: // 拇指和无名指捏
-                show_step++;
-                show_count_obj = 35;
-                hand["joint4"] = 0;
-                hand["joint6"] = 30;
-                hand["joint11"] = 50;
-                hand["joint19"] = 220;
-                hand["joint24"] = 220;
-                break;
-            case 52: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint4"] = 250;
-                hand["joint6"] = 100;
-                hand["joint11"] = 100;
-                hand["joint19"] = 250;
-                hand["joint24"] = 250;
-                break;
-            case 53: // 拇指和小指捏
-                show_step++;
-                show_count_obj = 40;
-                hand["joint5"] = 0;
-                hand["joint6"] = 0;
-                hand["joint11"] = 40;
-                hand["joint20"] = 230;
-                hand["joint25"] = 230;
-                break;
-            case 54: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint5"] = 20;
-                hand["joint6"] = 0;
-                hand["joint11"] = 100;
-                hand["joint20"] = 250;
-                hand["joint25"] = 250;
-                break;
-            case 55: // 拇指和小指掐
-                show_step++;
-                show_count_obj = 40;
-                hand["joint1"] = 175;
-                hand["joint5"] = 175;
-                hand["joint6"] = 0;
-                hand["joint11"] = 0;
-                hand["joint16"] = 130;
-                hand["joint20"] = 100;
-                hand["joint21"] = 130;
-                hand["joint25"] = 80;
-                break;
-            case 56: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint1"] = 250;
-                hand["joint5"] = 250;
-                hand["joint6"] = 0;
-                hand["joint11"] = 0;
-                hand["joint16"] = 250;
-                hand["joint20"] = 250;
-                hand["joint21"] = 250;
-                hand["joint25"] = 250;
-                break;
-            case 57: // 拇指和无名指掐
-                show_step++;
-                show_count_obj = 35;
-                hand["joint1"] = 170;
-                hand["joint4"] = 170;
-                hand["joint6"] = 30;
-                hand["joint11"] = 50;
-                hand["joint16"] = 130;
-                hand["joint19"] = 80;
-                hand["joint21"] = 130;
-                hand["joint24"] = 80;
-                break;
-            case 58: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint1"] = 250;
-                hand["joint4"] = 250;
-                hand["joint6"] = 30;
-                hand["joint11"] = 50;
-                hand["joint16"] = 250;
-                hand["joint19"] = 250;
-                hand["joint21"] = 250;
-                hand["joint24"] = 250;
-                break;
-            case 59: // 拇指和中指掐
-                show_step++;
-                show_count_obj = 35;
-                hand["joint1"] = 155;
-                hand["joint3"] = 155;
-                hand["joint6"] = 70;
-                hand["joint11"] = 60;
-                hand["joint16"] = 130;
-                hand["joint19"] = 90;
-                hand["joint21"] = 130;
-                hand["joint24"] = 80;
-                break;
-            case 60: // 1
-                show_step++;
-                show_count_obj = 20;
-                hand["joint1"] = 250;
-                hand["joint3"] = 250;
-                hand["joint6"] = 100;
-                hand["joint11"] = 100;
-                hand["joint16"] = 250;
-                hand["joint19"] = 250;
-                hand["joint21"] = 250;
-                hand["joint24"] = 250;
-                break;
-            case 61: // 拇指和食指掐
-                show_step++;
-                show_count_obj = 35;
-                hand["joint1"] = 165;
-                hand["joint2"] = 165;
-                hand["joint6"] = 100;
-                hand["joint11"] = 70;
-                hand["joint16"] = 130;
-                hand["joint19"] = 80;
-                hand["joint21"] = 130;
-                hand["joint24"] = 80;
-                break;
-            default:
-                std::cout << "Error: Unknown command" << std::endl;
-                // show_step = 0;
-        }
-    }
-
-    std::vector<uint8_t> positions;
-    for (const auto& kv : hand) {
-        positions.push_back(static_cast<double>(kv.second));
-    }
-    return positions;
-}
 
 // L7 - 执行动作 - 手掌握拳
 std::vector<std::vector<uint8_t>> L7_POSE_1 = {
@@ -749,79 +203,94 @@ void interactiveMode(LinkerHandApi &hand)
         case 9:
             if (hand.handJoint_ == LINKER_HAND::L7)
             {
-                // 设置速度
-                hand.setSpeed({200,200,200,200,200,200,200}); // L7协议速度需要7个
+                hand.setSpeed(std::vector<uint8_t>(7, HAND_SPEED)); // L7 need 7 speed
+                hand.setTorque(std::vector<uint8_t>(7, HAND_TORQUE)); // L7 need 7 torque
                 //---------------------------------------------------------
-                std::cout << "L7 - 执行动作 - 手掌握拳" << std::endl;
+                std::cout << "L7 - Execute action - Make a fist" << std::endl;
                 for (const auto &pose : L7_POSE_1)
                 {
                     hand.fingerMove(pose);
                     std::this_thread::sleep_for(std::chrono::seconds(1)); // 等待1秒
                 }
                 //---------------------------------------------------------
-                std::cout << "L7 - 执行动作 - 张开" << std::endl;
+                std::cout << "L7 - Execute action - Open hand" << std::endl;
                 hand.fingerMove(L7_POSE_OPEN);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 //---------------------------------------------------------
             }
             else if (hand.handJoint_ == LINKER_HAND::L10)
             {
-                // 设置速度
-                hand.setSpeed({200,200,200,200,200}); // L10协议速度需要5个
+                hand.setSpeed(std::vector<uint8_t>(5, HAND_SPEED)); // L10 need 5 speed
+                hand.setTorque(std::vector<uint8_t>(5, HAND_TORQUE)); // L10 need 5 torque
                 //---------------------------------------------------------
-                std::cout << "L10 - 执行动作 - 手指循环弯曲" << std::endl;
+                std::cout << "L10 - Execute action - Finger cycle bending" << std::endl;
                 for (const auto &pose : L10_POSE_1)
                 {
                     hand.fingerMove(pose);
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
                 //---------------------------------------------------------
-                std::cout << "L10 - 执行动作 - 拇指与其他手指循环对指" << std::endl;
+                std::cout << "L10 - Execute action - Thumb and Circular Fingers" << std::endl;
                 for (const auto &pose : L10_POSE_2)
                 {
                     hand.fingerMove(pose);
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
                 //---------------------------------------------------------
-                std::cout << "L10 - 执行动作 - 手指侧摆" << std::endl;
+                std::cout << "L10 - Execute action - Finger side swing" << std::endl;
                 for (const auto &pose : L10_POSE_3)
                 {
                     hand.fingerMove(pose);
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
                 //---------------------------------------------------------
-                std::cout << "L10 - 执行动作 - 握拳" << std::endl;
+                std::cout << "L10 - Execute action - Make a fist" << std::endl;
                 hand.fingerMove(L10_POSE_CLOSE);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 //---------------------------------------------------------
-                std::cout << "L10 - 执行动作 - 张开" << std::endl;
+                std::cout << "L10 - Execute action - Open hand" << std::endl;
                 hand.fingerMove(L10_POSE_OPEN);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 //---------------------------------------------------------
             }
             else if (hand.handJoint_ == LINKER_HAND::L20)
             {
+                hand.setSpeed(std::vector<uint8_t>(5, HAND_SPEED)); // L20 need 5 speed
                 //---------------------------------------------------------
-                std::cout << "L20 - 执行动作 - 握拳" << std::endl;
+                std::cout << "L20 - Execute action - Make a fist" << std::endl;
                 std::vector<uint8_t> L20_POSE_CLOSE = {69, 0, 0, 0, 0, 32, 10, 100, 180, 240, 145, 255, 255, 255, 255, 0, 0, 0, 0, 0};
                 hand.fingerMove(L20_POSE_CLOSE);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 //---------------------------------------------------------
-                std::cout << "L20 - 执行动作 - 张开" << std::endl;
+                std::cout << "L20 - Execute action - Open hand" << std::endl;
                 std::vector<uint8_t> L20_POSE_OPEN = {255, 255, 230, 255, 255, 255, 10, 100, 180, 240, 245, 255, 255, 255, 255, 255, 255, 255, 255, 255};
                 hand.fingerMove(L20_POSE_OPEN);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
             else if (hand.handJoint_ == LINKER_HAND::L25)
             {
-                std::cout << "LINKER_HAND::L25 ... " << std::endl;
+                hand.setSpeed(std::vector<uint8_t>(25, HAND_SPEED));
+                hand.setTorque(std::vector<uint8_t>(25, HAND_TORQUE));
+                //---------------------------------------------------------
 
-                while (show_step <= 61)
-                {
-                    std::cout << bytesToHex(show_left()) << std::endl;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                }
-                show_step = 0;
+                // Open hand
+                std::vector<uint8_t> pos1_1 = {230, 0, 0, 15, 5, 250, 55, 0, 75, 95, 85, 0, 0, 0, 0, 250, 0, 40, 35, 5, 250, 0, 5, 0, 0};
+                std::vector<uint8_t> pos1_2 = {80, 255, 255, 255, 255, 180, 51, 51, 72, 202, 202, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+                // Make a fist
+                std::vector<uint8_t> pos2_1 = {230, 0, 0, 15, 5, 250, 55, 0, 75, 95, 85, 0, 0, 0, 0, 80, 0, 40, 35, 5, 250, 0, 5, 0, 0};
+                std::vector<uint8_t> pos2_2 = {230, 0, 0, 15, 5, 42, 55, 0, 75, 95, 85, 0, 0, 0, 0, 90, 0, 40, 35, 5, 120, 0, 5, 0, 0};
+
+                std::cout << "L20 - Execute action - Make a fist" << std::endl;
+                hand.fingerMove(pos2_1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                hand.fingerMove(pos2_2);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                std::cout << "L20 - Execute action - Open hand" << std::endl;
+                hand.fingerMove(pos1_1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                hand.fingerMove(pos1_2);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
             }
             break;
         case 0:
