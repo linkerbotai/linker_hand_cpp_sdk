@@ -150,15 +150,17 @@ void interactiveMode(LinkerHandApi &hand)
         // std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
         std::cout << GREEN << "Run Choose Task:\n" << RESET;
         std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
-        std::cout << BLUE << "1. Obtain version information\n" << RESET;
-        std::cout << BLUE << "2. Obtain temperature\n" << RESET;
-        std::cout << BLUE << "3. Obtain fault codes\n" << RESET;
-        std::cout << BLUE << "4. Obtain current\n" << RESET;
-        std::cout << BLUE << "5. Obtain pressure sensing information 1\n" << RESET;
-        std::cout << BLUE << "6. Obtain pressure sensing information 2\n" << RESET;
-        std::cout << BLUE << "7. Clear fault codes\n" << RESET;
-        std::cout << BLUE << "8. Loop to obtain the current finger joint status 10 times\n" << RESET;
-        std::cout << BLUE << "9. Execute preset actions\n" << RESET;
+        std::cout << BLUE << " 1. Obtain version information\n" << RESET;
+        std::cout << BLUE << " 2. Obtain temperature\n" << RESET;
+        std::cout << BLUE << " 3. Obtain fault codes\n" << RESET;
+        std::cout << BLUE << " 4. Obtain current\n" << RESET;
+        std::cout << BLUE << " 5. Obtain torque\n" << RESET;
+        std::cout << BLUE << " 6. Obtain speed\n" << RESET;
+        std::cout << BLUE << " 7. Obtain pressure sensing information 1\n" << RESET;
+        std::cout << BLUE << " 8. Obtain pressure sensing information 2\n" << RESET;
+        std::cout << BLUE << " 9. Clear fault codes\n" << RESET;
+        std::cout << BLUE << "10. Loop to obtain the current finger joint status 10 times\n" << RESET;
+        std::cout << BLUE << "11. Execute preset actions\n" << RESET;
         std::cout << RED << "0. Exit\n" << RESET;
         std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
         std::cout << GREEN << "Please enter options: " << RESET;
@@ -182,25 +184,34 @@ void interactiveMode(LinkerHandApi &hand)
             std::cout << "Obtain current: " << bytesToHex(hand.getCurrent()) << std::endl;
             break;
         case 5:
-            std::cout << "Obtain pressure sensing information 1:\n"
-                      << bytesToHex(hand.getForce(1)) << std::endl;
+            std::cout << "Obtain torque: " << std::endl;
+            for (size_t i = 0; i < 10; i++) 
+            {
+                std::cout << bytesToHex(hand.getTorque()) << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
             break;
         case 6:
-            std::cout << "Obtain pressure sensing information 2:\n"
-                      << bytesToHex(hand.getForce()) << std::endl;
+            std::cout << "Obtain speed: " << bytesToHex(hand.getSpeed()) << std::endl;
             break;
         case 7:
+            std::cout << "Obtain pressure sensing information 1:\n" << bytesToHex(hand.getForce(1)) << std::endl;
+            break;
+        case 8:
+            std::cout << "Obtain pressure sensing information 2:\n" << bytesToHex(hand.getForce()) << std::endl;
+            break;
+        case 9:
             std::cout << "Clear fault codes\n" << std::endl;
             hand.clearFaultCode();
             break;
-        case 8:
+        case 10:
             for (size_t i = 0; i < 10; i++) 
             {
                 std::cout << bytesToHex(hand.getState()) << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             break;
-        case 9:
+        case 11:
             if (hand.handJoint_ == LINKER_HAND::L7)
             {
                 hand.setSpeed(std::vector<uint8_t>(7, HAND_SPEED)); // L7 need 7 speed
@@ -267,7 +278,7 @@ void interactiveMode(LinkerHandApi &hand)
                 hand.fingerMove(L20_POSE_OPEN);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
-            else if (hand.handJoint_ == LINKER_HAND::L25)
+            else if (hand.handJoint_ == LINKER_HAND::L25 || hand.handJoint_ == LINKER_HAND::L21)
             {
                 hand.setSpeed(std::vector<uint8_t>(25, HAND_SPEED));
                 hand.setTorque(std::vector<uint8_t>(25, HAND_TORQUE));
@@ -280,13 +291,13 @@ void interactiveMode(LinkerHandApi &hand)
                 std::vector<uint8_t> pos2_1 = {230, 0, 0, 15, 5, 250, 55, 0, 75, 95, 85, 0, 0, 0, 0, 80, 0, 40, 35, 5, 250, 0, 5, 0, 0};
                 std::vector<uint8_t> pos2_2 = {230, 0, 0, 15, 5, 42, 55, 0, 75, 95, 85, 0, 0, 0, 0, 90, 0, 40, 35, 5, 120, 0, 5, 0, 0};
 
-                std::cout << "L20 - Execute action - Make a fist" << std::endl;
+                std::cout << "L25/L21 - Execute action - Make a fist" << std::endl;
                 hand.fingerMove(pos2_1);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 hand.fingerMove(pos2_2);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
 
-                std::cout << "L20 - Execute action - Open hand" << std::endl;
+                std::cout << "L25/L21 - Execute action - Open hand" << std::endl;
                 hand.fingerMove(pos1_1);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 hand.fingerMove(pos1_2);
@@ -322,7 +333,9 @@ int main()
         std::cout << YELLOW << "—————————————————————————\n" << RESET;
         std::cout << BLUE << "[3]: L20\n" << RESET;
         std::cout << YELLOW << "—————————————————————————\n" << RESET;
-        std::cout << BLUE << "[4]: L25\n" << RESET;
+        std::cout << BLUE << "[4]: L21\n" << RESET;
+        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        std::cout << BLUE << "[5]: L25\n" << RESET;
         std::cout << YELLOW << "—————————————————————————\n" << RESET;
         std::cout << RED << "[0]: Exit\n" << RESET;
         std::cout << YELLOW << "—————————————————————————\n" << RESET;
@@ -341,6 +354,9 @@ int main()
             linkerhand = LINKER_HAND::L20;
             break;
         case 4:
+            linkerhand = LINKER_HAND::L21;
+            break;
+        case 5:
             linkerhand = LINKER_HAND::L25;
             break;
         case 0:

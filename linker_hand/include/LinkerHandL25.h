@@ -105,6 +105,16 @@ typedef enum
     // 动作指令 ·ACTION
     ACTION_PLAY = 0xA0, // 动作，预设动作指令
 
+    // L21新增
+    TOUCH_SENSOR_TYPE = 0xB0,	// 触觉传感器类型
+    THUMB_TOUCH = 0xB1,	// 大拇指触觉传感
+    INDEX_TOUCH = 0xB2,	// 食指触觉传感
+    MIDDLE_TOUCH = 0xB3, //	中指触觉传感
+    RING_TOUCH = 0xB4, // 无名指触觉传感
+    LITTLE_TOUCH = 0xB5, //	小拇指触觉传感
+    PALM_TOUCH = 0xB6, // 手掌指触觉传感
+
+
     // 配置命令·CONFIG
     HAND_UID = 0xC0, // 设备唯一标识码
     HAND_HARDWARE_VERSION = 0xC1, // 硬件版本
@@ -119,7 +129,7 @@ typedef enum
 
 class LinkerHand : public IHand {
 public:
-    LinkerHand(uint32_t handId, const std::string& canChannel, int baudrate);
+    LinkerHand(uint32_t handId, const std::string& canChannel, int baudrate, const int currentHandType = 0);
     ~LinkerHand();
 
     // 设置关节位置
@@ -388,6 +398,8 @@ private:
     std::vector<uint8_t> ring_force_data;
     // 小拇指压感数据
     std::vector<uint8_t> little_force_data;
+    // 掌心压感数据
+    std::vector<uint8_t> palm_force_data;
 
     std::vector<uint8_t> normal_force;
     std::vector<uint8_t> tangential_force;
@@ -395,7 +407,6 @@ private:
     std::vector<uint8_t> approach_inc;
     
     
-
 	// std::vector<uint8_t> joint_position2;
     // std::vector<uint8_t> joint_position3;
     // std::vector<uint8_t> joint_position4;
@@ -411,6 +422,9 @@ private:
 
     // 堵转计数
     std::vector<uint8_t> rotor_lock_count;
+
+    // 手型
+    int current_hand_type = 0; // 0:L25 1:L21
 };
 }
 #endif // LINKER_HAND_L25_H

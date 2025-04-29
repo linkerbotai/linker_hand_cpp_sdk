@@ -3,7 +3,7 @@
 namespace LinkerHandL25
 {
 
-LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate) : handId(handId), bus(canChannel, baudrate), running(true)
+LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), bus(canChannel, baudrate), running(true), current_hand_type(currentHandType)
 {
     // 启动接收线程
     receiveThread = std::thread(&LinkerHand::receiveResponse, this);
@@ -452,11 +452,35 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 {
     std::vector<std::vector<uint8_t>> result_vec;
 
-    result_vec.push_back(IHand::getSubVector(getNormalForce()));
-    result_vec.push_back(IHand::getSubVector(getTangentialForce()));
-    result_vec.push_back(IHand::getSubVector(getTangentialForceDir()));
-    result_vec.push_back(IHand::getSubVector(getApproachInc()));
+    if (current_hand_type = 0) // L25
+    {
+        result_vec.push_back(IHand::getSubVector(getNormalForce()));
+        result_vec.push_back(IHand::getSubVector(getTangentialForce()));
+        result_vec.push_back(IHand::getSubVector(getTangentialForceDir()));
+        result_vec.push_back(IHand::getSubVector(getApproachInc()));
+    }
 
+    if (current_hand_type == 1) // L21
+    {
+        // bus.send({FRAME_PROPERTY::TOUCH_SENSOR_TYPE}, handId); // return type 2
+        bus.send({FRAME_PROPERTY::THUMB_TOUCH}, handId);
+        bus.send({FRAME_PROPERTY::INDEX_TOUCH}, handId);
+        bus.send({FRAME_PROPERTY::MIDDLE_TOUCH}, handId);
+        bus.send({FRAME_PROPERTY::RING_TOUCH}, handId);
+        bus.send({FRAME_PROPERTY::LITTLE_TOUCH}, handId);
+        bus.send({FRAME_PROPERTY::PALM_TOUCH}, handId);
+
+        if (thumb_force_data.size() > 0 && index_force_data.size() > 0 && middle_force_data.size() > 0 && ring_force_data.size() > 0 && little_force_data.size() > 0 && palm_force_data.size() > 0)
+        {
+            result_vec.push_back(IHand::getSubVector(thumb_force_data));
+            result_vec.push_back(IHand::getSubVector(index_force_data));
+            result_vec.push_back(IHand::getSubVector(middle_force_data));
+            result_vec.push_back(IHand::getSubVector(ring_force_data));
+            result_vec.push_back(IHand::getSubVector(little_force_data));
+            result_vec.push_back(IHand::getSubVector(palm_force_data));
+        }
+    }
+    
     return result_vec;
 }
 
@@ -608,9 +632,9 @@ void LinkerHand::saveParameter()
                 auto data = bus.receive(handId);
                 if (data.size() <= 0) continue;
 
-				if (true)
+				if (RECV_DEBUG)
 		        {
-                    std::cout << "Recv: ";
+                    (current_hand_type == 0) ? std::cout << "L25-Recv: " : std::cout << "L21-Recv: ";
                     for (auto &can : data) std::cout << std::hex << (int)can << " ";
                     std::cout << std::endl;
 		        }
@@ -706,6 +730,24 @@ void LinkerHand::saveParameter()
                     break;
                 case FRAME_PROPERTY::HAND_APPROACH_INC: // 接近感应
                     approach_inc = payload;
+                    break;
+                case FRAME_PROPERTY::THUMB_TOUCH: // 大拇指触摸
+                    thumb_force_data = payload;
+                    break;
+                case FRAME_PROPERTY::INDEX_TOUCH: // 食指触摸
+                    index_force_data = payload;
+                    break;
+                case FRAME_PROPERTY::MIDDLE_TOUCH: // 中指触摸
+                    middle_force_data = payload;
+                    break;
+                case FRAME_PROPERTY::RING_TOUCH: // 无名指触摸
+                    ring_force_data = payload;
+                    break;
+                case FRAME_PROPERTY::LITTLE_TOUCH: // 小拇指触摸
+                    little_force_data = payload;
+                    break;
+                case FRAME_PROPERTY::PALM_TOUCH: // 手掌触摸
+                    palm_force_data = payload;
                     break;
                 case FRAME_PROPERTY::HAND_HARDWARE_VERSION: // 硬件版本
                     hand_hardware_version = payload;

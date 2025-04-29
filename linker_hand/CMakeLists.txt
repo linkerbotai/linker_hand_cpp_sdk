@@ -11,7 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 # 添加可执行文件
-add_executable(linker_hand_example src/example.cpp)
+add_executable(linker_hand_example examples/example.cpp)
 
 # 添加库
 add_library(linker_hand_lib STATIC

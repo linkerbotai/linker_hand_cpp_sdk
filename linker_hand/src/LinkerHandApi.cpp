@@ -2,46 +2,37 @@
 
 LinkerHandApi::LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType) : handJoint_(handJoint), handType_(handType)
 {
-    // try
+    hand = HandFactory::createHand(handJoint, handType, "can0", 1000000);
+
+    // if (handType != HAND_TYPE::LEFT && handType != HAND_TYPE::RIGHT)
     // {
-    //     YamlConfig::getInstance().loadConfig("config/setting.yaml");
-    
-    //     std::cout << "SDK VERSION : " << YamlConfig::getInstance().getString("VERSION") << std::endl;
+    //     throw std::invalid_argument("Unsupported hand type");
     // }
-    // catch(const std::exception& e)
+    // else
     // {
-    //     std::cerr << e.what() << '\n';
+    //     handId = handType;
     // }
 
-    if (handType != HAND_TYPE::LEFT && handType != HAND_TYPE::RIGHT)
-    {
-        throw std::invalid_argument("Unsupported hand type");
-    }
-    else
-    {
-        handId = handType;
-    }
-
-    if (handJoint == LINKER_HAND::L7)
-    {
-        hand = HandFactory::createHand(LINKER_HAND::L7, handId, "can0", 1000000);
-    }
-    else if (handJoint == LINKER_HAND::L10)
-    {
-        hand = HandFactory::createHand(LINKER_HAND::L10, handId, "can0", 1000000);
-    }
-    else if (handJoint == LINKER_HAND::L20)
-    {
-        hand = HandFactory::createHand(LINKER_HAND::L20, handId, "can0", 1000000);
-    }
-    else if (handJoint == LINKER_HAND::L25)
-    {
-        hand = HandFactory::createHand(LINKER_HAND::L25, handId, "can0", 1000000);
-    }
-    else
-    {
-        throw std::invalid_argument("Unsupported hand joint type");
-    }
+    // if (handJoint == LINKER_HAND::L7)
+    // {
+    //     hand = HandFactory::createHand(LINKER_HAND::L7, handId, "can0", 1000000);
+    // }
+    // else if (handJoint == LINKER_HAND::L10)
+    // {
+    //     hand = HandFactory::createHand(LINKER_HAND::L10, handId, "can0", 1000000);
+    // }
+    // else if (handJoint == LINKER_HAND::L20)
+    // {
+    //     hand = HandFactory::createHand(LINKER_HAND::L20, handId, "can0", 1000000);
+    // }
+    // else if (handJoint == LINKER_HAND::L25)
+    // {
+    //     hand = HandFactory::createHand(LINKER_HAND::L25, handId, "can0", 1000000);
+    // }
+    // else
+    // {
+    //     throw std::invalid_argument("Unsupported hand joint type");
+    // }
 }
 
 LinkerHandApi::~LinkerHandApi()

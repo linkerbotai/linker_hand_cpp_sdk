@@ -11,6 +11,7 @@ typedef enum {
     L7,
 	L10,
     L20,
+    L21,
 	L25
 } LINKER_HAND;
 
@@ -22,6 +23,12 @@ typedef enum {
 class HandFactory {
 public:
     static std::unique_ptr<IHand> createHand(LINKER_HAND type, uint32_t handId, const std::string& canChannel, int baudrate) {
+
+        if (handId != HAND_TYPE::LEFT && handId != HAND_TYPE::RIGHT)
+        {
+            throw std::invalid_argument("Unsupported hand type");
+        }
+        
         switch (type) {
             case LINKER_HAND::L7:
                 return std::make_unique<LinkerHandL7::LinkerHand>(handId, canChannel, baudrate);
@@ -29,8 +36,10 @@ public:
                 return std::make_unique<LinkerHandL10::LinkerHand>(handId, canChannel, baudrate);
             case LINKER_HAND::L20:
                 return std::make_unique<LinkerHandL20::LinkerHand>(handId, canChannel, baudrate);
+            case LINKER_HAND::L21:
+                return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate, 1);
             case LINKER_HAND::L25:
-                return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate);
+                return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate, 0);
             default:
                 throw std::invalid_argument("Unknown hand type");
         }
