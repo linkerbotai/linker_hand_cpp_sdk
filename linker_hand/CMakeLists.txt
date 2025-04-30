@@ -13,15 +13,11 @@ message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 # 添加可执行文件
 add_executable(linker_hand_example examples/example.cpp)
 
+# 自动查找所有源文件
+file(GLOB LINKER_HAND_SOURCES "src/*.cpp")
+
 # 添加库
-add_library(linker_hand_lib STATIC
-    src/CanBus.cpp
-    src/LinkerHandApi.cpp
-    src/LinkerHandL7.cpp
-    src/LinkerHandL10.cpp
-    src/LinkerHandL20.cpp
-    src/LinkerHandL25.cpp
-)
+add_library(linker_hand_lib STATIC ${LINKER_HAND_SOURCES})
 
 # 链接库
 target_link_libraries(linker_hand_example linker_hand_lib pthread yaml-cpp)

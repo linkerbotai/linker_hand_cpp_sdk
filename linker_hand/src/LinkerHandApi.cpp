@@ -93,6 +93,18 @@ void LinkerHandApi::fingerMove(const std::vector<uint8_t> &pose)
     }
 }
 
+void LinkerHandApi::fingerMoveArc(const std::vector<double> &pose)
+{
+    if (handJoint_ == LINKER_HAND::L10 && pose.size() == 10)
+    {
+        hand->setJointPositionArc(pose);
+    }
+    else
+    {
+        std::cout << "目前仅支持L10!" << std::endl;
+    }
+}
+
 std::vector<uint8_t> LinkerHandApi::getSpeed()
 {
     // 获取当前速度
@@ -103,6 +115,12 @@ std::vector<uint8_t> LinkerHandApi::getState()
 {
     // 获取当前关节状态
     return hand->getCurrentStatus();
+}
+
+std::vector<double> LinkerHandApi::getStateArc()
+{
+    // 获取当前关节状态
+    return hand->getCurrentStatusArc();
 }
 
 std::vector<std::vector<uint8_t>> LinkerHandApi::getForce(const int type)

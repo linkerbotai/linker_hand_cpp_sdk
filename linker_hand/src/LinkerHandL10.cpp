@@ -76,13 +76,51 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
     }
 }
 
+void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
+{
+    // TODO: 实现设置关节位置弧度的函数
+    if (handId == HAND_TYPE::LEFT)
+    {
+        setJointPositions(convertToUInt8(arc_to_range_left_10(jointAngles)));
+    }
+    else if (handId == HAND_TYPE::RIGHT)
+    {
+        setJointPositions(convertToUInt8(arc_to_range_right_10(jointAngles)));
+    }
+}
+
 std::vector<uint8_t> LinkerHand::getCurrentStatus()
 {
-    bus.send({FRAME_PROPERTY::JOINT_POSITION_RCO}, handId);
-    bus.send({FRAME_PROPERTY::JOINT_POSITION2_RCO}, handId);
+    // std::vector<uint8_t> result;
+    // result = std::vector<uint8_t>(6, 0);
+    // result[0] = FRAME_PROPERTY::JOINT_SPEED;
+    // bus.send(result, handId);
+
+    // result = std::vector<uint8_t>(7, 0);
+    // result[0] = FRAME_PROPERTY::JOINT_POSITION_RCO;
+    // bus.send(result, handId);
+
+    // result = std::vector<uint8_t>(5, 0);
+    // result[0] = FRAME_PROPERTY::JOINT_POSITION2_RCO;
+    // bus.send(result, handId);
 
     return IHand::getSubVector(joint_position, joint_position2);
 }
+
+std::vector<double> LinkerHand::getCurrentStatusArc()
+{
+    // std::cout << "getCurrentStatusArc handId : " << handId << std::endl;
+
+    if (handId == HAND_TYPE::LEFT)
+    {
+        return range_to_arc_left_10(convertToInt(getCurrentStatus()));
+    }
+    else if (handId == HAND_TYPE::RIGHT)
+    {
+        return range_to_arc_right_10(convertToInt(getCurrentStatus()));
+    }
+}
+
 
 // 获取版本号
 std::string LinkerHand::getVersion()
@@ -349,6 +387,14 @@ void LinkerHand::receiveResponse()
                     motorFaultCode_2 = payload;
                     break;
                 case FRAME_PROPERTY::REQUEST_DATA_RETURN:
+                    break;
+                case 0x45:
+                    /*
+                        can0  027   [1]  05
+                        can0  027   [6]  05 00 00 00 00 00
+                        can0  028   [1]  05
+                        can0  028   [5]  45 52 52 4F 52
+                    */
                     break;
                 default:
                     std::cout << "L10 未知数据类型: " << std::hex << (int)frame_property << std::endl;

@@ -7,19 +7,6 @@
 #include "LinkerHandL20.h"
 #include "LinkerHandL25.h"
 
-typedef enum {
-    L7,
-	L10,
-    L20,
-    L21,
-	L25
-} LINKER_HAND;
-
-typedef enum {
-    RIGHT = 0x27,
-    LEFT = 0x28
-} HAND_TYPE;
-
 class HandFactory {
 public:
     static std::unique_ptr<IHand> createHand(LINKER_HAND type, uint32_t handId, const std::string& canChannel, int baudrate) {

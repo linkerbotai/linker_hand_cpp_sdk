@@ -15,6 +15,7 @@ public:
 
 	// 设置关节位置
 	void fingerMove(const std::vector<uint8_t> &pose);
+	void fingerMoveArc(const std::vector<double> &pose);
 	// 设置速度
 	void setSpeed(const std::vector<uint8_t> &speed);
 	// 设置扭矩
@@ -25,6 +26,7 @@ public:
 	std::vector<uint8_t> getSpeed();
 	// 获取当前关节状态
 	std::vector<uint8_t> getState();
+	std::vector<double> getStateArc();
 	// 获取版本号
 	std::string getVersion();
 

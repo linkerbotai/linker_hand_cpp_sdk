@@ -8,18 +8,41 @@
 
 #define RECV_DEBUG 0
 
+typedef enum {
+    L7,
+	L10,
+    L20,
+    L21,
+	L25
+} LINKER_HAND;
+
+typedef enum {
+    RIGHT = 0x27,
+    LEFT = 0x28
+} HAND_TYPE;
+
 class IHand
 {
 public:
     virtual ~IHand() = default;
     // 设置关节位置
     virtual void setJointPositions(const std::vector<uint8_t> &jointAngles) = 0;
+    virtual void setJointPositionArc(const std::vector<double> &jointAngles)
+    {
+        (void) jointAngles;
+        printUnsupportedFeature("setJointPositionArc");
+    }
     // 获取速度数据
     virtual std::vector<uint8_t> getSpeed() = 0;
     // 设置关节速度
     virtual void setSpeed(const std::vector<uint8_t> &speed) = 0;
     // 获取当前关节位置
     virtual std::vector<uint8_t> getCurrentStatus() = 0;
+    virtual std::vector<double> getCurrentStatusArc()
+    {
+        printUnsupportedFeature("getCurrentPositionArc");
+        return {};
+    }
     // 获取电机故障码
     virtual std::vector<uint8_t> getFaultCode() = 0;
     // 获取电机电流

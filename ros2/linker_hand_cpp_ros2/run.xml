@@ -4,13 +4,13 @@
   <arg name="VERSION" default="1.1.6" description="版本号"/>
 
   <!-- 左手配置 -->
-  <arg name="LEFT_HAND_EXISTS" default="false" description="是否存在左手"/>
-  <arg name="LEFT_TOUCH" default="true" description="是否有压力传感器"/>
-  <arg name="LEFT_JOINT" default="L7" description="左手关节数 L7 \ L10 \ L20 \ L25"/>
+  <arg name="LEFT_HAND_EXISTS" default="true" description="是否存在左手"/>
+  <arg name="LEFT_TOUCH" default="false" description="是否有压力传感器"/>
+  <arg name="LEFT_JOINT" default="L10" description="左手关节数 L7 \ L10 \ L20 \ L25"/>
 
   <!-- 右手配置 -->
   <arg name="RIGHT_HAND_EXISTS" default="true" description="是否存在右手"/>
-  <arg name="RIGHT_TOUCH" default="true" description="是否有压力传感器"/>
+  <arg name="RIGHT_TOUCH" default="false" description="是否有压力传感器"/>
   <arg name="RIGHT_JOINT" default="L10" description="右手关节数 L7 \ L10 \ L20 \ L25"/>
 
   <!-- 通用配置 -->

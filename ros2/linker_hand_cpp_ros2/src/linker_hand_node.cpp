@@ -92,7 +92,7 @@ public:
             auto it = linker_hand_map.find(left_joint);
             if (it != linker_hand_map.end())
             {
-                hand_left = std::make_unique<LinkerHandApi>(LINKER_HAND::L7, HAND_TYPE::LEFT);
+                hand_left = std::make_unique<LinkerHandApi>(it->second, HAND_TYPE::LEFT);
             }
             else
             {
@@ -116,22 +116,41 @@ public:
 
         if (left_hand_exists != true && right_hand_exists != true) return;
         
+
+        if (left_hand_exists) initHand(hand_left, left_joint);
+        if (right_hand_exists) initHand(hand_right, right_joint);
+
         auto left_hand_control_cmd_cb = [this](sensor_msgs::msg::JointState::SharedPtr msg) -> void
         {
             if (left_hand_exists) controlHand(hand_left, left_joint, msg);
         };
-
         auto right_hand_control_cmd_cb = [this](sensor_msgs::msg::JointState::SharedPtr msg) -> void
         {
             if (right_hand_exists) controlHand(hand_right, right_joint, msg);
         };
 
+        auto left_hand_control_cmd_arc_cb = [this](sensor_msgs::msg::JointState::SharedPtr msg) -> void
+        {
+            if (left_hand_exists) controlHand(hand_left, left_joint, msg, true);
+        };
+        auto right_hand_control_cmd_arc_cb = [this](sensor_msgs::msg::JointState::SharedPtr msg) -> void
+        {
+            if (right_hand_exists) controlHand(hand_right, right_joint, msg, true);
+        };
+
 	    // Subscribe to Left and Right Hand Control Information
         sub_left_control = this->create_subscription<sensor_msgs::msg::JointState>("/cb_left_hand_control_cmd", 10, left_hand_control_cmd_cb);
         sub_right_control = this->create_subscription<sensor_msgs::msg::JointState>("/cb_right_hand_control_cmd", 10, right_hand_control_cmd_cb);
+
+        sub_left_control_arc = this->create_subscription<sensor_msgs::msg::JointState>("/cb_left_hand_control_cmd_arc", 10, left_hand_control_cmd_arc_cb);
+        sub_right_control_arc = this->create_subscription<sensor_msgs::msg::JointState>("/cb_right_hand_control_cmd_arc", 10, right_hand_control_cmd_arc_cb);
+
         // Publish Left and Right Hand State Information
         pub_left_state_ = this->create_publisher<sensor_msgs::msg::JointState>("/cb_left_hand_state", 10);
         pub_right_state_ = this->create_publisher<sensor_msgs::msg::JointState>("/cb_right_hand_state", 10);
+        pub_left_state_arc_ = this->create_publisher<sensor_msgs::msg::JointState>("/cb_left_hand_state_arc", 10);
+        pub_right_state_arc_ = this->create_publisher<sensor_msgs::msg::JointState>("/cb_right_hand_state_arc", 10);
+
         // Publish Left and Right Hand Force Information
         pub_left_force_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("/cb_left_hand_force", 10);
         pub_right_force_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("/cb_right_hand_force", 10);
@@ -149,6 +168,7 @@ public:
                         publishForceData(hand_left, *this->pub_left_force_); // public force sensor data
                     }
                     publishJointState(hand_left, *this->pub_left_state_); // public joint state
+                    publishJointState(hand_left, *this->pub_left_state_arc_, true); // public joint state
 
                     publishLinkerHandInfo(hand_left, *this->pub_left_info_); // public linker hand info
                 }
@@ -159,6 +179,7 @@ public:
                         publishForceData(hand_right, *this->pub_right_force_); // public force sensor data
                     }
                     publishJointState(hand_right, *this->pub_right_state_); // public joint state
+                    publishJointState(hand_right, *this->pub_right_state_arc_, true); // public joint state
 
                     publishLinkerHandInfo(hand_right, *this->pub_right_info_); // public linker hand info
                 }
@@ -192,11 +213,11 @@ public:
 
     // General function: public joint state
     template <typename HandType>
-    void publishJointState(const HandType& hand, rclcpp::Publisher<sensor_msgs::msg::JointState>& publisher)
+    void publishJointState(const HandType& hand, rclcpp::Publisher<sensor_msgs::msg::JointState>& publisher, const bool is_arc = false)
     {
         auto message = sensor_msgs::msg::JointState();
 
-        message.position = convert<uint8_t, double>(hand->getState());
+        (is_arc) ? message.position = hand->getStateArc() : message.position = convert<uint8_t, double>(hand->getState());
         message.velocity = convert<uint8_t, double>(hand->getSpeed());
         message.effort = convert<uint8_t, double>(hand->getTorque());
 
@@ -224,7 +245,7 @@ public:
 
     // General function: subscribe Hand Control Information
     template <typename HandType>
-    void controlHand(const HandType& hand, const std::string& hand_name, const sensor_msgs::msg::JointState::SharedPtr msg)
+    void controlHand(const HandType& hand, const std::string& hand_name, const sensor_msgs::msg::JointState::SharedPtr msg, const bool is_arc = false)
     {
         // for (auto &p : msg->position)
         // {
@@ -243,7 +264,7 @@ public:
 
             hand->setSpeed(speed); // speed
             hand->setTorque(effort); // torque
-            hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
+            (is_arc) ? hand->fingerMoveArc(msg->position) : hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
         }
         else if (hand_name == "L10" && msg->position.size() == 10)
         {
@@ -251,7 +272,7 @@ public:
 
             hand->setSpeed(speed); // speed
             hand->setTorque(effort); // torque
-            hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
+            (is_arc) ? hand->fingerMoveArc(msg->position) : hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
         }
         else if (hand_name == "L20" && msg->position.size() == 20)
         {
@@ -259,7 +280,7 @@ public:
 
             hand->setSpeed(speed); // speed
             // hand->setTorque({100, 100, 100, 100, 100}); // torque
-            hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
+            (is_arc) ? hand->fingerMoveArc(msg->position) : hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
         }
         else if (hand_name == "L25" && msg->position.size() == 25)
         {
@@ -268,7 +289,7 @@ public:
 
             hand->setSpeed(speed); // speed
             hand->setTorque(effort); // torque
-            hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
+            (is_arc) ? hand->fingerMoveArc(msg->position) : hand->fingerMove(convert<double, u_int8_t>(msg->position)); // joint position
         }
         else {
             std::cout << hand_name << " Invalid joint number: " << msg->position.size() << std::endl;
@@ -278,27 +299,38 @@ public:
 
     // std::vector<unsigned char> to std::string
     std::string vectorToString(const std::vector<unsigned char>& vec) {
-    std::ostringstream oss;
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (i > 0) {
-            oss << " ";
+        std::ostringstream oss;
+        for (size_t i = 0; i < vec.size(); ++i) {
+            if (i > 0) {
+                oss << " ";
+            }
+            oss << static_cast<int>(vec[i]);
         }
-        oss << static_cast<int>(vec[i]);
+        return oss.str();
     }
-    return oss.str();
-}
+
+    template <typename HandType>
+    void initHand(const HandType& hand, const std::string& hand_name)
+    {
+        if (hand_name == "L10")
+        {
+            hand->setSpeed(std::vector<uint8_t>(5, hand_speed)); // speed
+            hand->setTorque(std::vector<uint8_t>(5, hand_effort)); // torque
+            hand->fingerMove({255, 128, 255, 255, 255, 255, 128, 128, 128, 128}); // joint position
+        }
+    }
 
 private:
-    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_left_control;
-    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_right_control;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_left_control, sub_left_control_arc;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_right_control, sub_right_control_arc;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_left_info_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_right_info_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_left_force_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pub_right_force_;
     rclcpp::TimerBase::SharedPtr timer_state_;
-    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_left_state_;
-    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_right_state_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_left_state_, pub_left_state_arc_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_right_state_, pub_right_state_arc_;
 
     std::unique_ptr<LinkerHandApi> hand_left;
     std::unique_ptr<LinkerHandApi> hand_right;
