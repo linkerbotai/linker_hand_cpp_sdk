@@ -43,22 +43,16 @@ double is_within_range(double value, double min_value, double max_value);
 // 线性映射函数
 double scale_value(double original_value, double a_min, double a_max, double b_min, double b_max);
 
-// int 转换为 uint8_t
-std::vector<uint8_t> convertToUInt8(const std::vector<int>& input);
-
-// uint8_t 转换为 int
-std::vector<int> convertToInt(const std::vector<uint8_t>& input);
-
 // 右手范围到弧度（10 关节）
-std::vector<double> range_to_arc_right_10(const std::vector<int>& hand_range_r);
+std::vector<double> range_to_arc_right_10(const std::vector<u_int8_t>& hand_range_r);
 
 // 左手范围到弧度（10 关节）
-std::vector<double> range_to_arc_left_10(const std::vector<int>& hand_range_l);
+std::vector<double> range_to_arc_left_10(const std::vector<u_int8_t>& hand_range_l);
 
 // 右手弧度到范围（10 关节）
-std::vector<int> arc_to_range_right_10(const std::vector<double>& hand_arc_r);
+std::vector<u_int8_t> arc_to_range_right_10(const std::vector<double>& hand_arc_r);
 
 // 左手弧度到范围（10 关节）
-std::vector<int> arc_to_range_left_10(const std::vector<double>& hand_arc_l);
+std::vector<u_int8_t> arc_to_range_left_10(const std::vector<double>& hand_arc_l);
 
 #endif // RANGE_TO_ARC_H

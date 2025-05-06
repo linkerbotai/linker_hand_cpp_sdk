@@ -81,11 +81,11 @@ void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
     // TODO: 实现设置关节位置弧度的函数
     if (handId == HAND_TYPE::LEFT)
     {
-        setJointPositions(convertToUInt8(arc_to_range_left_10(jointAngles)));
+        setJointPositions(arc_to_range_left_10(jointAngles));
     }
     else if (handId == HAND_TYPE::RIGHT)
     {
-        setJointPositions(convertToUInt8(arc_to_range_right_10(jointAngles)));
+        setJointPositions(arc_to_range_right_10(jointAngles));
     }
 }
 
@@ -113,11 +113,11 @@ std::vector<double> LinkerHand::getCurrentStatusArc()
 
     if (handId == HAND_TYPE::LEFT)
     {
-        return range_to_arc_left_10(convertToInt(getCurrentStatus()));
+        return range_to_arc_left_10(getCurrentStatus());
     }
     else if (handId == HAND_TYPE::RIGHT)
     {
-        return range_to_arc_right_10(convertToInt(getCurrentStatus()));
+        return range_to_arc_right_10(getCurrentStatus());
     }
 }
 
