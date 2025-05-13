@@ -11,8 +11,17 @@ namespace LinkerHandL10
 LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate)
     : handId(handId), bus(canChannel, baudrate), running(true)
 {
+    thumb_pressure = std::vector<uint8_t>(72, 0);
+    index_finger_pressure = std::vector<uint8_t>(72, 0);
+    middle_finger_pressure = std::vector<uint8_t>(72, 0);
+    ring_finger_pressure = std::vector<uint8_t>(72, 0);
+    little_finger_pressure = std::vector<uint8_t>(72, 0);
+
     // 启动接收线程
     receiveThread = std::thread(&LinkerHand::receiveResponse, this);
+    
+    bus.send({TOUCH_SENSOR_TYPE}, handId);
+    bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
 }
 
 // 析构函数
@@ -191,18 +200,32 @@ std::vector<uint8_t> LinkerHand::getSpeed()
 std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 {
     std::vector<std::vector<uint8_t>> result_vec;
-    if (type == 0)
-    {
-        result_vec.push_back(IHand::getSubVector(getThumbForce()));
-        result_vec.push_back(IHand::getSubVector(getIndexForce()));
-        result_vec.push_back(IHand::getSubVector(getMiddleForce()));
-        result_vec.push_back(IHand::getSubVector(getRingForce()));
-        result_vec.push_back(IHand::getSubVector(getLittleForce()));
+    
+    if (sensor_type == 0x02) { 
+        bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
+        bus.send({FRAME_PROPERTY::INDEX_TOUCH, 0xC6}, handId);
+        bus.send({FRAME_PROPERTY::MIDDLE_TOUCH, 0xC6}, handId);
+        bus.send({FRAME_PROPERTY::RING_TOUCH, 0xC6}, handId);
+        bus.send({FRAME_PROPERTY::LITTLE_TOUCH, 0xC6}, handId);
+
+        result_vec.push_back(thumb_pressure);
+        result_vec.push_back(index_finger_pressure);
+        result_vec.push_back(middle_finger_pressure);
+        result_vec.push_back(ring_finger_pressure);
+        result_vec.push_back(little_finger_pressure);
     } else {
-        result_vec.push_back(IHand::getSubVector(getNormalForce()));
-        result_vec.push_back(IHand::getSubVector(getTangentialForce()));
-        result_vec.push_back(IHand::getSubVector(getTangentialForceDir()));
-        result_vec.push_back(IHand::getSubVector(getApproachInc()));
+        if (type == 0) {
+            result_vec.push_back(IHand::getSubVector(getThumbForce()));
+            result_vec.push_back(IHand::getSubVector(getIndexForce()));
+            result_vec.push_back(IHand::getSubVector(getMiddleForce()));
+            result_vec.push_back(IHand::getSubVector(getRingForce()));
+            result_vec.push_back(IHand::getSubVector(getLittleForce()));
+        } else {
+            result_vec.push_back(IHand::getSubVector(getNormalForce()));
+            result_vec.push_back(IHand::getSubVector(getTangentialForce()));
+            result_vec.push_back(IHand::getSubVector(getTangentialForceDir()));
+            result_vec.push_back(IHand::getSubVector(getApproachInc()));
+        }
     }
 
     return result_vec;
@@ -331,6 +354,33 @@ void LinkerHand::receiveResponse()
             uint8_t frame_property = data[0];
             std::vector<uint8_t> payload(data.begin(), data.end());
 
+            // 新压感数据
+            if (frame_property >= THUMB_TOUCH && frame_property <= LITTLE_TOUCH) 
+            {
+                if (data.size() == 8) {
+                    if (sensor_type != 0x02) {
+                        sensor_type = 0x02;
+                        continue;
+                    }
+                }
+                if (sensor_type == 0x02) {
+                    if (data.size() == 8) {
+                        uint8_t index = ((data[1] >> 4) + 1) * 6;
+                        std::vector<uint8_t> payload(data.begin() + 2, data.end());
+                        for (uint8_t i = index - 6, p = 0; i < index; ++i, ++p) {
+                            if (data[0] == FRAME_PROPERTY::THUMB_TOUCH) thumb_pressure[i] = payload[p];
+                            if (data[0] == FRAME_PROPERTY::INDEX_TOUCH) index_finger_pressure[i] = payload[p];
+                            if (data[0] == FRAME_PROPERTY::MIDDLE_TOUCH) middle_finger_pressure[i] = payload[p];
+                            if (data[0] == FRAME_PROPERTY::RING_TOUCH) ring_finger_pressure[i] = payload[p];
+                            if (data[0] == FRAME_PROPERTY::LITTLE_TOUCH) little_finger_pressure[i] = payload[p];
+                        }
+                    }
+                } else {
+                    // std::cout << "sensor type error !" << std::endl;
+                }
+                continue;
+            }
+
             switch(frame_property) {
                 case FRAME_PROPERTY::JOINT_POSITION_RCO: // 关节位置
                     joint_position = payload;
@@ -358,6 +408,13 @@ void LinkerHand::receiveResponse()
                     break;
                 case FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA: // 小拇指所有压力数据
                     little_finger_pressure = payload;
+                    break;
+                case FRAME_PROPERTY::TOUCH_SENSOR_TYPE: // 传感器类型
+                    if (payload.size() >= 2) {
+                        if (payload[1] <= 0x03 && payload[1] >= 0x01) {
+                            sensor_type = payload[1];
+                        }
+                    }
                     break;
                 case FRAME_PROPERTY::HAND_NORMAL_FORCE: // 法向压力
                     normal_force = payload;

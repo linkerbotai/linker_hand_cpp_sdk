@@ -383,29 +383,18 @@ private:
     std::vector<uint8_t> middle_fault; // 中指故障
     std::vector<uint8_t> ring_fault; // 无名指故障
     std::vector<uint8_t> little_fault; // 小拇指故障
-    
-
-
-    // 压感数据
-    std::vector<std::vector<uint8_t>> force_data;
-    // 大拇指压感数据
-    std::vector<uint8_t> thumb_force_data;
-    // 食指压感数据
-    std::vector<uint8_t> index_force_data;
-    // 中指压感数据
-    std::vector<uint8_t> middle_force_data;
-    // 无名指压感数据
-    std::vector<uint8_t> ring_force_data;
-    // 小拇指压感数据
-    std::vector<uint8_t> little_force_data;
-    // 掌心压感数据
-    std::vector<uint8_t> palm_force_data;
 
     std::vector<uint8_t> normal_force;
     std::vector<uint8_t> tangential_force;
     std::vector<uint8_t> tangential_force_dir;
     std::vector<uint8_t> approach_inc;
-    
+
+    std::vector<uint8_t> thumb_pressure;
+    std::vector<uint8_t> index_finger_pressure;
+    std::vector<uint8_t> middle_finger_pressure;
+    std::vector<uint8_t> ring_finger_pressure;
+    std::vector<uint8_t> little_finger_pressure;
+    std::vector<uint8_t> palm_force_data;
     
 	// std::vector<uint8_t> joint_position2;
     // std::vector<uint8_t> joint_position3;
@@ -425,6 +414,8 @@ private:
 
     // 手型
     int current_hand_type = 0; // 0:L25 1:L21
+
+    uint8_t sensor_type = 0;
 };
 }
 #endif // LINKER_HAND_L25_H

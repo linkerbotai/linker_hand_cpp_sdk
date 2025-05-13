@@ -169,6 +169,10 @@ void interactiveMode(LinkerHandApi &hand)
         if (choice != 1)
             std::cout << "——————————————————————————————————————————————" << std::endl;
 
+        std::string pose_str;
+        int arr[7];
+        std::vector<uint8_t> pose;
+
         switch (choice)
         {
         case 1:
@@ -195,10 +199,18 @@ void interactiveMode(LinkerHandApi &hand)
             std::cout << "Obtain speed: " << bytesToHex(hand.getSpeed()) << std::endl;
             break;
         case 7:
-            std::cout << "Obtain pressure sensing information 1:\n" << bytesToHex(hand.getForce(1)) << std::endl;
+            for (size_t i = 0; i < 30; i++) 
+            {
+                std::cout << "Obtain pressure sensing information 1:\n" << bytesToHex(hand.getForce(1)) << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
             break;
         case 8:
-            std::cout << "Obtain pressure sensing information 2:\n" << bytesToHex(hand.getForce()) << std::endl;
+            for (size_t i = 0; i < 30; i++) 
+            {
+                std::cout << "Obtain pressure sensing information 2:\n" << bytesToHex(hand.getForce()) << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
             break;
         case 9:
             std::cout << "Clear fault codes\n" << std::endl;
@@ -285,11 +297,13 @@ void interactiveMode(LinkerHandApi &hand)
                 //---------------------------------------------------------
 
                 // Open hand
-                std::vector<uint8_t> pos1_1 = {230, 0, 0, 15, 5, 250, 55, 0, 75, 95, 85, 0, 0, 0, 0, 250, 0, 40, 35, 5, 250, 0, 5, 0, 0};
+                std::vector<uint8_t> pos1_1 = {230, 0, 0, 15, 5, 250, 55, 100, 75, 95, 85, 0, 0, 0, 0, 250, 0, 40, 35, 5, 250, 0, 5, 0, 0};
                 std::vector<uint8_t> pos1_2 = {80, 255, 255, 255, 255, 180, 51, 51, 72, 202, 202, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+                std::vector<uint8_t> pos1_3 = {75, 255, 255, 255, 255, 176, 51, 138, 135, 202, 202, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+                
                 // Make a fist
-                std::vector<uint8_t> pos2_1 = {230, 0, 0, 15, 5, 250, 55, 0, 75, 95, 85, 0, 0, 0, 0, 80, 0, 40, 35, 5, 250, 0, 5, 0, 0};
-                std::vector<uint8_t> pos2_2 = {230, 0, 0, 15, 5, 42, 55, 0, 75, 95, 85, 0, 0, 0, 0, 90, 0, 40, 35, 5, 120, 0, 5, 0, 0};
+                std::vector<uint8_t> pos2_1 = {230, 0, 0, 15, 5, 250, 55, 100, 75, 95, 85, 0, 0, 0, 0, 80, 0, 40, 35, 5, 250, 0, 5, 0, 0};
+                std::vector<uint8_t> pos2_2 = {230, 0, 0, 15, 5, 42, 55, 100, 75, 95, 85, 0, 0, 0, 0, 90, 0, 40, 35, 5, 120, 0, 5, 0, 0};
 
                 std::cout << "L25/L21 - Execute action - Make a fist" << std::endl;
                 hand.fingerMove(pos2_1);
@@ -300,9 +314,26 @@ void interactiveMode(LinkerHandApi &hand)
                 std::cout << "L25/L21 - Execute action - Open hand" << std::endl;
                 hand.fingerMove(pos1_1);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
-                hand.fingerMove(pos1_2);
+                // hand.fingerMove(pos1_2);
+                // std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                hand.fingerMove(pos1_3);
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
+            break;
+        case 12:
+            hand.setSpeed(std::vector<uint8_t>(7, HAND_SPEED)); // L7 need 7 speed
+            hand.setTorque(std::vector<uint8_t>(7, HAND_TORQUE)); // L7 need 7 torque
+            //---------------------------------------------------------
+            
+            std::cout << "请输入" << 7 << "个整数：" << std::endl;
+            for (int i = 0; i < 7; ++i) {
+                std::cin >> arr[i];
+                pose.push_back(arr[i]);
+            }
+            
+            hand.fingerMove(pose);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
             break;
         case 0:
             exit();

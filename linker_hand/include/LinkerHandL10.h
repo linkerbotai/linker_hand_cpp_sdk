@@ -38,7 +38,16 @@ typedef enum
     MOTOR_TEMPERATURE_2 = 0x34,			// 电机温度2
 	MOTOR_FAULT_CODE_1 = 0x35,			// 电机故障码1
 	MOTOR_FAULT_CODE_2 = 0x36,			// 电机故障码2
-	LINKER_HAND_VERSION = 0X64			// 版本号
+	LINKER_HAND_VERSION = 0X64,			// 版本号
+
+    // 新压感
+    TOUCH_SENSOR_TYPE = 0xB0,	// 触觉传感器类型
+    THUMB_TOUCH = 0xB1,	// 大拇指触觉传感
+    INDEX_TOUCH = 0xB2,	// 食指触觉传感
+    MIDDLE_TOUCH = 0xB3, //	中指触觉传感
+    RING_TOUCH = 0xB4, // 无名指触觉传感
+    LITTLE_TOUCH = 0xB5, //	小拇指触觉传感
+    PALM_TOUCH = 0xB6, // 手掌指触觉传感
 }FRAME_PROPERTY;
 
 class LinkerHand : public IHand
@@ -138,6 +147,8 @@ private:
 
 	// 版本信息
 	std::vector<uint8_t> version;
+
+    uint8_t sensor_type = 0;
 };
 } // namespace LinkerHandL10
 #endif // LINKER_HAND_L10_H

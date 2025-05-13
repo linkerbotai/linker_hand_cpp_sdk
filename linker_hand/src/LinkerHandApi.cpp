@@ -58,6 +58,10 @@ void LinkerHandApi::setSpeed(const std::vector<uint8_t> &speed)
     {
         hand->setSpeed(speed);
     }
+    else if (handJoint_ == LINKER_HAND::L21 && speed.size() == 25)
+    {
+        hand->setSpeed(speed);
+    }
     else if (handJoint_ == LINKER_HAND::L25 && speed.size() == 25)
     {
         hand->setSpeed(speed);
@@ -80,6 +84,10 @@ void LinkerHandApi::fingerMove(const std::vector<uint8_t> &pose)
         hand->setJointPositions(pose);
     }
     else if (handJoint_ == LINKER_HAND::L20 && pose.size() == 20)
+    {
+        hand->setJointPositions(pose);
+    }
+    else if (handJoint_ == LINKER_HAND::L21 && pose.size() == 25)
     {
         hand->setJointPositions(pose);
     }

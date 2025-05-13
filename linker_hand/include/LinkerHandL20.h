@@ -49,7 +49,16 @@ typedef enum
     HAND_HARDWARE_VERSION = 0xC1,    // 硬件版本 只读 --------
     HAND_SOFTWARE_VERSION = 0xC2,    // 软件版本 只读 --------
     HAND_COMM_ID = 0xC3,             // 设备ID 可读写 1字节 
-    HAND_SAVE_PARAMETER = 0xCF       // 保存参数 只写 --------
+    HAND_SAVE_PARAMETER = 0xCF,       // 保存参数 只写 --------
+
+    // 新压感
+    TOUCH_SENSOR_TYPE = 0xB0,	// 触觉传感器类型
+    THUMB_TOUCH = 0xB1,	// 大拇指触觉传感
+    INDEX_TOUCH = 0xB2,	// 食指触觉传感
+    MIDDLE_TOUCH = 0xB3, //	中指触觉传感
+    RING_TOUCH = 0xB4, // 无名指触觉传感
+    LITTLE_TOUCH = 0xB5, //	小拇指触觉传感
+    PALM_TOUCH = 0xB6 // 手掌指触觉传感
 }FRAME_PROPERTY;
 
 
@@ -123,21 +132,17 @@ private:
 
     // 压感数据
     std::vector<std::vector<uint8_t>> force_data;
-    // 大拇指压感数据
-    std::vector<uint8_t> thumb_force_data;
-    // 食指压感数据
-    std::vector<uint8_t> index_force_data;
-    // 中指压感数据
-    std::vector<uint8_t> middle_force_data;
-    // 无名指压感数据
-    std::vector<uint8_t> ring_force_data;
-    // 小拇指压感数据
-    std::vector<uint8_t> little_force_data;
 
     std::vector<uint8_t> normal_force;
     std::vector<uint8_t> tangential_force;
     std::vector<uint8_t> tangential_force_dir;
     std::vector<uint8_t> approach_inc;
+
+    std::vector<uint8_t> thumb_pressure;
+    std::vector<uint8_t> index_finger_pressure;
+    std::vector<uint8_t> middle_finger_pressure;
+    std::vector<uint8_t> ring_finger_pressure;
+    std::vector<uint8_t> little_finger_pressure;
     
     // 关节位置
     std::vector<uint8_t> joint_position1;
@@ -156,6 +161,8 @@ private:
 
     // 堵转计数
     std::vector<uint8_t> rotor_lock_count;
+
+    uint8_t sensor_type = 0;
 };
 }
 #endif // LINKER_HAND_L20_H
