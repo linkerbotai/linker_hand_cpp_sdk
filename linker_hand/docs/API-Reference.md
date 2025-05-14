@@ -16,7 +16,19 @@ void fingerMove(const std::vector<uint8_t> &pose);
 **Description**:  
 设置关节的目标位置，用于控制手指的运动。  
 **Parameters**:  
-- `pose`: 一个包含目标位置数据的 `std::vector<uint8_t>`，长度为自由度型号（L10=10,L20=20）。
+- `pose`: 一个包含目标位置数据长度为（L10=10、L20=20、L21=25、L25=25）
+的 `std::vector<uint8_t>`数组，范围是0～255。
+---
+
+### 设置关节位置
+```cpp
+void fingerMoveArc(const std::vector<double> &pose);
+```
+**Description**:  
+设置关节的目标位置，用于控制手指的运动。  
+**Parameters**:  
+- `pose`: 一个包含目标位置数据长度为（L10=10、L20=20、L21=25、L25=25）
+的 `std::vector<double>`数组，范围为urdf限位。
 
 ---
 
@@ -72,6 +84,17 @@ std::vector<uint8_t> getState();
 获取当前关节的状态信息。  
 **Returns**:  
 - 返回一个 `std::vector<uint8_t>`，包含当前关节的状态数据。
+
+---
+
+### 获取当前关节状态
+```cpp
+std::vector<double> getStateArc();
+```
+**Description**:  
+获取当前关节的状态信息。  
+**Returns**:  
+- 返回一个 `std::vector<double>`，包含当前关节的状态数据。
 
 ---
 

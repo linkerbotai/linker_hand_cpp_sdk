@@ -30,39 +30,52 @@ LinkerHand::~LinkerHand()
 // 设置关节位置
 void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 {
-    // 将数组拆成四个部分 R T P Y
-    std::vector<uint8_t> joint_position1(jointAngles.begin(), jointAngles.begin() + 5);
-    std::vector<uint8_t> joint_position2(jointAngles.begin() + 5, jointAngles.begin() + 10);
-    std::vector<uint8_t> joint_position3(jointAngles.begin() + 10, jointAngles.begin() + 15);
-    std::vector<uint8_t> joint_position4(jointAngles.begin() + 15, jointAngles.begin() + 20);
+    if (jointAngles.size() == 20)
+    {
+        // 将数组拆成四个部分 R T P Y
+        std::vector<uint8_t> joint_position1(jointAngles.begin(), jointAngles.begin() + 5);
+        std::vector<uint8_t> joint_position2(jointAngles.begin() + 5, jointAngles.begin() + 10);
+        std::vector<uint8_t> joint_position3(jointAngles.begin() + 10, jointAngles.begin() + 15);
+        std::vector<uint8_t> joint_position4(jointAngles.begin() + 15, jointAngles.begin() + 20);
 
-    joint_position3.insert(joint_position3.begin(), FRAME_PROPERTY::JOINT_ROLL_R);
-    joint_position4.insert(joint_position4.begin(), FRAME_PROPERTY::JOINT_TIP_R);
-    joint_position1.insert(joint_position1.begin(), FRAME_PROPERTY::JOINT_PITCH_R);
-    joint_position2.insert(joint_position2.begin(), FRAME_PROPERTY::JOINT_YAW_R);
+        joint_position3.insert(joint_position3.begin(), FRAME_PROPERTY::JOINT_ROLL_R);
+        joint_position4.insert(joint_position4.begin(), FRAME_PROPERTY::JOINT_TIP_R);
+        joint_position1.insert(joint_position1.begin(), FRAME_PROPERTY::JOINT_PITCH_R);
+        joint_position2.insert(joint_position2.begin(), FRAME_PROPERTY::JOINT_YAW_R);
 
-    bus.send(joint_position3, handId);
-    bus.send(joint_position4, handId);
-    bus.send(joint_position1, handId);
-    bus.send(joint_position2, handId);
+        bus.send(joint_position3, handId);
+        bus.send(joint_position4, handId);
+        bus.send(joint_position1, handId);
+        bus.send(joint_position2, handId);
+    } else {
+        std::cout << "Joint position size is not 20" << std::endl;
+    }
 }
 
 void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
 {
-    if (handId == HAND_TYPE::LEFT) {
-        setJointPositions(arc_to_range(20, "left", jointAngles));
-    } else if (handId == HAND_TYPE::RIGHT) {
-        setJointPositions(arc_to_range(20, "right", jointAngles));
+    if (jointAngles.size() == 20) {
+        if (handId == HAND_TYPE::LEFT) {
+            setJointPositions(arc_to_range(20, "left", jointAngles));
+        } else if (handId == HAND_TYPE::RIGHT) {
+            setJointPositions(arc_to_range(20, "right", jointAngles));
+        }
+    } else {
+        std::cout << "Joint position size is not 20" << std::endl;
     }
 }
 
 // 设置关节速度
 void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 {
-    std::vector<uint8_t> data;
-    data.push_back(FRAME_PROPERTY::JOINT_SPEED_R);
-    data.insert(data.end(), speed.begin(), speed.end());
-    bus.send(data, handId);
+    if (speed.size() == 5) {
+        std::vector<uint8_t> data;
+        data.push_back(FRAME_PROPERTY::JOINT_SPEED_R);
+        data.insert(data.end(), speed.begin(), speed.end());
+        bus.send(data, handId); 
+    } else {
+        std::cout << "Speed size is not 5" << std::endl;
+    }
 }
 
 // 获取当前速度
@@ -226,19 +239,27 @@ std::vector<uint8_t> LinkerHand::getCurrent()
 // 清除电机故障码
 void LinkerHand::clearFaultCode(const std::vector<uint8_t> &code)
 {
-    std::vector<uint8_t> data;
-    data.push_back(FRAME_PROPERTY::JOINT_FAULT_R);
-    data.insert(data.end(), code.begin(), code.end());
-    bus.send(data, handId);
+    if (code.size() == 5) {
+        std::vector<uint8_t> data;
+        data.push_back(FRAME_PROPERTY::JOINT_FAULT_R);
+        data.insert(data.end(), code.begin(), code.end());
+        bus.send(data, handId);
+    } else {
+        std::cout << "clearFaultCode size is not 5" << std::endl;
+    }
 }
 
 // 设置电流
 void LinkerHand::setCurrent(const std::vector<uint8_t> &current)
 {
-    std::vector<uint8_t> data;
-    data.push_back(FRAME_PROPERTY::JOINT_CURRENT_R);
-    data.insert(data.end(), current.begin(), current.end());
-    bus.send(data, handId);
+    if (current.size() == 5) {
+        std::vector<uint8_t> data;
+        data.push_back(FRAME_PROPERTY::JOINT_CURRENT_R);
+        data.insert(data.end(), current.begin(), current.end());
+        bus.send(data, handId);
+    } else {
+        std::cout << "Current size is not 5" << std::endl;
+    }
 }
 
 std::string LinkerHand::getVersion()

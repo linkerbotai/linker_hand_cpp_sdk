@@ -30,113 +30,95 @@ LinkerHand::~LinkerHand()
 // 设置关节位置
 void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 {
-    #if 0
-    // 将数组拆成五个部分
-    std::vector<uint8_t> joint_position1(jointAngles.begin(), jointAngles.begin() + 5);
-    std::vector<uint8_t> joint_position2(jointAngles.begin() + 5, jointAngles.begin() + 10);
-    std::vector<uint8_t> joint_position3(jointAngles.begin() + 10, jointAngles.begin() + 15);
-    std::vector<uint8_t> joint_position4(jointAngles.begin() + 15, jointAngles.begin() + 20);
-    std::vector<uint8_t> joint_position5(jointAngles.begin() + 20, jointAngles.begin() + 25);
-
-    joint_position1.insert(joint_position1.begin(), FRAME_PROPERTY::THUMB_POS);
-    joint_position2.insert(joint_position2.begin(), FRAME_PROPERTY::INDEX_POS);
-    joint_position3.insert(joint_position3.begin(), FRAME_PROPERTY::MIDDLE_POS);
-    joint_position4.insert(joint_position4.begin(), FRAME_PROPERTY::RING_POS);
-    joint_position5.insert(joint_position5.begin(), FRAME_PROPERTY::LITTLE_POS);
-
-    // 发送数据
-    bus.send(joint_position1, handId);
-    bus.send(joint_position2, handId);
-    bus.send(joint_position3, handId);
-    bus.send(joint_position4, handId);
-    bus.send(joint_position5, handId);
-    #endif
-
-    std::vector<uint8_t> joint_array;
-    joint_array.push_back(jointAngles[10]);
-    joint_array.push_back(jointAngles[5]);
-    joint_array.push_back(jointAngles[0]);
-    joint_array.push_back(jointAngles[15]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[20]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[6]);
-    joint_array.push_back(jointAngles[1]);
-    joint_array.push_back(jointAngles[16]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[21]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[7]); // 05-12
-    joint_array.push_back(jointAngles[2]);
-    joint_array.push_back(jointAngles[17]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[22]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[8]);
-    joint_array.push_back(jointAngles[3]);
-    joint_array.push_back(jointAngles[18]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[23]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[9]);
-    joint_array.push_back(jointAngles[4]);
-    joint_array.push_back(jointAngles[19]);
-    joint_array.push_back(0);
-    joint_array.push_back(jointAngles[24]);
-
-
-    // std::cout << "---------------------------------------" << std::endl;
-
-    int i = 0;
-    // 使用列表推导式将列表每6个元素切成一个子数组
-    for (auto it = joint_array.begin(); it != joint_array.end(); it += 6)
+    if (jointAngles.size() == 25)
     {
-        // std::vector<uint8_t> joint_position;
-        std::vector<uint8_t> joint_position(it, it + 6);
+        std::vector<uint8_t> joint_array;
+        joint_array.push_back(jointAngles[10]);
+        joint_array.push_back(jointAngles[5]);
+        joint_array.push_back(jointAngles[0]);
+        joint_array.push_back(jointAngles[15]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[20]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[6]);
+        joint_array.push_back(jointAngles[1]);
+        joint_array.push_back(jointAngles[16]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[21]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[7]); // 05-12
+        joint_array.push_back(jointAngles[2]);
+        joint_array.push_back(jointAngles[17]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[22]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[8]);
+        joint_array.push_back(jointAngles[3]);
+        joint_array.push_back(jointAngles[18]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[23]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[9]);
+        joint_array.push_back(jointAngles[4]);
+        joint_array.push_back(jointAngles[19]);
+        joint_array.push_back(0);
+        joint_array.push_back(jointAngles[24]);
 
-        switch(i / 6)
+        // std::cout << "---------------------------------------" << std::endl;
+
+        int i = 0;
+        // 使用列表推导式将列表每6个元素切成一个子数组
+        for (auto it = joint_array.begin(); it != joint_array.end(); it += 6)
         {
-            case 0:
-                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::THUMB_POS);
-                break;
-            case 1:
-                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::INDEX_POS);
-                break;
-            case 2:
-                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::MIDDLE_POS);
-                break;
-            case 3:
-                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::RING_POS);
-                break;
-            case 4:
-                joint_position.insert(joint_position.begin(), FRAME_PROPERTY::LITTLE_POS);
-                break;
+            std::vector<uint8_t> joint_position(it, it + 6);
+            switch(i / 6)
+            {
+                case 0:
+                    joint_position.insert(joint_position.begin(), FRAME_PROPERTY::THUMB_POS);
+                    break;
+                case 1:
+                    joint_position.insert(joint_position.begin(), FRAME_PROPERTY::INDEX_POS);
+                    break;
+                case 2:
+                    joint_position.insert(joint_position.begin(), FRAME_PROPERTY::MIDDLE_POS);
+                    break;
+                case 3:
+                    joint_position.insert(joint_position.begin(), FRAME_PROPERTY::RING_POS);
+                    break;
+                case 4:
+                    joint_position.insert(joint_position.begin(), FRAME_PROPERTY::LITTLE_POS);
+                    break;
+            }
+            bus.send(joint_position, handId);
+            i += 6;
+
+            // for (auto &item : joint_position)
+            // {
+            //     std::cout << std::hex << (int)item << " ";
+            // }
         }
-        
-        bus.send(joint_position, handId);
-
-        i += 6;
-
-        // for (auto &item : joint_position)
-        // {
-        //     std::cout << std::hex << (int)item << " ";
-        // }
+        // std::cout << std::endl;
+    }  else {
+        std::cout << "Joint position size is not 25" << std::endl;
     }
-    // std::cout << std::endl;
 }
 
 void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
 {
-    static int joints_num;
-    if (current_hand_type == 0) {// L25
-        joints_num = 25;
-    } else if (current_hand_type == 1) {// L21
-        joints_num = 21;
-    }
-    if (handId == HAND_TYPE::LEFT) {
-        setJointPositions(arc_to_range(joints_num, "left", jointAngles));
-    } else if (handId == HAND_TYPE::RIGHT) {
-        setJointPositions(arc_to_range(joints_num, "right", jointAngles));
+    if (jointAngles.size() == 25) {
+        static int joints_num;
+        if (current_hand_type == 0) {// L25
+            joints_num = 25;
+        } else if (current_hand_type == 1) {// L21
+            joints_num = 21;
+        }
+        if (handId == HAND_TYPE::LEFT) {
+            setJointPositions(arc_to_range(joints_num, "left", jointAngles));
+        } else if (handId == HAND_TYPE::RIGHT) {
+            setJointPositions(arc_to_range(joints_num, "right", jointAngles));
+        }
+    } else {
+        std::cout << "Joint position size is not 25" << std::endl;
     }
 }
 
@@ -221,25 +203,29 @@ std::vector<double> LinkerHand::getCurrentStatusArc()
 // 设置关节速度-有合并指令待确认
 void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 {
-    // 将数组拆成五个部分
-    std::vector<uint8_t> joint_speed1(speed.begin(), speed.begin() + 5);
-    std::vector<uint8_t> joint_speed2(speed.begin() + 5, speed.begin() + 10);
-    std::vector<uint8_t> joint_speed3(speed.begin() + 10, speed.begin() + 15);
-    std::vector<uint8_t> joint_speed4(speed.begin() + 15, speed.begin() + 20);
-    std::vector<uint8_t> joint_speed5(speed.begin() + 20, speed.begin() + 25);
+    if (speed.size() == 25) {
+        // 将数组拆成五个部分
+        std::vector<uint8_t> joint_speed1(speed.begin(), speed.begin() + 5);
+        std::vector<uint8_t> joint_speed2(speed.begin() + 5, speed.begin() + 10);
+        std::vector<uint8_t> joint_speed3(speed.begin() + 10, speed.begin() + 15);
+        std::vector<uint8_t> joint_speed4(speed.begin() + 15, speed.begin() + 20);
+        std::vector<uint8_t> joint_speed5(speed.begin() + 20, speed.begin() + 25);
 
-    joint_speed1.insert(joint_speed1.begin(), FRAME_PROPERTY::THUMB_SPEED);
-    joint_speed2.insert(joint_speed2.begin(), FRAME_PROPERTY::INDEX_SPEED);
-    joint_speed3.insert(joint_speed3.begin(), FRAME_PROPERTY::MIDDLE_SPEED);
-    joint_speed4.insert(joint_speed4.begin(), FRAME_PROPERTY::RING_SPEED);
-    joint_speed5.insert(joint_speed5.begin(), FRAME_PROPERTY::LITTLE_SPEED);
+        joint_speed1.insert(joint_speed1.begin(), FRAME_PROPERTY::THUMB_SPEED);
+        joint_speed2.insert(joint_speed2.begin(), FRAME_PROPERTY::INDEX_SPEED);
+        joint_speed3.insert(joint_speed3.begin(), FRAME_PROPERTY::MIDDLE_SPEED);
+        joint_speed4.insert(joint_speed4.begin(), FRAME_PROPERTY::RING_SPEED);
+        joint_speed5.insert(joint_speed5.begin(), FRAME_PROPERTY::LITTLE_SPEED);
 
-    // 发送数据
-    bus.send(joint_speed1, handId);
-    bus.send(joint_speed2, handId);
-    bus.send(joint_speed3, handId);
-    bus.send(joint_speed4, handId);
-    bus.send(joint_speed5, handId);
+        // 发送数据
+        bus.send(joint_speed1, handId);
+        bus.send(joint_speed2, handId);
+        bus.send(joint_speed3, handId);
+        bus.send(joint_speed4, handId);
+        bus.send(joint_speed5, handId);
+    } else {
+        std::cout << "Joint speed size is not 25" << std::endl;
+    }
 }
 
 #if 0
@@ -305,25 +291,29 @@ std::vector<uint8_t> LinkerHand::getSpeed()
 // 设置扭矩-有合并指令待确认
 void LinkerHand::setTorque(const std::vector<uint8_t> &torque) 
 {
-    // 将数组拆成五个部分
-    std::vector<uint8_t> joint_torque1(torque.begin(), torque.begin() + 5);
-    std::vector<uint8_t> joint_torque2(torque.begin() + 5, torque.begin() + 10);
-    std::vector<uint8_t> joint_torque3(torque.begin() + 10, torque.begin() + 15);
-    std::vector<uint8_t> joint_torque4(torque.begin() + 15, torque.begin() + 20);
-    std::vector<uint8_t> joint_torque5(torque.begin() + 20, torque.begin() + 25);
+    if (torque.size() == 25) {
+        // 将数组拆成五个部分
+        std::vector<uint8_t> joint_torque1(torque.begin(), torque.begin() + 5);
+        std::vector<uint8_t> joint_torque2(torque.begin() + 5, torque.begin() + 10);
+        std::vector<uint8_t> joint_torque3(torque.begin() + 10, torque.begin() + 15);
+        std::vector<uint8_t> joint_torque4(torque.begin() + 15, torque.begin() + 20);
+        std::vector<uint8_t> joint_torque5(torque.begin() + 20, torque.begin() + 25);
 
-    joint_torque1.insert(joint_torque1.begin(), FRAME_PROPERTY::THUMB_TORQUE);
-    joint_torque2.insert(joint_torque2.begin(), FRAME_PROPERTY::INDEX_TORQUE);
-    joint_torque3.insert(joint_torque3.begin(), FRAME_PROPERTY::MIDDLE_TORQUE);
-    joint_torque4.insert(joint_torque4.begin(), FRAME_PROPERTY::RING_TORQUE);
-    joint_torque5.insert(joint_torque5.begin(), FRAME_PROPERTY::LITTLE_TORQUE);
+        joint_torque1.insert(joint_torque1.begin(), FRAME_PROPERTY::THUMB_TORQUE);
+        joint_torque2.insert(joint_torque2.begin(), FRAME_PROPERTY::INDEX_TORQUE);
+        joint_torque3.insert(joint_torque3.begin(), FRAME_PROPERTY::MIDDLE_TORQUE);
+        joint_torque4.insert(joint_torque4.begin(), FRAME_PROPERTY::RING_TORQUE);
+        joint_torque5.insert(joint_torque5.begin(), FRAME_PROPERTY::LITTLE_TORQUE);
 
-    // 发送数据
-    bus.send(joint_torque1, handId);
-    bus.send(joint_torque2, handId);
-    bus.send(joint_torque3, handId);
-    bus.send(joint_torque4, handId);
-    bus.send(joint_torque5, handId);
+        // 发送数据
+        bus.send(joint_torque1, handId);
+        bus.send(joint_torque2, handId);
+        bus.send(joint_torque3, handId);
+        bus.send(joint_torque4, handId);
+        bus.send(joint_torque5, handId);
+    } else {
+        std::cout << "Joint torque size is not 25" << std::endl;
+    }
 }
 #if 0
     // 横滚关节扭矩

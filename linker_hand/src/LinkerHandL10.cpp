@@ -87,10 +87,15 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 
 void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
 {
-    if (handId == HAND_TYPE::LEFT) {
-        setJointPositions(arc_to_range(10, "left", jointAngles));
-    } else if (handId == HAND_TYPE::RIGHT) {
-        setJointPositions(arc_to_range(10, "right", jointAngles));
+    if (jointAngles.size() == 10)
+    {
+        if (handId == HAND_TYPE::LEFT) {
+            setJointPositions(arc_to_range(10, "left", jointAngles));
+        } else if (handId == HAND_TYPE::RIGHT) {
+            setJointPositions(arc_to_range(10, "right", jointAngles));
+        }
+    } else {
+        std::cout << "Joint position size is not 10" << std::endl;
     }
 }
 
@@ -164,20 +169,29 @@ std::string LinkerHand::getVersion()
 
 void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
 {
-    std::vector<uint8_t> result = {FRAME_PROPERTY::TORQUE_LIMIT};
-    result.insert(result.end(), torque.begin(), torque.end());
+    if (torque.size() == 5) {
+        std::vector<uint8_t> result = {FRAME_PROPERTY::TORQUE_LIMIT};
+        result.insert(result.end(), torque.begin(), torque.end());
 
-    bus.send(result, handId);
+        bus.send(result, handId);
+    } else {
+        std::cout << "Torque size is not 5" << std::endl;
+    }
 }
 
 // 设置关节速度
 void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 {
-    std::vector<uint8_t> result = {FRAME_PROPERTY::JOINT_SPEED};
-    result.insert(result.end(), speed.begin(), speed.end());
+    if (speed.size() == 5)
+    {
+        std::vector<uint8_t> result = {FRAME_PROPERTY::JOINT_SPEED};
+        result.insert(result.end(), speed.begin(), speed.end());
 
-    joint_speed = result;
-    bus.send(result, handId);
+        joint_speed = result;
+        bus.send(result, handId);
+    } else {
+        std::cout << "Joint speed size is not 5" << std::endl;
+    }
 }
 
 
