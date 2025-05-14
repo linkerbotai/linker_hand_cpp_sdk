@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "RangeToArc.h"
 
 #define RECV_DEBUG 0
 

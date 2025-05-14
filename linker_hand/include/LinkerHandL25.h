@@ -134,6 +134,7 @@ public:
 
     // 设置关节位置
     void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+    void setJointPositionArc(const std::vector<double> &jointAngles) override;
     #if 0
     // 横滚关节位置
     void setRoll(const std::vector<uint8_t> &roll) override;
@@ -150,6 +151,7 @@ public:
     #endif
     // 获取当前关节状态
     std::vector<uint8_t> getCurrentStatus() override;
+    std::vector<double> getCurrentStatusArc() override;
     #if 0
     // 大拇指指关节位置
     std::vector<uint8_t> getThumb() override;

@@ -11,234 +11,148 @@ double scale_value(double original_value, double a_min, double a_max, double b_m
     return (original_value - a_min) * (b_max - b_min) / (a_max - a_min) + b_min;
 }
 
-// 将范围值转换为弧度值（右手，20个关节）
-std::vector<double> range_to_arc_right_20(const std::vector<u_int8_t>& hand_range_r) {
-    std::vector<double> hand_arc_r(20, 0);
-    if (hand_range_r.size() != 20) {
-        std::cerr << "Error: hand_range_r size is not 20." << std::endl;
-        return {};
+bool initialize_params(int joints_type, const std::string& left_or_right, std::vector<double>& min_limits, std::vector<double>& max_limits, std::vector<int>& derict) {
+    min_limits.clear();
+    max_limits.clear();
+    derict.clear();
+    
+    switch(joints_type) {
+        case 7:
+            if (left_or_right == "left") {
+                min_limits = l7_l_min;
+                max_limits = l7_l_max;
+                derict = l7_l_derict;
+            } else if (left_or_right == "right") {
+                min_limits = l7_r_min;
+                max_limits = l7_r_max;
+                derict = l7_r_derict;
+            }
+            break;
+        case 10:
+            if (left_or_right == "left") {
+                min_limits = l10_l_min;
+                max_limits = l10_l_max;
+                derict = l10_l_derict;
+            } else if (left_or_right == "right") {
+                min_limits = l10_r_min;
+                max_limits = l10_r_max;
+                derict = l10_r_derict;
+            }
+            break;
+        case 20:
+            if (left_or_right == "left") {
+                min_limits = l20_l_min;
+                max_limits = l20_l_max;
+                derict = l20_l_derict;
+            } else if (left_or_right == "right") {
+                min_limits = l20_r_min;
+                max_limits = l20_r_max;
+                derict = l20_r_derict;
+            }
+            break;
+        case 21:
+            if (left_or_right == "left") {
+                min_limits = l21_l_min;
+                max_limits = l21_l_max;
+                derict = l21_l_derict;
+            } else if (left_or_right == "right") {
+                min_limits = l21_r_min;
+                max_limits = l21_r_max;
+                derict = l21_r_derict;
+            }
+            break;
+        case 25:
+            if (left_or_right == "left") {
+                min_limits = l25_l_min;
+                max_limits = l25_l_max;
+                derict = l25_l_derict;
+            } else if (left_or_right == "right") {
+                min_limits = l25_r_min;
+                max_limits = l25_r_max;
+                derict = l25_r_derict;
+            }
+            break;
+        default:
+            return false;
     }
-    for (int i = 0; i < 20; ++i) {
-        if (11 <= i && i <= 14) continue;
-        double val_r = is_within_range(hand_range_r[i], 0, 255);
-        if (l20_r_derict[i] == -1) {
-            hand_arc_r[i] = scale_value(val_r, 0, 255, l20_r_max[i], l20_r_min[i]);
-        } else {
-            hand_arc_r[i] = scale_value(val_r, 0, 255, l20_r_min[i], l20_r_max[i]);
-        }
-    }
-    return hand_arc_r;
+    
+    return !min_limits.empty() && !max_limits.empty() && !derict.empty();
 }
 
-// 将范围值转换为弧度值（左手，20个关节）
-std::vector<double> range_to_arc_left_20(const std::vector<u_int8_t>& hand_range_l) {
-    std::vector<double> hand_arc_l(20, 0);
-    if (hand_range_l.size() != 20) {
-        std::cerr << "Error: hand_range_r size is not 20." << std::endl;
-        return {};
+bool should_skip_joint(int joints_type, int joint_index) {
+    if (joints_type == 21) {
+        return (11 <= joint_index && joint_index <= 14) || (16 <= joint_index && joint_index <= 19);
+    } else if (joints_type == 25) {
+        return 11 <= joint_index && joint_index <= 14;
     }
-    for (int i = 0; i < 20; ++i) {
-        if (11 <= i && i <= 14) continue;
-        double val_l = is_within_range(hand_range_l[i], 0, 255);
-        if (l20_l_derict[i] == -1) {
-            hand_arc_l[i] = scale_value(val_l, 0, 255, l20_l_max[i], l20_l_min[i]);
-        } else {
-            hand_arc_l[i] = scale_value(val_l, 0, 255, l20_l_min[i], l20_l_max[i]);
-        }
-    }
-    return hand_arc_l;
+    return false;
 }
 
-// 将弧度值转换为范围值（右手，20个关节）
-std::vector<u_int8_t> arc_to_range_right_20(const std::vector<double>& hand_arc_r) {
-    std::vector<u_int8_t> hand_range_r(20, 0);
-    if (hand_arc_r.size() != 20) {
-        std::cerr << "Error: hand_range_r size is not 20." << std::endl;
+std::vector<double> range_to_arc(const int &joints_type, const std::string &left_or_right, const std::vector<uint8_t> &hand_range) {
+    
+	std::vector<double> hand_arc;
+	std::vector<double> min_limits;
+	std::vector<double> max_limits;
+	std::vector<int> derict;
+	
+	if (!initialize_params(joints_type, left_or_right, min_limits, max_limits, derict)) {
+        std::cerr << "Error: Invalid joints_type or left_or_right parameter." << std::endl;
         return {};
     }
-    for (int i = 0; i < 20; ++i) {
-        if (11 <= i && i <= 14) continue;
-        double val_r = is_within_range(hand_arc_r[i], l20_r_min[i], l20_r_max[i]);
-        if (l20_r_derict[i] == -1) {
-            hand_range_r[i] = scale_value(val_r, l20_r_min[i], l20_r_max[i], 255, 0);
-        } else {
-            hand_range_r[i] = scale_value(val_r, l20_r_min[i], l20_r_max[i], 0, 255);
-        }
-    }
-    return hand_range_r;
-}
-
-// 将弧度值转换为范围值（左手，20个关节）
-std::vector<u_int8_t> arc_to_range_left_20(const std::vector<double>& hand_arc_l) {
-    std::vector<u_int8_t> hand_range_l(20, 0);
-    if (hand_arc_l.size() != 20) {
-        std::cerr << "Error: hand_range_r size is not 20." << std::endl;
+    
+    if (hand_range.size() != max_limits.size()) {
         return {};
     }
-    for (int i = 0; i < 20; ++i) {
-        if (11 <= i && i <= 14) continue;
-        double val_l = is_within_range(hand_arc_l[i], l20_l_min[i], l20_l_max[i]);
-        if (l20_l_derict[i] == -1) {
-            hand_range_l[i] = scale_value(val_l, l20_l_min[i], l20_l_max[i], 255, 0);
+    
+    hand_arc = std::vector<double>(max_limits.size(), 0);
+    
+    for (size_t i = 0; i < hand_arc.size(); ++i) {
+    	if (should_skip_joint(joints_type, i)) {
+            continue;
+        }
+    
+        double val = is_within_range(hand_range[i], 0, 255);
+        if (derict[i] == -1) {
+            hand_arc[i] = scale_value(val, 0, 255, max_limits[i], min_limits[i]);
         } else {
-            hand_range_l[i] = scale_value(val_l, l20_l_min[i], l20_l_max[i], 0, 255);
+            hand_arc[i] = scale_value(val, 0, 255, min_limits[i], max_limits[i]);
         }
     }
-    return hand_range_l;
-}
-
-
-
-
-
-
-// 右手范围到弧度（10 关节）
-std::vector<double> range_to_arc_right_10(const std::vector<u_int8_t>& hand_range_r) {
-    std::vector<double> hand_arc_r(10, 0);
-    if (hand_range_r.size() != 10) {
-        // std::cerr << "Error: hand_range_r size is not 10." << std::endl;
-        return {};
-    }
-    for (size_t i = 0; i < 10; ++i) {
-        double val_r = is_within_range(hand_range_r[i], 0, 255);
-        if (l10_r_derict[i] == -1) {
-            hand_arc_r[i] = scale_value(val_r, 0, 255, l10_r_max[i], l10_r_min[i]);
-        } else {
-            hand_arc_r[i] = scale_value(val_r, 0, 255, l10_r_min[i], l10_r_max[i]);
-        }
-    }
-    return hand_arc_r;
-}
-
-// 左手范围到弧度（10 关节）
-std::vector<double> range_to_arc_left_10(const std::vector<u_int8_t>& hand_range_l) {
-    std::vector<double> hand_arc_l(10, 0);
-    if (hand_range_l.size() != 10) {
-        // std::cerr << "Error: hand_range_l size is not 10." << std::endl;
-        return {};
-    }
-    for (size_t i = 0; i < 10; ++i) {
-        double val_l = is_within_range(hand_range_l[i], 0, 255);
-        if (l10_l_derict[i] == -1) {
-            hand_arc_l[i] = scale_value(val_l, 0, 255, l10_l_max[i], l10_l_min[i]);
-        } else {
-            hand_arc_l[i] = scale_value(val_l, 0, 255, l10_l_min[i], l10_l_max[i]);
-        }
-    }
-    return hand_arc_l;
-}
-
-// 右手弧度到范围（10 关节）
-std::vector<u_int8_t> arc_to_range_right_10(const std::vector<double>& hand_arc_r) {
-    std::vector<u_int8_t> hand_range_r(10, 0);
-    if (hand_arc_r.size() != 10) {
-        // std::cerr << "Error: hand_arc_r size is not 10." << std::endl;
-        return {};
-    }
-    for (size_t i = 0; i < 10; ++i) {
-        double val_r = is_within_range(hand_arc_r[i], l10_r_min[i], l10_r_max[i]);
-        if (l10_r_derict[i] == -1) {
-            hand_range_r[i] = static_cast<u_int8_t>(std::round(scale_value(val_r, l10_r_min[i], l10_r_max[i], 255, 0)));
-        } else {
-            hand_range_r[i] = static_cast<u_int8_t>(std::round(scale_value(val_r, l10_r_min[i], l10_r_max[i], 0, 255)));
-        }
-    }
-    return hand_range_r;
-}
-
-// 左手弧度到范围（10 关节）
-std::vector<u_int8_t> arc_to_range_left_10(const std::vector<double>& hand_arc_l) {
-    std::vector<u_int8_t> hand_range_l(10, 0);
-    if (hand_arc_l.size() != 10) {
-        // std::cerr << "Error: hand_arc_l size is not 10." << std::endl;
-        return {};
-    }
-    for (size_t i = 0; i < 10; ++i) {
-        double val_l = is_within_range(hand_arc_l[i], l10_l_min[i], l10_l_max[i]);
-        if (l10_l_derict[i] == -1) {
-            hand_range_l[i] = static_cast<u_int8_t>(std::round(scale_value(val_l, l10_l_min[i], l10_l_max[i], 255, 0)));
-        } else {
-            hand_range_l[i] = static_cast<u_int8_t>(std::round(scale_value(val_l, l10_l_min[i], l10_l_max[i], 0, 255)));
-        }
-    }
-    return hand_range_l;
+    
+    return hand_arc;
 }
 
 
+std::vector<uint8_t> arc_to_range(const int &joints_type, const std::string &left_or_right, const std::vector<double> &hand_arc) {
 
-
-
-
-
-
-// 右手范围到弧度（7 关节）
-std::vector<double> range_to_arc_right_7(const std::vector<u_int8_t>& hand_range_r) {
-    std::vector<double> hand_arc_r(7, 0);
-    if (hand_range_r.size() != 7) {
-        // std::cerr << "Error: hand_range_r size is not 7." << std::endl;
+	std::vector<uint8_t> hand_range;
+	std::vector<double> min_limits;
+	std::vector<double> max_limits;
+	std::vector<int> derict;
+	
+	if (!initialize_params(joints_type, left_or_right, min_limits, max_limits, derict)) {
+        std::cerr << "Error: Invalid joints_type or left_or_right parameter." << std::endl;
         return {};
     }
-    for (size_t i = 0; i < 7; ++i) {
-        double val_r = is_within_range(hand_range_r[i], 0, 255);
-        if (l7_r_derict[i] == -1) {
-            hand_arc_r[i] = scale_value(val_r, 0, 255, l7_r_max[i], l7_r_min[i]);
-        } else {
-            hand_arc_r[i] = scale_value(val_r, 0, 255, l7_r_min[i], l7_r_max[i]);
-        }
-    }
-    return hand_arc_r;
-}
-
-// 左手范围到弧度（7 关节）
-std::vector<double> range_to_arc_left_7(const std::vector<u_int8_t>& hand_range_l) {
-    std::vector<double> hand_arc_l(7, 0);
-    if (hand_range_l.size() != 7) {
-        // std::cerr << "Error: hand_range_l size is not 7." << std::endl;
+    
+    if (hand_arc.size() != max_limits.size()) {
         return {};
     }
-    for (size_t i = 0; i < 7; ++i) {
-        double val_l = is_within_range(hand_range_l[i], 0, 255);
-        if (l7_l_derict[i] == -1) {
-            hand_arc_l[i] = scale_value(val_l, 0, 255, l7_l_max[i], l7_l_min[i]);
+    
+	hand_range = std::vector<uint8_t>(max_limits.size(), 0);
+	
+	for (int i = 0; i < hand_range.size(); ++i) {
+        if (should_skip_joint(joints_type, i)) {
+            continue;
+        }
+    	
+        double val = is_within_range(hand_arc[i], min_limits[i], max_limits[i]);
+        if (derict[i] == -1) {
+            hand_range[i] = static_cast<uint8_t>(std::round(scale_value(val, min_limits[i], max_limits[i], 255, 0)));
         } else {
-            hand_arc_l[i] = scale_value(val_l, 0, 255, l7_l_min[i], l7_l_max[i]);
+            hand_range[i] = static_cast<uint8_t>(std::round(scale_value(val, min_limits[i], max_limits[i], 0, 255)));
         }
     }
-    return hand_arc_l;
-}
-
-// 右手弧度到范围（7 关节）
-std::vector<u_int8_t> arc_to_range_right_7(const std::vector<double>& hand_arc_r) {
-    std::vector<u_int8_t> hand_range_r(7, 0);
-    if (hand_arc_r.size() != 7) {
-        // std::cerr << "Error: hand_arc_r size is not 7." << std::endl;
-        return {};
-    }
-    for (size_t i = 0; i < 7; ++i) {
-        double val_r = is_within_range(hand_arc_r[i], l7_r_min[i], l7_r_max[i]);
-        if (l7_r_derict[i] == -1) {
-            hand_range_r[i] = static_cast<u_int8_t>(std::round(scale_value(val_r, l7_r_min[i], l7_r_max[i], 255, 0)));
-        } else {
-            hand_range_r[i] = static_cast<u_int8_t>(std::round(scale_value(val_r, l7_r_min[i], l7_r_max[i], 0, 255)));
-        }
-    }
-    return hand_range_r;
-}
-
-// 左手弧度到范围（7 关节）
-std::vector<u_int8_t> arc_to_range_left_7(const std::vector<double>& hand_arc_l) {
-    std::vector<u_int8_t> hand_range_l(7, 0);
-    if (hand_arc_l.size() != 7) {
-        // std::cerr << "Error: hand_arc_l size is not 7." << std::endl;
-        return {};
-    }
-    for (size_t i = 0; i < 7; ++i) {
-        double val_l = is_within_range(hand_arc_l[i], l7_l_min[i], l7_l_max[i]);
-        if (l7_l_derict[i] == -1) {
-            hand_range_l[i] = static_cast<u_int8_t>(std::round(scale_value(val_l, l7_l_min[i], l7_l_max[i], 255, 0)));
-        } else {
-            hand_range_l[i] = static_cast<u_int8_t>(std::round(scale_value(val_l, l7_l_min[i], l7_l_max[i], 0, 255)));
-        }
-    }
-    return hand_range_l;
+    
+    return hand_range;
 }

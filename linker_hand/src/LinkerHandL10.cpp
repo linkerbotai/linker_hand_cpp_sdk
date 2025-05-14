@@ -87,14 +87,10 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 
 void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
 {
-    // TODO: 实现设置关节位置弧度的函数
-    if (handId == HAND_TYPE::LEFT)
-    {
-        setJointPositions(arc_to_range_left_10(jointAngles));
-    }
-    else if (handId == HAND_TYPE::RIGHT)
-    {
-        setJointPositions(arc_to_range_right_10(jointAngles));
+    if (handId == HAND_TYPE::LEFT) {
+        setJointPositions(arc_to_range(10, "left", jointAngles));
+    } else if (handId == HAND_TYPE::RIGHT) {
+        setJointPositions(arc_to_range(10, "right", jointAngles));
     }
 }
 
@@ -118,16 +114,12 @@ std::vector<uint8_t> LinkerHand::getCurrentStatus()
 
 std::vector<double> LinkerHand::getCurrentStatusArc()
 {
-    // std::cout << "getCurrentStatusArc handId : " << handId << std::endl;
-
-    if (handId == HAND_TYPE::LEFT)
-    {
-        return range_to_arc_left_10(getCurrentStatus());
+    if (handId == HAND_TYPE::LEFT) {
+        return range_to_arc(10, "left", getCurrentStatus());
+    } else if (handId == HAND_TYPE::RIGHT) {
+        return range_to_arc(10, "right", getCurrentStatus());
     }
-    else if (handId == HAND_TYPE::RIGHT)
-    {
-        return range_to_arc_right_10(getCurrentStatus());
-    }
+    return {};
 }
 
 
@@ -366,13 +358,15 @@ void LinkerHand::receiveResponse()
                 if (sensor_type == 0x02) {
                     if (data.size() == 8) {
                         uint8_t index = ((data[1] >> 4) + 1) * 6;
-                        std::vector<uint8_t> payload(data.begin() + 2, data.end());
-                        for (uint8_t i = index - 6, p = 0; i < index; ++i, ++p) {
-                            if (data[0] == FRAME_PROPERTY::THUMB_TOUCH) thumb_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::INDEX_TOUCH) index_finger_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::MIDDLE_TOUCH) middle_finger_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::RING_TOUCH) ring_finger_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::LITTLE_TOUCH) little_finger_pressure[i] = payload[p];
+                        if (index <= 0x48) {
+                            std::vector<uint8_t> payload(data.begin() + 2, data.end());
+                            for (uint8_t i = index - 6, p = 0; i < index; ++i, ++p) {
+                                if (data[0] == FRAME_PROPERTY::THUMB_TOUCH) thumb_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::INDEX_TOUCH) index_finger_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::MIDDLE_TOUCH) middle_finger_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::RING_TOUCH) ring_finger_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::LITTLE_TOUCH) little_finger_pressure[i] = payload[p];
+                            }
                         }
                     }
                 } else {

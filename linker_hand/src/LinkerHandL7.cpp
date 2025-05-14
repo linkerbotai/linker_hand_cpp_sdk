@@ -72,10 +72,29 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
     }
 }
 
+void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
+{
+    if (handId == HAND_TYPE::LEFT) {
+        setJointPositions(arc_to_range(7, "left", jointAngles));
+    } else if (handId == HAND_TYPE::RIGHT) {
+        setJointPositions(arc_to_range(7, "right", jointAngles));
+    }
+}
+
 std::vector<uint8_t> LinkerHand::getCurrentStatus()
 {
     bus.send({FRAME_PROPERTY::JOINT_POSITION}, handId);
     return IHand::getSubVector(joint_position);
+}
+
+std::vector<double> LinkerHand::getCurrentStatusArc()
+{
+    if (handId == HAND_TYPE::LEFT) {
+        return range_to_arc(7, "left", getCurrentStatus());
+    } else if (handId == HAND_TYPE::RIGHT) {
+        return range_to_arc(7, "right", getCurrentStatus());
+    }
+    return {};
 }
 
 // 获取版本号
@@ -296,13 +315,15 @@ void LinkerHand::receiveResponse()
                 if (sensor_type == 0x02) {
                     if (data.size() == 8) {
                         uint8_t index = ((data[1] >> 4) + 1) * 6;
-                        std::vector<uint8_t> payload(data.begin() + 2, data.end());
-                        for (uint8_t i = index - 6, p = 0; i < index; ++i, ++p) {
-                            if (data[0] == FRAME_PROPERTY::THUMB_TOUCH) thumb_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::INDEX_TOUCH) index_finger_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::MIDDLE_TOUCH) middle_finger_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::RING_TOUCH) ring_finger_pressure[i] = payload[p];
-                            if (data[0] == FRAME_PROPERTY::LITTLE_TOUCH) little_finger_pressure[i] = payload[p];
+                        if (index <= 0x48) {
+                            std::vector<uint8_t> payload(data.begin() + 2, data.end());
+                            for (uint8_t i = index - 6, p = 0; i < index; ++i, ++p) {
+                                if (data[0] == FRAME_PROPERTY::THUMB_TOUCH) thumb_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::INDEX_TOUCH) index_finger_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::MIDDLE_TOUCH) middle_finger_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::RING_TOUCH) ring_finger_pressure[i] = payload[p];
+                                if (data[0] == FRAME_PROPERTY::LITTLE_TOUCH) little_finger_pressure[i] = payload[p];
+                            }
                         }
                     }
                 } else {

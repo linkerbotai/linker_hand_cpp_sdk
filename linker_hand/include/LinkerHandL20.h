@@ -69,12 +69,14 @@ public:
 
     // 设置关节位置
     void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+    void setJointPositionArc(const std::vector<double> &jointAngles) override;
 	// 设置关节速度
     void setSpeed(const std::vector<uint8_t> &speed) override;
 	// 获取当前速度
     std::vector<uint8_t> getSpeed() override;
 	// 获取当前关节状态
     std::vector<uint8_t> getCurrentStatus() override;
+    std::vector<double> getCurrentStatusArc() override;
 	//--------------------------------------------------------------------
 	// 获取所有压感数据
     std::vector<std::vector<uint8_t>> getForce(const int type = 0) override;

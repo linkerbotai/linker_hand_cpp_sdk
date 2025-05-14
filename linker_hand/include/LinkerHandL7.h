@@ -53,6 +53,7 @@ public:
 
 	// 设置关节位置
     void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+    void setJointPositionArc(const std::vector<double> &jointAngles) override;
 	// 设置最大扭矩
 	void setTorque(const std::vector<uint8_t> &torque) override;
 	// 设置关节速度
@@ -63,6 +64,7 @@ public:
 	std::vector<uint8_t> getTorque() override;
 	// 获取当前关节状态
     std::vector<uint8_t> getCurrentStatus() override;
+    std::vector<double> getCurrentStatusArc() override;
 	//--------------------------------------------------------------------
 	// 获取所有压感数据
     std::vector<std::vector<uint8_t>> getForce(const int type = 0) override;
