@@ -137,12 +137,10 @@ void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
     void setTip(const std::vector<uint8_t> &tip) override;
 #endif
 
-// 将 L25 的状态值转换为 CMD 格式的状态值
-std::vector<uint8_t> LinkerHand::state_to_cmd(const std::vector<uint8_t>& l25_state) {
-    // L25 CAN 默认接收 30 个数据，初始化 pose 为 25 个 0.0
-    std::vector<uint8_t> pose(25, 0.0);  // 原来控制 L25 的指令数据为 25 个
+std::vector<uint8_t> LinkerHand::state_to_cmd(const std::vector<uint8_t>& l25_state) 
+{
+    std::vector<uint8_t> pose(25, 0.0);
 
-    // 映射关系，字典中存储 l25_state 索引和 pose 索引之间的映射关系
     std::map<int, int> mapping = {
         {0, 10},  {1, 5},   {2, 0},   {3, 15}, {5, 20}, {7, 6},
         {8, 1},   {9, 16},  {11, 21}, {13, 7}, {14, 2}, {15, 17}, {17, 22},
@@ -150,19 +148,14 @@ std::vector<uint8_t> LinkerHand::state_to_cmd(const std::vector<uint8_t>& l25_st
         {27, 19}, {29, 24}
     };
 
-    // 遍历映射字典，更新 pose 的值
     for (const auto& pair : mapping) {
         int l25_idx = pair.first;
         int pose_idx = pair.second;
 
-        // 确保索引在有效范围内
         if (l25_idx < l25_state.size() && pose_idx < pose.size()) {
             pose[pose_idx] = l25_state[l25_idx];
         }
     }
-
-    std::cout << "state_to_cmd pose.size() : " << pose.size() << std::endl;
-
     return pose;
 }
 
@@ -204,13 +197,9 @@ std::vector<double> LinkerHand::getCurrentStatusArc()
         joints_num = 21;
     }
 
-    std::cout << "joints_num : " << joints_num << std::endl;
-
     if (handId == HAND_TYPE::LEFT) {
-        std::cout << "LEFT range_to_arc" << std::endl;
         return range_to_arc(joints_num, "left", getCurrentStatus());
     } else if (handId == HAND_TYPE::RIGHT) {
-        std::cout << "RIGHT range_to_arc" << std::endl;
         return range_to_arc(joints_num, "right", getCurrentStatus());
     }
     return {};

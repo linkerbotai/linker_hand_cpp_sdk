@@ -310,7 +310,7 @@ void LinkerHand::receiveResponse()
             if (RECV_DEBUG)
             {
                 std::cout << "L7-Recv: ";
-                for (auto &can : data) std::cout << std::hex << (int)can << " ";
+                for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }
 
