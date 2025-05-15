@@ -7,7 +7,6 @@
 
 namespace LinkerHandL7
 {
-// 构造函数
 LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate)
     : handId(handId), bus(canChannel, baudrate), running(true)
 {
@@ -17,14 +16,12 @@ LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudr
     ring_finger_pressure = std::vector<uint8_t>(72, 0);
     little_finger_pressure = std::vector<uint8_t>(72, 0);
 
-    // 启动接收线程
     receiveThread = std::thread(&LinkerHand::receiveResponse, this);
     
     bus.send({TOUCH_SENSOR_TYPE}, handId);
     bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
 }
 
-// 析构函数
 LinkerHand::~LinkerHand()
 {
     running = false;
@@ -34,13 +31,12 @@ LinkerHand::~LinkerHand()
     }
 }
 
-// 设置关节位置
 void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
 {
     if (jointAngles.size() == 7)
     { 
-        int JointEffort = 100; // 力度 0～255
-        int JointVelocity = 180; // 速度 0～255
+        int JointEffort = 100; // Effort 0～255
+        int JointVelocity = 180; // Velocity 0～255
 
         uint8_t send_data[8];
 
@@ -102,40 +98,24 @@ std::vector<double> LinkerHand::getCurrentStatusArc()
     return {};
 }
 
-// 获取版本号
 std::string LinkerHand::getVersion()
 {
-    bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, handId); // 发送获取版本号的命令
+    bus.send({FRAME_PROPERTY::LINKER_HAND_VERSION}, handId);
     
     std::stringstream ss;
 
     if (version.size() > 0) 
     {
-        // ss << "————————————————————————————————————" << std::endl;
-        // ss << "             版本信息" << std::endl;
-        // ss << "————————————————————————————————————" << std::endl;
-        // ss << "自由度       ：" << (int)version[1] << std::endl;
-        // ss << "机械手版本   ：" << (int)version[2] << std::endl;
-        // ss << "版本序号     ：" << (int)version[3] << std::endl;
-        // if (version[4] == 0x52) {
-        //     ss << "手方向       ：右手" << std::endl;
-        // } else if (version[4] == 0x4C) {
-        //     ss << "手方向       ：左手" << std::endl;
-        // }
-        // ss << "软件版本号   ：V" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
-        // ss << "硬件版本号   ：V" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
-        // ss << "————————————————————————————————————" << std::endl;
-
-        ss << "自由度：" << (int)version[1] << std::endl;
-        ss << "机械手版本：" << (int)version[2] << std::endl;
-        ss << "版本序号：" << (int)version[3] << std::endl;
+        ss << "freedom: " << (int)version[1] << std::endl;
+        ss << "Robot version: " << (int)version[2] << std::endl;
+        ss << "Version Number: " << (int)version[3] << std::endl;
         if (version[4] == 0x52) {
-            ss << "手方向：右手" << std::endl;
+            ss << "Hand direction: Right hand" << std::endl;
         } else if (version[4] == 0x4C) {
-            ss << "手方向：左手" << std::endl;
+            ss << "Hand direction: Left hand" << std::endl;
         }
-        ss << "软件版本号：v" << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
-        ss << "硬件版本号：v" << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
+        ss << "Software Version: " << ((int)(version[5] >> 4) + (int)(version[5] & 0x0F) / 10.0) << std::endl;
+        ss << "Hardware Version: " << ((int)(version[6] >> 4) + (int)(version[6] & 0x0F) / 10.0) << std::endl;
     }
 
     return ss.str();
@@ -152,7 +132,6 @@ void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
     }
 }
 
-// 设置关节速度
 void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 {
     if (speed.size() == 7) {
@@ -166,15 +145,12 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
     }
 }
 
-
-// 获取关节速度
 std::vector<uint8_t> LinkerHand::getSpeed()
 {
     bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
     return IHand::getSubVector(joint_speed);
 }
 
-// 获取所有压感数据
 std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 {
     std::vector<std::vector<uint8_t>> result_vec;
@@ -210,90 +186,75 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
     return result_vec;
 }
 
-
-// 获取五指法向压力
 std::vector<uint8_t> LinkerHand::getNormalForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId); // 发送请求法向力的命令
+    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId);
     return normal_force;
 }
 
-// 获取五指切向压力
 std::vector<uint8_t> LinkerHand::getTangentialForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId); // 发送请求切向力的命令
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId);
     return tangential_force;
 }
 
-// 获取五指切向方向
 std::vector<uint8_t> LinkerHand::getTangentialForceDir()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId); // 发送请求切向力方向的命令
+    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId);
     return tangential_force_dir;
 }
 
-// 获取五指接近感应
 std::vector<uint8_t> LinkerHand::getApproachInc()
 {
-    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId); // 发送请求接近度的命令
+    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId);
     return approach_inc;
 }
 
-// -----------------------------------------------------------------------
-
-// 获取当前扭矩
 std::vector<uint8_t> LinkerHand::getTorque()
 {
     bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
     return IHand::getSubVector(max_torque);
 }
 
-// 获取电机温度
 std::vector<uint8_t> LinkerHand::getTemperature()
 {
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE}, handId);
     return IHand::getSubVector(motorTemperature_1);
 }
 
-// 获取电机故障码
 std::vector<uint8_t> LinkerHand::getFaultCode()
 {
     bus.send({FRAME_PROPERTY::MOTOR_FAULT_CODE}, handId);
     return IHand::getSubVector(motorFaultCode_1);
 }
 
-// 获取大拇指压感数据
 std::vector<uint8_t> LinkerHand::getThumbForce()
 {
-    bus.send({FRAME_PROPERTY::THUMB_ALL_DATA}, handId); // 获取大拇指指尖传感器的所有数据
+    bus.send({FRAME_PROPERTY::THUMB_ALL_DATA}, handId);
     return thumb_pressure;
 }
 
-// 获取食指压感数据
 std::vector<uint8_t> LinkerHand::getIndexForce()
 {
-    bus.send({FRAME_PROPERTY::INDEX_FINGER_ALL_DATA}, handId); // 获取食指指尖传感器的所有数据
+    bus.send({FRAME_PROPERTY::INDEX_FINGER_ALL_DATA}, handId);
     return index_finger_pressure;
 }
 
-// 获取中指压感数据
 std::vector<uint8_t> LinkerHand::getMiddleForce()
 {
-    bus.send({FRAME_PROPERTY::MIDDLE_FINGER_ALL_DATA}, handId); // 获取中指指尖传感器的所有数据
+    bus.send({FRAME_PROPERTY::MIDDLE_FINGER_ALL_DATA}, handId);
     return middle_finger_pressure;
 }
 
-// 获取无名指压感数据
 std::vector<uint8_t> LinkerHand::getRingForce()
 {
-    bus.send({FRAME_PROPERTY::RING_FINGER_ALL_DATA}, handId); // 获取无名指指尖传感器的所有数据
+    bus.send({FRAME_PROPERTY::RING_FINGER_ALL_DATA}, handId);
     return ring_finger_pressure;
 }
 
-// 获取小拇指压感数据
 std::vector<uint8_t> LinkerHand::getLittleForce()
 {
-    bus.send({FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA}, handId); // 获取小拇指指尖传感器的所有数据
+    bus.send({FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA}, handId);
     return little_finger_pressure;
 }
 
@@ -346,52 +307,52 @@ void LinkerHand::receiveResponse()
             }
 
             switch(frame_property) {
-                case FRAME_PROPERTY::JOINT_POSITION: // 关节位置
+                case FRAME_PROPERTY::JOINT_POSITION:
                     joint_position = payload;
                     break;
-                case FRAME_PROPERTY::TORQUE_LIMIT: // 扭矩限制
+                case FRAME_PROPERTY::TORQUE_LIMIT:
                     max_torque = payload;
                     break;
-                case FRAME_PROPERTY::JOINT_SPEED: // 关节速度
+                case FRAME_PROPERTY::JOINT_SPEED:
                     joint_speed = payload;
                     break;
-                case FRAME_PROPERTY::THUMB_ALL_DATA: // 大拇指所有压力数据
+                case FRAME_PROPERTY::THUMB_ALL_DATA:
                     thumb_pressure = payload;
                     break;
-                case FRAME_PROPERTY::INDEX_FINGER_ALL_DATA: // 食指所有压力数据
+                case FRAME_PROPERTY::INDEX_FINGER_ALL_DATA:
                     index_finger_pressure = payload;
                     break;
-                case FRAME_PROPERTY::MIDDLE_FINGER_ALL_DATA: // 中指所有压力数据
+                case FRAME_PROPERTY::MIDDLE_FINGER_ALL_DATA:
                     middle_finger_pressure = payload;
                     break;
-                case FRAME_PROPERTY::RING_FINGER_ALL_DATA: // 无名指所有压力数据
+                case FRAME_PROPERTY::RING_FINGER_ALL_DATA:
                     ring_finger_pressure = payload;
                     break;
-                case FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA: // 小拇指所有压力数据
+                case FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA:
                     little_finger_pressure = payload;
                     break;
-                case FRAME_PROPERTY::HAND_NORMAL_FORCE: // 法向压力
+                case FRAME_PROPERTY::HAND_NORMAL_FORCE:
                     normal_force = payload;
                     break;
-                case FRAME_PROPERTY::HAND_TANGENTIAL_FORCE: // 切向压力
+                case FRAME_PROPERTY::HAND_TANGENTIAL_FORCE:
                     tangential_force = payload;
                     break;
-                case FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR: // 切向方向
+                case FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR:
                     tangential_force_dir = payload;
                     break;
-                case FRAME_PROPERTY::HAND_APPROACH_INC: // 接近感应
+                case FRAME_PROPERTY::HAND_APPROACH_INC:
                     approach_inc = payload;
                     break;
-                case FRAME_PROPERTY::LINKER_HAND_VERSION: // 版本号
+                case FRAME_PROPERTY::LINKER_HAND_VERSION:
                     version = payload;
                     break;
-                case FRAME_PROPERTY::MOTOR_TEMPERATURE: // 电机温度
+                case FRAME_PROPERTY::MOTOR_TEMPERATURE:
                     motorTemperature_1 = payload;
                     break;
-                case FRAME_PROPERTY::MOTOR_FAULT_CODE: // 电机故障码
+                case FRAME_PROPERTY::MOTOR_FAULT_CODE:
                     motorFaultCode_1 = payload;
                     break;
-                    case FRAME_PROPERTY::TOUCH_SENSOR_TYPE: // 传感器类型
+                    case FRAME_PROPERTY::TOUCH_SENSOR_TYPE:
                     if (payload.size() >= 2) {
                         if (payload[1] <= 0x03 && payload[1] >= 0x01) {
                             sensor_type = payload[1];
@@ -399,7 +360,7 @@ void LinkerHand::receiveResponse()
                     }
                     break;
                 default:
-                    std::cout << "L7 未知数据类型: " << std::hex << (int)frame_property << std::endl;
+                    if (RECV_DEBUG) std::cout << "L7 Unknown data type: " << std::hex << (int)frame_property << std::endl;
                     continue;
             }
         }
