@@ -136,6 +136,36 @@ void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
     // 指尖关节位置
     void setTip(const std::vector<uint8_t> &tip) override;
 #endif
+
+// 将 L25 的状态值转换为 CMD 格式的状态值
+std::vector<uint8_t> LinkerHand::state_to_cmd(const std::vector<uint8_t>& l25_state) {
+    // L25 CAN 默认接收 30 个数据，初始化 pose 为 25 个 0.0
+    std::vector<uint8_t> pose(25, 0.0);  // 原来控制 L25 的指令数据为 25 个
+
+    // 映射关系，字典中存储 l25_state 索引和 pose 索引之间的映射关系
+    std::map<int, int> mapping = {
+        {0, 10},  {1, 5},   {2, 0},   {3, 15}, {5, 20}, {7, 6},
+        {8, 1},   {9, 16},  {11, 21}, {13, 7}, {14, 2}, {15, 17}, {17, 22},
+        {19, 8},  {20, 3},  {21, 18}, {23, 23}, {25, 9}, {26, 4},
+        {27, 19}, {29, 24}
+    };
+
+    // 遍历映射字典，更新 pose 的值
+    for (const auto& pair : mapping) {
+        int l25_idx = pair.first;
+        int pose_idx = pair.second;
+
+        // 确保索引在有效范围内
+        if (l25_idx < l25_state.size() && pose_idx < pose.size()) {
+            pose[pose_idx] = l25_state[l25_idx];
+        }
+    }
+
+    std::cout << "state_to_cmd pose.size() : " << pose.size() << std::endl;
+
+    return pose;
+}
+
 // 获取当前关节状态
 std::vector<uint8_t> LinkerHand::getCurrentStatus()
 {
@@ -145,21 +175,10 @@ std::vector<uint8_t> LinkerHand::getCurrentStatus()
     bus.send({FRAME_PROPERTY::RING_POS}, handId);
     bus.send({FRAME_PROPERTY::LITTLE_POS}, handId);
 
+    std::vector<uint8_t> result_vec;
+
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> joint_position;
-
-    // std::vector<uint8_t> joint_position1_ = IHand::getSubVector(thumb_pos);
-    // std::vector<uint8_t> joint_position2_ = IHand::getSubVector(index_pos);
-    // std::vector<uint8_t> joint_position3_ = IHand::getSubVector(middle_pos);
-    // std::vector<uint8_t> joint_position4_ = IHand::getSubVector(ring_pos);
-    // std::vector<uint8_t> joint_position5_ = IHand::getSubVector(little_pos);
-
-    // joint_position.insert(joint_position.end(), joint_position1_.begin(), joint_position1_.end());
-    // joint_position.insert(joint_position.end(), joint_position2_.begin(), joint_position2_.end());
-    // joint_position.insert(joint_position.end(), joint_position3_.begin(), joint_position3_.end());
-    // joint_position.insert(joint_position.end(), joint_position4_.begin(), joint_position4_.end());
-    // joint_position.insert(joint_position.end(), joint_position5_.begin(), joint_position5_.end());
-
     if (thumb_pos.size() > 0 && index_pos.size() > 0 && middle_pos.size() > 0 && ring_pos.size() > 0 && little_pos.size() > 0)
     {
         joint_position.insert(joint_position.end(), thumb_pos.begin() + 1, thumb_pos.end());
@@ -169,7 +188,11 @@ std::vector<uint8_t> LinkerHand::getCurrentStatus()
         joint_position.insert(joint_position.end(), little_pos.begin() + 1, little_pos.end());
     }
 
-    return joint_position;
+    if (joint_position.size() == 30) {
+        result_vec = state_to_cmd(joint_position);
+    }
+
+    return result_vec;
 }
 
 std::vector<double> LinkerHand::getCurrentStatusArc()
@@ -180,9 +203,14 @@ std::vector<double> LinkerHand::getCurrentStatusArc()
     } else if (current_hand_type == 1) {// L21
         joints_num = 21;
     }
+
+    std::cout << "joints_num : " << joints_num << std::endl;
+
     if (handId == HAND_TYPE::LEFT) {
+        std::cout << "LEFT range_to_arc" << std::endl;
         return range_to_arc(joints_num, "left", getCurrentStatus());
     } else if (handId == HAND_TYPE::RIGHT) {
+        std::cout << "RIGHT range_to_arc" << std::endl;
         return range_to_arc(joints_num, "right", getCurrentStatus());
     }
     return {};
@@ -251,22 +279,12 @@ std::vector<uint8_t> LinkerHand::getSpeed()
     bus.send({FRAME_PROPERTY::RING_SPEED}, handId);
     bus.send({FRAME_PROPERTY::LITTLE_SPEED}, handId);
 
+    std::vector<uint8_t> result_vec;
+
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> joint_speed;
 
-    // std::vector<uint8_t> joint_speed1 = IHand::getSubVector(thumb_speed);
-    // std::vector<uint8_t> joint_speed2 = IHand::getSubVector(index_speed);
-    // std::vector<uint8_t> joint_speed3 = IHand::getSubVector(middle_speed);
-    // std::vector<uint8_t> joint_speed4 = IHand::getSubVector(ring_speed);
-    // std::vector<uint8_t> joint_speed5 = IHand::getSubVector(little_speed);
-
-    // joint_speed.insert(joint_speed.end(), joint_speed1.begin(), joint_speed1.end());
-    // joint_speed.insert(joint_speed.end(), joint_speed2.begin(), joint_speed2.end());
-    // joint_speed.insert(joint_speed.end(), joint_speed3.begin(), joint_speed3.end());
-    // joint_speed.insert(joint_speed.end(), joint_speed4.begin(), joint_speed4.end());
-    // joint_speed.insert(joint_speed.end(), joint_speed5.begin(), joint_speed5.end());
-    if (thumb_speed.size() > 0 && index_speed.size() > 0 && middle_speed.size() > 0 && ring_speed.size() > 0 && little_speed.size() > 0)
-    {
+    if (thumb_speed.size() > 0 && index_speed.size() > 0 && middle_speed.size() > 0 && ring_speed.size() > 0 && little_speed.size() > 0) {
         joint_speed.insert(joint_speed.end(), thumb_speed.begin() + 1, thumb_speed.end());
         joint_speed.insert(joint_speed.end(), index_speed.begin() + 1, index_speed.end());
         joint_speed.insert(joint_speed.end(), middle_speed.begin() + 1, middle_speed.end());
@@ -274,7 +292,11 @@ std::vector<uint8_t> LinkerHand::getSpeed()
         joint_speed.insert(joint_speed.end(), little_speed.begin() + 1, little_speed.end());
     }
 
-    return joint_speed;
+    if (joint_speed.size() == 30) {
+        result_vec = state_to_cmd(joint_speed);
+    }
+
+    return result_vec;
 }
 #if 0
     // 大拇指速度
@@ -338,20 +360,10 @@ std::vector<uint8_t> LinkerHand::getTorque()
     bus.send({FRAME_PROPERTY::RING_TORQUE}, handId);
     bus.send({FRAME_PROPERTY::LITTLE_TORQUE}, handId);
 
+    std::vector<uint8_t> result_vec;
+
     // 合成一个完整的关节位置数据
     std::vector<uint8_t> joint_torque;
-
-    // std::vector<uint8_t> joint_torque1 = IHand::getSubVector(thumb_torque);
-    // std::vector<uint8_t> joint_torque2 = IHand::getSubVector(index_torque);
-    // std::vector<uint8_t> joint_torque3 = IHand::getSubVector(middle_torque);
-    // std::vector<uint8_t> joint_torque4 = IHand::getSubVector(ring_torque);
-    // std::vector<uint8_t> joint_torque5 = IHand::getSubVector(little_torque);
-
-    // joint_torque.insert(joint_torque.end(), joint_torque1.begin(), joint_torque1.end());
-    // joint_torque.insert(joint_torque.end(), joint_torque2.begin(), joint_torque2.end());
-    // joint_torque.insert(joint_torque.end(), joint_torque3.begin(), joint_torque3.end());
-    // joint_torque.insert(joint_torque.end(), joint_torque4.begin(), joint_torque4.end());
-    // joint_torque.insert(joint_torque.end(), joint_torque5.begin(), joint_torque5.end());
 
     if (thumb_torque.size() > 0 && index_torque.size() > 0 && middle_torque.size() > 0 && ring_torque.size() > 0 && little_torque.size() > 0)
     {
@@ -362,7 +374,11 @@ std::vector<uint8_t> LinkerHand::getTorque()
         joint_torque.insert(joint_torque.end(), little_torque.begin() + 1, little_torque.end());
     }
 
-    return joint_torque;
+    if (joint_torque.size() == 30) {
+        result_vec = state_to_cmd(joint_torque);
+    }
+
+    return result_vec;
 }
 #if 0
     // 大拇指扭矩
@@ -590,8 +606,8 @@ std::string LinkerHand::getVersion()
     // getUID();
     getCommID();
 
-    std::cout << "handware_version size : " << hand_hardware_version.size() << std::endl;
-    std::cout << "hand_software_version size : " << hand_software_version.size() << std::endl;
+    // std::cout << "handware_version size : " << hand_hardware_version.size() << std::endl;
+    // std::cout << "hand_software_version size : " << hand_software_version.size() << std::endl;
 
     std::stringstream ss;
 
@@ -671,10 +687,9 @@ void LinkerHand::saveParameter()
                 auto data = bus.receive(handId);
                 if (data.size() <= 0) continue;
 
-				if (RECV_DEBUG)
-		        {
+				if (RECV_DEBUG) {
                     (current_hand_type == 0) ? std::cout << "L25-Recv: " : std::cout << "L21-Recv: ";
-                    for (auto &can : data) std::cout << std::hex << (int)can << " ";
+                    for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                     std::cout << std::endl;
 		        }
 
@@ -822,7 +837,7 @@ void LinkerHand::saveParameter()
                     hand_comm_id = payload;
                     break;
                 default:
-                    std::cout << "L25 未知数据类型: " << std::hex << (int)frame_property << std::endl;
+                    std::cout << "L25 未知数据类型: " << std::hex << (int)frame_property << std::dec << std::endl;
                     continue;
             }
         }

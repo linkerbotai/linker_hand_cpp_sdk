@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <condition_variable>
-
+#include <map>
 #include "IHand.h"
 #include "CanBus.h"
 
@@ -149,6 +149,8 @@ public:
     // 指尖关节位置
     void setTip(const std::vector<uint8_t> &tip) override;
     #endif
+
+    std::vector<uint8_t> state_to_cmd(const std::vector<uint8_t>& l25_state);
     // 获取当前关节状态
     std::vector<uint8_t> getCurrentStatus() override;
     std::vector<double> getCurrentStatusArc() override;

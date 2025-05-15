@@ -126,7 +126,7 @@ namespace Communication
     }
     #endif
 
-    void CanBus::send(const std::vector<uint8_t>& data, uint32_t can_id)
+    void CanBus::send(const std::vector<uint8_t>& data, uint32_t can_id, const bool wait)
     {
         std::lock_guard<std::mutex> lock(mutex); // 获取锁
 
@@ -152,7 +152,9 @@ namespace Communication
             exit(1);
             throw std::runtime_error("Failed to send CAN frame");
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+        // if (wait) std::this_thread::sleep_for(std::chrono::milliseconds(15));
+        if (wait) std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 
     std::vector<uint8_t> CanBus::receive(uint32_t& id)

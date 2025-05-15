@@ -101,6 +101,7 @@ std::vector<double> range_to_arc(const int &joints_type, const std::string &left
     }
     
     if (hand_range.size() != max_limits.size()) {
+        std::cerr << "Error: Invalid hand_range size." << std::endl;
         return {};
     }
     
