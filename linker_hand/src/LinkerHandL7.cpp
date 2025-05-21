@@ -8,7 +8,7 @@
 namespace LinkerHandL7
 {
 LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate)
-    : handId(handId), bus(canChannel, baudrate), running(true)
+    : handId(handId), bus(canChannel, baudrate, LINKER_HAND::L7), running(true)
 {
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -84,7 +84,7 @@ void LinkerHand::setJointPositionArc(const std::vector<double> &jointAngles)
 
 std::vector<uint8_t> LinkerHand::getCurrentStatus()
 {
-    bus.send({FRAME_PROPERTY::JOINT_POSITION}, handId);
+    // bus.send({FRAME_PROPERTY::JOINT_POSITION}, handId);
     return IHand::getSubVector(joint_position);
 }
 
@@ -270,7 +270,7 @@ void LinkerHand::receiveResponse()
             
             if (RECV_DEBUG)
             {
-                std::cout << "L7-Recv: ";
+                std::cout << "L7-Recv: " << getCurrentTime() << "  : " ;
                 for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }

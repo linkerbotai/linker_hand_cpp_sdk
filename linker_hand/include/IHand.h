@@ -5,22 +5,14 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <chrono>
+
 #include "RangeToArc.h"
+#include "LinkerHandType.h"
 
 #define RECV_DEBUG 0
-
-typedef enum {
-    L7,
-	L10,
-    L20,
-    L21,
-	L25
-} LINKER_HAND;
-
-typedef enum {
-    RIGHT = 0x27,
-    LEFT = 0x28
-} HAND_TYPE;
 
 class IHand
 {
@@ -188,6 +180,28 @@ public:
         if (vec2.size() > 0) result.insert(result.end(), vec2.begin() + 1, vec2.end());
         return result;
     }
+
+    virtual std::string getCurrentTime()
+    {
+        // 获取当前时间点
+        auto now = std::chrono::high_resolution_clock::now();
+    
+        // 使用std::put_time格式化时间点为字符串
+        std::time_t time = std::chrono::system_clock::to_time_t(now);
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+    
+        // 获取微秒部分并添加到字符串中
+        auto duration = now.time_since_epoch();
+        auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration % std::chrono::seconds(1)).count();
+        ss << "." << std::setfill('0') << std::setw(6) << microseconds;
+    
+        // 打印格式化的时间字符串
+        // std::cout << "Current time: " << ss.str() << std::endl;
+
+        return ss.str();
+    }
+
 protected:
     void printUnsupportedFeature(const std::string &featureName) const
     {

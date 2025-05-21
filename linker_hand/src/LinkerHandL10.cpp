@@ -8,7 +8,7 @@
 namespace LinkerHandL10
 {
 LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate)
-    : handId(handId), bus(canChannel, baudrate), running(true)
+    : handId(handId), bus(canChannel, baudrate, LINKER_HAND::L10), running(true)
 {
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -174,14 +174,14 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 
 std::vector<uint8_t> LinkerHand::getSpeed()
 {
-    bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
+    // bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
     return IHand::getSubVector(joint_speed);
 }
 
 std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 {
     std::vector<std::vector<uint8_t>> result_vec;
-    
+
     if (sensor_type == 0x02) { 
         bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
         bus.send({FRAME_PROPERTY::INDEX_TOUCH, 0xC6}, handId);
@@ -238,7 +238,7 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
 
 std::vector<uint8_t> LinkerHand::getTorque()
 {
-    bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
+    // bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
     return IHand::getSubVector(max_torque);
 }
 
@@ -308,9 +308,9 @@ void LinkerHand::receiveResponse()
             auto data = bus.receive(handId);
             if (data.size() <= 0) continue;
             
-            if (RECV_DEBUG)
+            if (1)
             {
-                std::cout << "L10-Recv: ";
+                std::cout << "L10-Recv: " << getCurrentTime() << "  : " ;
                 for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }

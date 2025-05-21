@@ -3,7 +3,7 @@
 namespace LinkerHandL20
 {
 
-LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate) : handId(handId), bus(canChannel, baudrate), running(true)
+LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate) : handId(handId), bus(canChannel, baudrate, LINKER_HAND::L20), running(true)
 {
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -290,7 +290,7 @@ void LinkerHand::receiveResponse()
             
             if (RECV_DEBUG)
             {
-                std::cout << "L20-Recv: ";
+                std::cout << "L20-Recv: " << getCurrentTime() << "  : " ;
                 for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }

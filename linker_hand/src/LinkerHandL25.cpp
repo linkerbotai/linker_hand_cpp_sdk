@@ -3,7 +3,7 @@
 namespace LinkerHandL25
 {
 
-LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), bus(canChannel, baudrate), running(true), current_hand_type(currentHandType)
+LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), bus(canChannel, baudrate, LINKER_HAND::L25), running(true), current_hand_type(currentHandType)
 {
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -151,7 +151,7 @@ std::vector<uint8_t> LinkerHand::getCurrentStatus()
 
     std::vector<uint8_t> result_vec;
     std::vector<uint8_t> joint_position;
-    if (thumb_pos.size() > 0 && index_pos.size() > 0 && middle_pos.size() > 0 && ring_pos.size() > 0 && little_pos.size() > 0)
+    if (thumb_pos.size() > 1 && index_pos.size() > 1 && middle_pos.size() > 1 && ring_pos.size() > 1 && little_pos.size() > 1)
     {
         joint_position.insert(joint_position.end(), thumb_pos.begin() + 1, thumb_pos.end());
         joint_position.insert(joint_position.end(), index_pos.begin() + 1, index_pos.end());
@@ -220,7 +220,7 @@ std::vector<uint8_t> LinkerHand::getSpeed()
     std::vector<uint8_t> result_vec;
     std::vector<uint8_t> joint_speed;
 
-    if (thumb_speed.size() > 0 && index_speed.size() > 0 && middle_speed.size() > 0 && ring_speed.size() > 0 && little_speed.size() > 0) {
+    if (thumb_speed.size() > 1 && index_speed.size() > 1 && middle_speed.size() > 1 && ring_speed.size() > 1 && little_speed.size() > 1) {
         joint_speed.insert(joint_speed.end(), thumb_speed.begin() + 1, thumb_speed.end());
         joint_speed.insert(joint_speed.end(), index_speed.begin() + 1, index_speed.end());
         joint_speed.insert(joint_speed.end(), middle_speed.begin() + 1, middle_speed.end());
@@ -271,7 +271,7 @@ std::vector<uint8_t> LinkerHand::getTorque()
     std::vector<uint8_t> result_vec;
     std::vector<uint8_t> joint_torque;
 
-    if (thumb_torque.size() > 0 && index_torque.size() > 0 && middle_torque.size() > 0 && ring_torque.size() > 0 && little_torque.size() > 0)
+    if (thumb_torque.size() > 1 && index_torque.size() > 1 && middle_torque.size() > 1 && ring_torque.size() > 1 && little_torque.size() > 1)
     {
         joint_torque.insert(joint_torque.end(), thumb_torque.begin() + 1, thumb_torque.end());
         joint_torque.insert(joint_torque.end(), index_torque.begin() + 1, index_torque.end());
@@ -283,7 +283,7 @@ std::vector<uint8_t> LinkerHand::getTorque()
     if (joint_torque.size() == 30) {
         result_vec = state_to_cmd(joint_torque);
     }
-
+    
     return result_vec;
 }
 
@@ -296,7 +296,7 @@ std::vector<uint8_t> LinkerHand::getFaultCode()
     bus.send({FRAME_PROPERTY::LITTLE_FAULT}, handId);
 
     std::vector<uint8_t> fault_code;
-    if (thumb_fault.size() > 0 && index_fault.size() > 0 && middle_fault.size() > 0 && ring_fault.size() > 0 && little_fault.size() > 0)
+    if (thumb_fault.size() > 1 && index_fault.size() > 1 && middle_fault.size() > 1 && ring_fault.size() > 1 && little_fault.size() > 1)
     {
         fault_code.insert(fault_code.end(), thumb_fault.begin() + 1, thumb_fault.end());
         fault_code.insert(fault_code.end(), index_fault.begin() + 1, index_fault.end());
@@ -316,7 +316,7 @@ std::vector<uint8_t> LinkerHand::getTemperature()
     bus.send({FRAME_PROPERTY::LITTLE_TEMPERATURE}, handId);
 
     std::vector<uint8_t> temperature;
-    if (thumb_temperature.size() > 0 && index_temperature.size() > 0 && middle_temperature.size() > 0 && ring_temperature.size() > 0 && little_temperature.size() > 0)
+    if (thumb_temperature.size() > 1 && index_temperature.size() > 1 && middle_temperature.size() > 1 && ring_temperature.size() > 1 && little_temperature.size() > 1)
     {
         temperature.insert(temperature.end(), thumb_temperature.begin() + 1, thumb_temperature.end());
         temperature.insert(temperature.end(), index_temperature.begin() + 1, index_temperature.end());
