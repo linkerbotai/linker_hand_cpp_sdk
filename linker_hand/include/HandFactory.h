@@ -7,29 +7,67 @@
 #include "LinkerHandL20.h"
 #include "LinkerHandL25.h"
 
+#include "ModbusLinkerHandL10.h"
+
 class HandFactory {
 public:
-    static std::unique_ptr<IHand> createHand(LINKER_HAND type, uint32_t handId, const std::string& canChannel, int baudrate) {
+    static std::unique_ptr<IHand> createHand(LINKER_HAND type, uint32_t handId, COMM_TYPE commType) {
 
         if (handId != HAND_TYPE::LEFT && handId != HAND_TYPE::RIGHT)
         {
             throw std::invalid_argument("Unsupported hand type");
         }
-        
-        switch (type) {
-            case LINKER_HAND::L7:
-                return std::make_unique<LinkerHandL7::LinkerHand>(handId, canChannel, baudrate);
-            case LINKER_HAND::L10:
-                return std::make_unique<LinkerHandL10::LinkerHand>(handId, canChannel, baudrate);
-            case LINKER_HAND::L20:
-                return std::make_unique<LinkerHandL20::LinkerHand>(handId, canChannel, baudrate);
-            case LINKER_HAND::L21:
-                return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate, 1);
-            case LINKER_HAND::L25:
-                return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate, 0);
-            default:
-                throw std::invalid_argument("Unknown hand type");
+
+        std::string canChannel;
+        int baudrate = 1000000;
+
+        switch (commType)
+        {
+        case COMM_TYPE::COMM_CAN_0:
+            canChannel = "can0";
+            break;
+        case COMM_TYPE::COMM_CAN_1:
+            canChannel = "can1";
+            break;
+        case COMM_TYPE::COMM_MODBUS:
+            canChannel = "modbus";
+            break;
+        default:
+            throw std::invalid_argument("Unknown comm type");
+            break;
         }
+
+        if (canChannel == "can0" || canChannel == "can1") {
+            switch (type) {
+                case LINKER_HAND::L7:
+                    return std::make_unique<LinkerHandL7::LinkerHand>(handId, canChannel, baudrate);
+                    break;
+                case LINKER_HAND::L10:
+                    return std::make_unique<LinkerHandL10::LinkerHand>(handId, canChannel, baudrate);
+                    break;
+                case LINKER_HAND::L20:
+                    return std::make_unique<LinkerHandL20::LinkerHand>(handId, canChannel, baudrate);
+                    break;
+                case LINKER_HAND::L21:
+                    return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate, 1);
+                    break;
+                case LINKER_HAND::L25:
+                    return std::make_unique<LinkerHandL25::LinkerHand>(handId, canChannel, baudrate, 0);
+                    break;
+                default:
+                    throw std::invalid_argument("Unknown hand type");
+            }
+        } else if (canChannel == "modbus") {
+            switch (type) {
+                case LINKER_HAND::L10:
+                    return std::make_unique<ModbusLinkerHandL10::LinkerHand>(handId);
+                default:
+                    throw std::invalid_argument("Unknown hand type");
+                    break;
+            }
+        }
+
+        return nullptr;
     }
 };
 

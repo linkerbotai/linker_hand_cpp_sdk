@@ -1,8 +1,8 @@
 #include "LinkerHandApi.h"
 
-LinkerHandApi::LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType) : handJoint_(handJoint), handType_(handType)
+LinkerHandApi::LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType, const COMM_TYPE commType) : handJoint_(handJoint), handType_(handType)
 {
-    hand = HandFactory::createHand(handJoint, handType, "can0", 1000000);
+    hand = HandFactory::createHand(handJoint, handType, commType);
 }
 
 LinkerHandApi::~LinkerHandApi()

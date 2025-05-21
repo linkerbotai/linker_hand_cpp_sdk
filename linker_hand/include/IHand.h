@@ -37,7 +37,11 @@ public:
         return {};
     }
     // 获取电机故障码
-    virtual std::vector<uint8_t> getFaultCode() = 0;
+    virtual std::vector<uint8_t> getFaultCode()
+    {
+        printUnsupportedFeature("getFaultCode");
+        return {};
+    }
     // 获取电机电流
     virtual std::vector<uint8_t> getCurrent()
     {
@@ -46,7 +50,11 @@ public:
     }
     // ------------------------------------------------------
     // 获取压感数据
-    virtual std::vector<std::vector<uint8_t>> getForce(const int type) = 0;
+    virtual std::vector<std::vector<uint8_t>> getForce(const int type)
+    {
+        printUnsupportedFeature("getForce");
+        return {};
+    }
     // 获取大拇指压感数据
     virtual std::vector<uint8_t> getThumbForce()
     {

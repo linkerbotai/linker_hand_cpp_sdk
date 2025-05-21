@@ -10,7 +10,7 @@
 class LinkerHandApi
 {
 public:
-	LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType);
+	LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType, const COMM_TYPE commType = COMM_CAN_0);
 	~LinkerHandApi();
 
 	// 设置关节位置
