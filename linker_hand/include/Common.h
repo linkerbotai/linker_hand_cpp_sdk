@@ -1,5 +1,5 @@
-#ifndef LINKER_HAND_TYPES_H
-#define LINKER_HAND_TYPES_H
+#ifndef COMMON_H
+#define COMMON_H
 
 enum LINKER_HAND {
     L7,
@@ -20,4 +20,8 @@ enum COMM_TYPE {
     COMM_MODBUS
 };
 
-#endif // LINKER_HAND_TYPES_H
+
+#define SEND_DEBUG 1
+#define RECV_DEBUG 1
+
+#endif // COMMON_H

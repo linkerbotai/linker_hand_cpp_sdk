@@ -25,9 +25,8 @@
 #include <sstream>
 #include <chrono>
 
-#include "LinkerHandType.h"
+#include "Common.h"
 
-#define SEND_DEBUG 0
 
 namespace Communication //Communicator
 {
@@ -39,12 +38,13 @@ namespace Communication //Communicator
         
         void send(const std::vector<uint8_t>& data, uint32_t can_id, const bool wait = false);
         // void send(const uint8_t send_data[8], const size_t size, uint32_t id);
-        std::vector<uint8_t> receive(uint32_t& id);
+        // std::vector<uint8_t> receive(uint32_t& id);
+        can_frame recv(uint32_t& id);
         
         void setReceiveTimeout(int seconds, int microseconds);
         void updateSendRate();
         void updateReceiveRate();
-        void printMillisecondTime();
+        std::string printMillisecondTime();
 
     private:
         int socket_fd;
@@ -70,3 +70,4 @@ namespace Communication //Communicator
 }
 
 #endif // CAN_BUS_H
+

@@ -284,13 +284,12 @@ void LinkerHand::receiveResponse()
     {
         try
         {
-            auto data = bus.receive(handId);
-            
+            auto frame = bus.recv(handId);
+            std::vector<uint8_t> data(frame.data, frame.data + frame.can_dlc);
             if (data.size() <= 0) continue;
             
-            if (RECV_DEBUG)
-            {
-                std::cout << "L20-Recv: " << getCurrentTime() << "  : " ;
+            if (RECV_DEBUG) {
+                std::cout << "# L20-Recv " << getCurrentTime() << " | can_id:" << std::hex << frame.can_id << std::dec << " can_dlc:" << (int)frame.can_dlc << " data:";
                 for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }
@@ -404,3 +403,4 @@ void LinkerHand::receiveResponse()
 }
 
 } // namespace LinkerHandL20
+

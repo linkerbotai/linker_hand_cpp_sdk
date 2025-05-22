@@ -30,9 +30,9 @@ LinkerHand-CPP-ROS2 是灵心巧手科技有限公司开发，基于 LinkerHand-
 
 针对以上话题的具体字段及其详细描述如下表所示：
 
-```bash
-$ ros2 topic echo /cb_left_hand_control_cmd
-```
+
+- 控制关节话题：ros2 topic echo /cb_left_hand_control_cmd
+
 ```bash
   header: 
     seq: 256
@@ -63,9 +63,8 @@ $ ros2 topic echo /cb_left_hand_control_cmd
 ---
 
 
-```bash
-$ ros2 topic echo /cb_left_hand_info
-```
+- 灵巧手信息话题：ros2 topic echo /cb_left_hand_info
+
 ```bash
 data: 'Hand direction: Left hand
 
@@ -76,6 +75,20 @@ data: 'Hand direction: Left hand
   Temperature: 47 49 40 41 0 39 0 46 42 0 0 39 0 49...'
 ```
 
+- 关节反馈话题 ros2 topic echo /cb_left_hand_state
+
+```bash
+  header: 
+    seq: 256
+    stamp: 
+      secs: 1744343699
+      nsecs: 232647418
+    frame_id: ''
+  name: []
+  position: [155.0, 162.0, 176.0, 125.0, 255.0, 255.0, 180.0, 179.0, 181.0, 68.0]
+  velocity: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+```
 
 <!-- 
 <table>

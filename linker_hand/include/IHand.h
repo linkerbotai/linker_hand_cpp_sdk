@@ -10,9 +10,7 @@
 #include <chrono>
 
 #include "RangeToArc.h"
-#include "LinkerHandType.h"
-
-#define RECV_DEBUG 0
+#include "Common.h"
 
 class IHand
 {
@@ -52,6 +50,7 @@ public:
     // 获取压感数据
     virtual std::vector<std::vector<uint8_t>> getForce(const int type)
     {
+        (void)type;
         printUnsupportedFeature("getForce");
         return {};
     }
@@ -202,10 +201,14 @@ public:
         // 获取微秒部分并添加到字符串中
         auto duration = now.time_since_epoch();
         auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration % std::chrono::seconds(1)).count();
-        ss << "." << std::setfill('0') << std::setw(6) << microseconds;
-    
+        // 只保留毫秒部分
+        int milliseconds = microseconds / 1000;
+        ss << "." << std::setfill('0') << std::setw(3) << milliseconds;
+        // 微妙
+        // ss << "." << std::setfill('0') << std::setw(6) << microseconds;
+
         // 打印格式化的时间字符串
-        // std::cout << "Current time: " << ss.str() << std::endl;
+        // std::cout << "send time: " << ss.str() << std::endl;
 
         return ss.str();
     }
@@ -222,3 +225,4 @@ protected:
     }
 };
 #endif // I_HAND_H
+

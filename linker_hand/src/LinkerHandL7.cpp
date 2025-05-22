@@ -147,8 +147,14 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 
 std::vector<uint8_t> LinkerHand::getSpeed()
 {
-    bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
+    // bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
     return IHand::getSubVector(joint_speed);
+}
+
+std::vector<uint8_t> LinkerHand::getTorque()
+{
+    // bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
+    return IHand::getSubVector(max_torque);
 }
 
 std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
@@ -210,12 +216,6 @@ std::vector<uint8_t> LinkerHand::getApproachInc()
     return approach_inc;
 }
 
-std::vector<uint8_t> LinkerHand::getTorque()
-{
-    bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
-    return IHand::getSubVector(max_torque);
-}
-
 std::vector<uint8_t> LinkerHand::getTemperature()
 {
     bus.send({FRAME_PROPERTY::MOTOR_TEMPERATURE}, handId);
@@ -264,13 +264,12 @@ void LinkerHand::receiveResponse()
     {
         try
         {
-            auto data = bus.receive(handId);
-            
+            auto frame = bus.recv(handId);
+            std::vector<uint8_t> data(frame.data, frame.data + frame.can_dlc);
             if (data.size() <= 0) continue;
             
-            if (RECV_DEBUG)
-            {
-                std::cout << "L7-Recv: " << getCurrentTime() << "  : " ;
+            if (RECV_DEBUG) {
+                std::cout << "# L7-Recv " << getCurrentTime() << " | can_id:" << std::hex << frame.can_id << std::dec << " can_dlc:" << (int)frame.can_dlc << " data:";
                 for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }
@@ -371,3 +370,4 @@ void LinkerHand::receiveResponse()
     }
 }
 }
+

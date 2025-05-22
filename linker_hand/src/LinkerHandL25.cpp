@@ -3,7 +3,7 @@
 namespace LinkerHandL25
 {
 
-LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), bus(canChannel, baudrate, LINKER_HAND::L25), running(true), current_hand_type(currentHandType)
+LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), bus(canChannel, baudrate, currentHandType == 0 ? LINKER_HAND::L25 : LINKER_HAND::L21), running(true), current_hand_type(currentHandType)
 {
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -498,14 +498,15 @@ void LinkerHand::receiveResponse()
     {
         try
         {
-            auto data = bus.receive(handId);
-            if (data.size() <= 0)
-                continue;
-
+            auto frame = bus.recv(handId);
+            std::vector<uint8_t> data(frame.data, frame.data + frame.can_dlc);
+            if (data.size() <= 0) continue;
+            
             if (RECV_DEBUG) {
-                (current_hand_type == 0) ? std::cout << "L25-Recv: " : std::cout << "L21-Recv: ";
-                for (auto &can : data)
-                    std::cout << std::hex << (int)can << std::dec << " ";
+                static std::string hand_str;
+                (current_hand_type == 0) ? hand_str = "L25" : hand_str = "L21";
+                std::cout << "# " << hand_str << "-Recv " << getCurrentTime() << " | can_id:" << std::hex << frame.can_id << std::dec << " can_dlc:" << (int)frame.can_dlc << " data:";
+                for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
                 std::cout << std::endl;
             }
 
@@ -665,3 +666,4 @@ void LinkerHand::receiveResponse()
 }
 
 } // namespace LinkerHandL25
+

@@ -1,99 +1,132 @@
 # LinkerHand-CPP-SDK
 
 ## 概述
-LinkerHand-CPP-SDK 是灵心巧手科技有限公司开发，用于L7、L10、L20型号灵巧手的驱动软件和功能示例源码。
+LinkerHand-CPP-SDK 是由灵心巧手（北京）科技有限公司开发，用于L7、L10、L20、L21、L25型号灵巧手的驱动软件和Demo示例。
+
 
 ## 安装
-#### 依赖环境
-    sudo apt-get install yaml-cpp
 
-#### 启动脚本
+- 下载SDK
+
+    ```bash
+    git clone https://github.com/linkerbotai/linker_hand_cpp_sdk.git
+    ```
+
+- 启动脚本
+    ```bash
     cd linker_hand_cpp_sdk/linker_hand
     ./script.sh
+    ```
     
-![alt text](linker_hand/img/script.png)
-#### 运行示例
+    ![alt text](linker_hand/img/script.png)
+- 运行示例
+    ```bash
     cd build
     ./linker_hand_example
+    ```
 
-![alt text](linker_hand/img/example.png)
+    ![alt text](linker_hand/img/example.png)
 
 ## 快速开始
 
-创建main.cpp文件，并添加以下代码：
-```cpp
-// main.cpp
-#include "LinkerHandApi.h"
+- 创建main.cpp文件，并添加以下代码：
 
-int main() {
-    
-    // 调用API接口
-    LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
+    ```cpp
+    // main.cpp
+    #include "LinkerHandApi.h"
 
-    // 获取版本信息
-    std::cout << hand.getVersion() << std::endl;
+    int main() {
+        
+        // 调用API接口
+        LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
 
-    // 握拳
-    std::vector<uint8_t> fist_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
-    hand.fingerMove(fist_pose);
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+        // 获取版本信息
+        std::cout << hand.getVersion() << std::endl;
 
-    // 张开
-    std::vector<uint8_t> open_pose = {255, 104, 255, 255, 255, 255, 255, 255, 255, 71};
-    hand.fingerMove(open_pose);
-	std::this_thread::sleep_for(std::chrono::seconds(1));
-	
-    return 0;
-}
-```
-创建CMakeLists.txt文件，并添加以下配置：
-```cmake
-# CMakeLists.txt
-cmake_minimum_required(VERSION 3.5)
-project(MyProject)
+        // 握拳
+        std::vector<uint8_t> fist_pose = {101, 60, 0, 0, 0, 0, 255, 255, 255, 51};
+        hand.fingerMove(fist_pose);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 
-# 包含目录
-include_directories(/usr/local/linker_hand_cpp_sdk/include)
+        // 张开
+        std::vector<uint8_t> open_pose = {255, 104, 255, 255, 255, 255, 255, 255, 255, 71};
+        hand.fingerMove(open_pose);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        
+        return 0;
+    }
+    ```
+- 创建CMakeLists.txt文件，并添加以下配置：
+    ```cmake
+    # CMakeLists.txt
+    cmake_minimum_required(VERSION 3.5)
+    project(MyProject)
 
-# 查找 liblinker_hand_lib.a 库
-find_library(LINKER_HAND_LIB
-    NAMES linker_hand_lib
-    PATHS /usr/local/linker_hand_cpp_sdk/lib
-    NO_DEFAULT_PATH
-)
+    # 包含目录
+    include_directories(/usr/local/linker_hand_cpp_sdk/include)
 
-# 检查是否找到库
-if(NOT LINKER_HAND_LIB)
-    message(FATAL_ERROR "liblinker_hand_lib.a not found!")
-else()
-    message(STATUS "liblinker_hand_lib.a found at ${LINKER_HAND_LIB}")
-endif()
+    # 查找 liblinker_hand_lib.a 库
+    find_library(LINKER_HAND_LIB
+        NAMES linker_hand_lib
+        PATHS /usr/local/linker_hand_cpp_sdk/lib
+        NO_DEFAULT_PATH
+    )
 
-# 添加可执行文件
-add_executable(my_project main.cpp)
+    # 检查是否找到库
+    if(NOT LINKER_HAND_LIB)
+        message(FATAL_ERROR "liblinker_hand_lib.a not found!")
+    else()
+        message(STATUS "liblinker_hand_lib.a found at ${LINKER_HAND_LIB}")
+    endif()
 
-# 链接库
-target_link_libraries(my_project ${LINKER_HAND_LIB} pthread)
-```
+    # 添加可执行文件
+    add_executable(my_project main.cpp)
 
-#### 文件结构
-```
-├── example
-│   ├── CMakeLists.txt
-│   └── main.cpp
-```
-#### 编译
+    # 链接库
+    target_link_libraries(my_project ${LINKER_HAND_LIB} pthread)
+    ```
+
+- 文件结构
+    ```
+    ├── example
+    │   ├── CMakeLists.txt
+    │   └── main.cpp
+    ```
+- 编译
+    ```bash
     cd example
     mkdir build
     cd build
     cmake ..
     make
-#### 运行
+    ```
+- 运行
+    ```bash
     ./my_project
+    ```
 
+- position与手指关节对照表
 
+    ```
+    L7:  ["大拇指弯曲", "大拇指横摆","食指弯曲", "中指弯曲", "无名指弯曲","小拇指弯曲","拇指旋转"]
+
+    L10: ["拇指根部", "拇指侧摆","食指根部", "中指根部", "无名指根部","小指根部","食指侧摆","无名指侧摆","小指侧摆","拇指旋转"]
+
+    L20: ["拇指根部", "食指根部", "中指根部", "无名指根部","小指根部","拇指侧摆","食指侧摆","中指侧摆","无名指侧摆","小指侧摆","拇指横摆","预留","预留","预留","预留","拇指尖部","食指末端","中指末端","无名指末端","小指末端"]
+    
+    L21: ["大拇指根部", "食指根部", "中指根部","无名指根部","小拇指根部","大拇指侧摆","食指侧摆","中指侧摆","无名指侧摆","小拇指侧摆","大拇指横滚","预留","预留","预留","预留","大拇指中部","预留","预留","预留","预留","大拇指指尖","食指指尖","中指指尖","无名指指尖","小拇指指尖"]
+
+    L25: ["大拇指根部", "食指根部", "中指根部","无名指根部","小拇指根部","大拇指侧摆","食指侧摆","中指侧摆","无名指侧摆","小拇指侧摆","大拇指横滚","预留","预留","预留","预留","大拇指中部","食指中部","中指中部","无名指中部","小拇指中部","大拇指指尖","食指指尖","中指指尖","无名指指尖","小拇指指尖"]
+    ```
+
+## 示例
+
+| 序号 | 文件名称 | 描述 |
+| :--- | :--- | :--- |
+| 1 | Examples | 示例集合（支持L7、L10、L20、L21、L25灵巧手） |
+| 2 | ModbusRTU | 仅支持L10型号灵巧手（四代睿尔曼臂） |
 
 ## API文档
-[C++ API文档](linker_hand/docs/API-Reference.md)
+- [C++ API文档](linker_hand/docs/API-Reference.md)
 
 ## 版本更新

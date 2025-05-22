@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <sstream>
 #include "rm_service.h"
-#include "LinkerHandType.h"
+#include "Common.h"
 #include "ICommunication.h"
 
 namespace Communication //Communicator

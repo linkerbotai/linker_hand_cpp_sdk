@@ -102,7 +102,7 @@ namespace Communication
         close(socket_fd);
     }
 
-    void CanBus::printMillisecondTime() {
+    std::string CanBus::printMillisecondTime() {
         // 获取当前时间点
         auto now = std::chrono::high_resolution_clock::now();
     
@@ -114,10 +114,15 @@ namespace Communication
         // 获取微秒部分并添加到字符串中
         auto duration = now.time_since_epoch();
         auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration % std::chrono::seconds(1)).count();
-        ss << "." << std::setfill('0') << std::setw(6) << microseconds;
-    
+        // 只保留毫秒部分
+        int milliseconds = microseconds / 1000;
+        ss << "." << std::setfill('0') << std::setw(3) << milliseconds;
+        // 微妙
+        // ss << "." << std::setfill('0') << std::setw(6) << microseconds;
+
         // 打印格式化的时间字符串
-        std::cout << "Current time: " << ss.str() << std::endl;
+        // std::cout << "send time: " << ss.str() << std::endl;
+        return ss.str();
     }
 
     void CanBus::send(const std::vector<uint8_t>& data, uint32_t can_id, const bool wait)
@@ -125,7 +130,19 @@ namespace Communication
         std::unique_lock<std::mutex> lock(mutex_send); // 使用 unique_lock 替代 lock_guard
 
         if (SEND_DEBUG) {
-            std::cout << "\033[1;32m# Send\033[0m can_id:" << std::hex << can_id << " can_dlc:" << data.size() << " data:";
+            static std::string hand_str;
+            if (linker_hand == LINKER_HAND::L7) {
+                hand_str = "L7";
+            } else if (linker_hand == LINKER_HAND::L10) {
+                hand_str = "L10";
+            } else if (linker_hand == LINKER_HAND::L20) {
+                hand_str = "L20";
+            } else if (linker_hand == LINKER_HAND::L21) {
+                hand_str = "L21";
+            } else if (linker_hand == LINKER_HAND::L25) {
+                hand_str = "L25";
+            }
+            std::cout << "\033[1;32m# " << hand_str << "-Send\033[0m " << printMillisecondTime() << " | can_id:" << std::hex << can_id << std::dec << " can_dlc:" << data.size() << " data:";
             for (auto &can : data) std::cout << std::hex << (int)can << std::dec << " ";
             std::cout << std::endl;
         }
@@ -138,12 +155,12 @@ namespace Communication
         if (write(socket_fd, &frame, sizeof(frame)) != sizeof(frame))
         {
             std::cout << "Failed to send CAN frame" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            if (write(socket_fd, &frame, sizeof(frame)) != sizeof(frame)) {
-                close(socket_fd);
-                system("sudo /usr/sbin/ip link set can0 down");
-                throw std::runtime_error("Failed to send CAN frame");
-            }
+            // std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // if (write(socket_fd, &frame, sizeof(frame)) != sizeof(frame)) {
+            //     close(socket_fd);
+            //     system("sudo /usr/sbin/ip link set can0 down");
+            //     throw std::runtime_error("Failed to send CAN frame");
+            // }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
 
@@ -182,10 +199,19 @@ namespace Communication
         // 提前解锁
         lock.unlock();
 
-        if (linker_hand == LINKER_HAND::L10) {
+        if (linker_hand == LINKER_HAND::L10 || linker_hand == LINKER_HAND::L7) {
             // 压感
             if (data[0] >= 0xb1 && data[0] <= 0xb6) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(25)); // 获取每个指头的压感数据最少25毫秒等待，完整指令需要125毫秒，新压感的频率最高是8hz
+                std::this_thread::sleep_for(std::chrono::milliseconds(40)); // 获取每个指头的压感数据最少25毫秒等待，完整指令需要125毫秒，新压感的频率最高是8hz
+            }
+
+            // 扭矩
+            if (data[0] == 0x02) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(2));
+            }
+            // 速度
+            if (data[0] == 0x05) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(2));
             }
         }
 
@@ -198,32 +224,45 @@ namespace Communication
             }
             // 扭矩
             if (data[0] >= 0x51 && data[0] <= 0x55) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(2));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             // 速度
             if (data[0] >= 0x49 && data[0] <= 0x4D) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(2));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             // 获取位置
             if (data[0] >= 0x41 && data[0] <= 0x45) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(2));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         }
     }
 
-    std::vector<uint8_t> CanBus::receive(uint32_t& id)
+    // std::vector<uint8_t> CanBus::receive(uint32_t& id)
+    // {
+    //     struct can_frame frame;
+    //     if (read(socket_fd, &frame, sizeof(frame)) != sizeof(frame))
+    //     {
+    //         throw std::runtime_error("Failed to receive CAN frame");
+    //     }
+
+	// 	if(frame.can_id == id) {
+	// 		// std::cout << id << "==" << frame.can_id << std::endl;
+	// 		return std::vector<uint8_t>(frame.data, frame.data + frame.can_dlc);
+	// 	}
+	// 	return {};
+    // }
+
+    can_frame CanBus::recv(uint32_t& id)
     {
         struct can_frame frame;
-        if (read(socket_fd, &frame, sizeof(frame)) != sizeof(frame))
-        {
+        if (read(socket_fd, &frame, sizeof(frame)) != sizeof(frame)) {
             throw std::runtime_error("Failed to receive CAN frame");
         }
 
 		if(frame.can_id == id) {
-			// std::cout << id << "==" << frame.can_id << std::endl;
-			return std::vector<uint8_t>(frame.data, frame.data + frame.can_dlc);
+			return frame;
 		}
-		return {};
+		return frame;
     }
 
     void CanBus::updateSendRate() {
@@ -268,3 +307,4 @@ namespace Communication
         }
     }
 }
+
