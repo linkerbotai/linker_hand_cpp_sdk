@@ -25,12 +25,6 @@ find_package(sensor_msgs REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 # ----------------------------------------------------------------------
-# 包含目录
-include_directories(
-  /usr/local/linker_hand_cpp_sdk/include
-  include
-)
-
 # 查找 liblinker_hand_lib.a 库
 find_library(LINKER_HAND_LIB
     NAMES linker_hand_lib
@@ -44,7 +38,34 @@ if(NOT LINKER_HAND_LIB)
 else()
     message(STATUS "liblinker_hand_lib.a found at ${LINKER_HAND_LIB}")
 endif()
+
+# 包含目录
+include_directories(
+  /usr/local/linker_hand_cpp_sdk/include
+  include
+)
 # ----------------------------------------------------------------------
+# 查找 RMAN_API_LIB 库
+find_library(RMAN_API_LIB
+    NAMES api_cpp
+    PATHS /usr/local/linker_hand_cpp_sdk/third_party/Robotic_Arm/lib
+    NO_DEFAULT_PATH
+)
+
+# 检查是否找到库
+if(NOT RMAN_API_LIB)
+    message(FATAL_ERROR "libapi_cpp.so not found!")
+else()
+    message(STATUS "libapi_cpp.a found at ${RMAN_API_LIB}")
+endif()
+
+# 包含目录
+include_directories(
+  /usr/local/linker_hand_cpp_sdk/third_party/Robotic_Arm/include
+)
+# ----------------------------------------------------------------------
+
+
 
 add_executable(linker_hand_node src/linker_hand_node.cpp)
 target_include_directories(linker_hand_node PUBLIC
@@ -53,7 +74,7 @@ target_include_directories(linker_hand_node PUBLIC
 ament_target_dependencies(linker_hand_node rclcpp std_msgs sensor_msgs)
 
 # 链接库
-target_link_libraries(linker_hand_node ${LINKER_HAND_LIB} pthread yaml-cpp)
+target_link_libraries(linker_hand_node ${LINKER_HAND_LIB} ${RMAN_API_LIB} pthread yaml-cpp)
 
 install(TARGETS linker_hand_node
   DESTINATION lib/${PROJECT_NAME})
@@ -65,6 +86,11 @@ install(TARGETS linker_hand_node
 # install(FILES config/setting.yaml
 #   DESTINATION config
 # )
+
+set_target_properties(linker_hand_node PROPERTIES
+    INSTALL_RPATH "/usr/local/linker_hand_cpp_sdk/third_party/Robotic_Arm/lib"
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

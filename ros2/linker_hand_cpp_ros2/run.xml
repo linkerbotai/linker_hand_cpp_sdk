@@ -5,27 +5,55 @@
 
   <!-- 左手配置 -->
   <arg name="LEFT_HAND_EXISTS" default="true" description="是否存在左手"/>
-  <arg name="LEFT_TOUCH" default="false" description="是否有压力传感器"/>
-  <arg name="LEFT_JOINT" default="L10" description="左手关节数 L7 \ L10 \ L20 \ L25"/>
+  <arg name="LEFT_TOUCH" default="true" description="是否有压力传感器"/>
+  <arg name="LEFT_JOINTS" default="L10" description="左手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
 
   <!-- 右手配置 -->
-  <arg name="RIGHT_HAND_EXISTS" default="true" description="是否存在右手"/>
-  <arg name="RIGHT_TOUCH" default="false" description="是否有压力传感器"/>
-  <arg name="RIGHT_JOINT" default="L10" description="右手关节数 L7 \ L10 \ L20 \ L25"/>
+  <arg name="RIGHT_HAND_EXISTS" default="false" description="是否存在右手"/>
+  <arg name="RIGHT_TOUCH" default="true" description="是否有压力传感器"/>
+  <arg name="RIGHT_JOINTS" default="L10" description="右手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
 
   <!-- 通用配置 -->
-  <arg name="HAND_SPEED" default="50" description="手部运动速度 0 ~ 255"/>
+  <arg name="HAND_SPEED" default="100" description="关节速度 0 ~ 255"/>
+  <arg name="HAND_EFFORT" default="200" description="关节扭矩 0 ~ 255"/>
+
+
 
   <!-- 节点启动 -->
-  <node pkg="linker_hand_cpp_ros2" exec="linker_hand_node" name="linker_hand_node" output="screen">
+  <node pkg="linker_hand_cpp_ros2" exec="linker_hand_node" name="linker_hand_left_node" output="screen">
     <!-- 参数传递 -->
-    <param name="VERSION" value="$(var VERSION)"/>
-    <param name="LEFT_HAND_EXISTS" value="$(var LEFT_HAND_EXISTS)"/>
-    <param name="LEFT_TOUCH" value="$(var LEFT_TOUCH)"/>
-    <param name="LEFT_JOINT" value="$(var LEFT_JOINT)"/>
-    <param name="RIGHT_HAND_EXISTS" value="$(var RIGHT_HAND_EXISTS)"/>
-    <param name="RIGHT_TOUCH" value="$(var RIGHT_TOUCH)"/>
-    <param name="RIGHT_JOINT" value="$(var RIGHT_JOINT)"/>
+    <param name="HAND_TYPE" value="0"/>
+    <param name="HAND_EXISTS" value="$(var LEFT_HAND_EXISTS)"/>
+    <param name="HAND_TOUCH" value="$(var LEFT_TOUCH)"/>
+    <param name="HAND_JOINTS" value="$(var LEFT_JOINTS)"/>
     <param name="HAND_SPEED" value="$(var HAND_SPEED)"/>
+    <param name="HAND_EFFORT" value="$(var HAND_EFFORT)"/>
+    <param name="VERSION" value="$(var VERSION)"/>
+    <!-- 左手话题命名 -->
+    <param name="HAND_SETTING_TOPIC" value="/left_hand_settings"/>
+    <param name="HAND_CONTROL_TOPIC" value="/left_hand_control"/>
+    <param name="HAND_STATE_TOPIC" value="/left_hand_state"/>
+    <param name="HAND_TOUCH_TOPIC" value="/left_hand_touch"/>
+    <param name="HAND_INFO_TOPIC" value="/left_hand_info"/>
   </node>
+
+
+  <!-- 节点启动 -->
+  <node pkg="linker_hand_cpp_ros2" exec="linker_hand_node" name="linker_hand_right_node" output="screen">
+    <!-- 参数传递 -->
+    <param name="HAND_TYPE" value="1"/>
+    <param name="HAND_EXISTS" value="$(var RIGHT_HAND_EXISTS)"/>
+    <param name="HAND_TOUCH" value="$(var RIGHT_TOUCH)"/>
+    <param name="HAND_JOINTS" value="$(var RIGHT_JOINTS)"/>
+    <param name="HAND_SPEED" value="$(var HAND_SPEED)"/>
+    <param name="HAND_EFFORT" value="$(var HAND_EFFORT)"/>
+    <param name="VERSION" value="$(var VERSION)"/>
+    <!-- 左手话题命名 -->
+    <param name="HAND_SETTING_TOPIC" value="/right_hand_settings"/>
+    <param name="HAND_CONTROL_TOPIC" value="/right_hand_control"/>
+    <param name="HAND_STATE_TOPIC" value="/right_hand_state"/>
+    <param name="HAND_TOUCH_TOPIC" value="/right_hand_touch"/>
+    <param name="HAND_INFO_TOPIC" value="/right_hand_info"/>
+  </node>
+  
 </launch>
