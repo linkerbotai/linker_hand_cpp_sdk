@@ -32,44 +32,7 @@ LinkerHand-CPP-ROS2 是灵心巧手科技有限公司开发，基于 LinkerHand-
   <arg name="HAND_SPEED" default="100" description="关节速度 0 ~ 255"/>
   <arg name="HAND_EFFORT" default="200" description="关节扭矩 0 ~ 255"/>
 
-
-
-  <!-- 节点启动 -->
-  <node pkg="linker_hand_cpp_ros2" exec="linker_hand_node" name="linker_hand_left_node" output="screen">
-    <!-- 参数传递 -->
-    <param name="HAND_TYPE" value="0"/>
-    <param name="HAND_EXISTS" value="$(var LEFT_HAND_EXISTS)"/>
-    <param name="HAND_TOUCH" value="$(var LEFT_TOUCH)"/>
-    <param name="HAND_JOINTS" value="$(var LEFT_JOINTS)"/>
-    <param name="HAND_SPEED" value="$(var HAND_SPEED)"/>
-    <param name="HAND_EFFORT" value="$(var HAND_EFFORT)"/>
-    <param name="VERSION" value="$(var VERSION)"/>
-    <!-- 左手话题命名 -->
-    <param name="HAND_SETTING_TOPIC" value="/left_hand_settings"/>
-    <param name="HAND_CONTROL_TOPIC" value="/left_hand_control"/>
-    <param name="HAND_STATE_TOPIC" value="/left_hand_state"/>
-    <param name="HAND_TOUCH_TOPIC" value="/left_hand_touch"/>
-    <param name="HAND_INFO_TOPIC" value="/left_hand_info"/>
-  </node>
-
-
-  <!-- 节点启动 -->
-  <node pkg="linker_hand_cpp_ros2" exec="linker_hand_node" name="linker_hand_right_node" output="screen">
-    <!-- 参数传递 -->
-    <param name="HAND_TYPE" value="1"/>
-    <param name="HAND_EXISTS" value="$(var RIGHT_HAND_EXISTS)"/>
-    <param name="HAND_TOUCH" value="$(var RIGHT_TOUCH)"/>
-    <param name="HAND_JOINTS" value="$(var RIGHT_JOINTS)"/>
-    <param name="HAND_SPEED" value="$(var HAND_SPEED)"/>
-    <param name="HAND_EFFORT" value="$(var HAND_EFFORT)"/>
-    <param name="VERSION" value="$(var VERSION)"/>
-    <!-- 左手话题命名 -->
-    <param name="HAND_SETTING_TOPIC" value="/right_hand_settings"/>
-    <param name="HAND_CONTROL_TOPIC" value="/right_hand_control"/>
-    <param name="HAND_STATE_TOPIC" value="/right_hand_state"/>
-    <param name="HAND_TOUCH_TOPIC" value="/right_hand_touch"/>
-    <param name="HAND_INFO_TOPIC" value="/right_hand_info"/>
-  </node>
+  ......
   
 </launch>
 ```
