@@ -21,7 +21,7 @@ enum COMM_TYPE {
 };
 
 
-#define SEND_DEBUG 1
-#define RECV_DEBUG 1
+#define SEND_DEBUG 0
+#define RECV_DEBUG 0
 
 #endif // COMMON_H
