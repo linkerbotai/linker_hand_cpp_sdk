@@ -44,12 +44,14 @@ ModBus::~ModBus()
 
 void ModBus::send(const std::vector<uint8_t>& data, uint32_t &id, const int &start_address, const int &num) 
 {
-   writeHoldingRegister(id, start_address, num, data);
+    std::unique_lock<std::mutex> lock(send_mutex);
+    writeHoldingRegister(id, start_address, num, data);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 }
 
 std::vector<uint8_t> ModBus::recv(uint32_t& id, const int &start_address, const int &num)
 {
-   return readHoldingRegister(id, start_address, num);
+    return readHoldingRegister(id, start_address, num);
 }
 
 bool ModBus::writeHoldingRegister(const int &id, const int &start_address, const int &num, const std::vector<uint8_t> &data) {

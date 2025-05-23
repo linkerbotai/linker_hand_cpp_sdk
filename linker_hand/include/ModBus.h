@@ -44,6 +44,8 @@ namespace Communication //Communicator
         int result = -1;
         rm_robot_handle *robot_handle;
         RM_Service robotic_arm;
+
+        std::mutex send_mutex;
     };
 }
 
