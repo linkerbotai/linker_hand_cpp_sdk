@@ -7,7 +7,30 @@
 
 This document provides a detailed overview of the C++ API for the Linker Hand, including functions for controlling the hand's movements, retrieving sensor data, and setting operational parameters.
 
-## Public API
+## 构造函数
+```cpp
+LinkerHandApi(const LINKER_HAND &handJoint, const HAND_TYPE &handType, const COMM_TYPE commType = COMM_CAN_0);
+```
+描述
+LinkerHandApi 类的构造函数，用于初始化 Linker 机械手 API。
+
+参数
+- handJoint：指定机械手的型号（如 LINKER_HAND::L7、LINKER_HAND::L10 等）
+- handType：指定机械手的类型（如 HAND_TYPE::LEFT、HAND_TYPE::RIGHT）
+- commType：指定通信类型 (如 COMM_CAN_0、COMM_CAN_1、COMM_MODBUS)，默认值为 COMM_CAN_0
+
+```cpp
+#include "LinkerHandApi.h"
+
+int main() {
+
+    LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::LEFT);
+
+    return 0;
+}
+```
+
+## 成员函数
 
 ### 设置关节位置
 ```cpp
