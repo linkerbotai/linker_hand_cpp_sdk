@@ -183,8 +183,8 @@ public:
     virtual std::vector<uint8_t> getSubVector(const std::vector<uint8_t>& vec1, const std::vector<uint8_t>& vec2)
     {
         std::vector<uint8_t> result;
-        if (vec1.size() > 0) result.insert(result.end(), vec1.begin() + 1, vec1.end());
-        if (vec2.size() > 0) result.insert(result.end(), vec2.begin() + 1, vec2.end());
+        if (vec1.size() > 1) result.insert(result.end(), vec1.begin() + 1, vec1.end());
+        if (vec2.size() > 1) result.insert(result.end(), vec2.begin() + 1, vec2.end());
         return result;
     }
 

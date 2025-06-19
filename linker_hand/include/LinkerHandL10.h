@@ -18,9 +18,11 @@ typedef enum
 {									  
 	// INVALID_FRAME_PROPERTY = 0x00,	// 无效的can帧属性
     JOINT_POSITION_RCO = 0x01,			// 关节1-6的关节位置
-    TORQUE_LIMIT = 0x02,				// 五根手指的转矩限制		
+    TORQUE_LIMIT = 0x02,				// 五根手指的转矩限制
+    TORQUE_LIMIT_2 = 0x03,				// 五根手指的转矩限制2
     JOINT_POSITION2_RCO = 0x04,			// 关节7-10的关节位置
     JOINT_SPEED = 0x05,					// 五根手指的速度
+    JOINT_SPEED_2 = 0x06,				// 五根手指的速度2
     REQUEST_DATA_RETURN = 0x09,			// 获取所有关节位置和压力
     // JOINT_POSITION_N = 0x11,
     // MAX_PRESS_N = 0x12,
@@ -119,6 +121,7 @@ private:
 	std::vector<uint8_t> joint_position;
 	std::vector<uint8_t> joint_position2;
 	std::vector<uint8_t> joint_speed;
+    std::vector<uint8_t> joint_speed_2;
 
 	std::vector<uint8_t> normal_force;
     std::vector<uint8_t> tangential_force;
@@ -133,6 +136,7 @@ private:
 
 	// 最大扭矩
     std::vector<uint8_t> max_torque;
+    std::vector<uint8_t> max_torque_2;
 
 	// 电机温度
     std::vector<uint8_t> motorTemperature_1;

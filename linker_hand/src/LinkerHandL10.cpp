@@ -148,11 +148,31 @@ std::string LinkerHand::getVersion()
 
 void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
 {
+    std::vector<uint8_t> result;
     if (torque.size() == 5) {
-        std::vector<uint8_t> result = {FRAME_PROPERTY::TORQUE_LIMIT};
+        result = {FRAME_PROPERTY::TORQUE_LIMIT};
         result.insert(result.end(), torque.begin(), torque.end());
+        max_torque = result;
 
         bus.send(result, handId);
+    } else if (torque.size() == 10) {
+        result = {FRAME_PROPERTY::TORQUE_LIMIT};
+        result.insert(result.end(), torque.begin(), torque.end() - 5);
+        bus.send(result, handId);
+        max_torque = result;
+        // std::cout << "result_1:" << std::endl;
+        // for (int i = 0; i < result.size(); i++) {
+        //     std::cout << std::hex << (int)result[i] << std::dec << std::endl;
+        // }
+
+        result = {FRAME_PROPERTY::TORQUE_LIMIT_2};
+        result.insert(result.end(), torque.begin() + 5, torque.end());
+        bus.send(result, handId);
+        max_torque_2 = result;
+        // std::cout << "result_2:" << std::endl;
+        // for (int i = 0; i < result.size(); i++) {
+        //     std::cout << std::hex << (int)result[i] << std::dec << std::endl;
+        // }
     } else {
         std::cout << "Torque size is not 5" << std::endl;
     }
@@ -160,13 +180,24 @@ void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
 
 void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 {
-    if (speed.size() == 5)
-    {
-        std::vector<uint8_t> result = {FRAME_PROPERTY::JOINT_SPEED};
+    std::vector<uint8_t> result;
+    if (speed.size() == 5) {
+        result = {FRAME_PROPERTY::JOINT_SPEED};
         result.insert(result.end(), speed.begin(), speed.end());
 
         joint_speed = result;
         bus.send(result, handId);
+    } else if (speed.size() == 10) {
+        result = {FRAME_PROPERTY::JOINT_SPEED};
+        result.insert(result.end(), speed.begin(), speed.end() - 5);
+        bus.send(result, handId);
+        joint_speed = result;
+
+        result = {FRAME_PROPERTY::JOINT_SPEED_2};
+        result.insert(result.end(), speed.begin() + 5, speed.end());
+        bus.send(result, handId);
+        joint_speed_2 = result;
+        
     } else {
         std::cout << "Joint speed size is not 5" << std::endl;
     }
@@ -175,13 +206,15 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 std::vector<uint8_t> LinkerHand::getSpeed()
 {
     // bus.send({FRAME_PROPERTY::JOINT_SPEED}, handId);
-    return IHand::getSubVector(joint_speed);
+    // bus.send({FRAME_PROPERTY::JOINT_SPEED_2}, handId);
+    return IHand::getSubVector(joint_speed, joint_speed_2);
 }
 
 std::vector<uint8_t> LinkerHand::getTorque()
 {
     // bus.send({FRAME_PROPERTY::TORQUE_LIMIT}, handId);
-    return IHand::getSubVector(max_torque);
+    // bus.send({FRAME_PROPERTY::TORQUE_LIMIT_2}, handId);
+    return IHand::getSubVector(max_torque, max_torque_2);
 }
 
 std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
@@ -353,11 +386,17 @@ void LinkerHand::receiveResponse()
                 case FRAME_PROPERTY::TORQUE_LIMIT:
                     max_torque = payload;
                     break;
+                case FRAME_PROPERTY::TORQUE_LIMIT_2:
+                    max_torque_2 = payload;
+                    break;
                 case FRAME_PROPERTY::JOINT_POSITION2_RCO:
                     joint_position2 = payload;
                     break;
                 case FRAME_PROPERTY::JOINT_SPEED:
                     joint_speed = payload;
+                    break;
+                case FRAME_PROPERTY::JOINT_SPEED_2:
+                    joint_speed_2 = payload;
                     break;
                 case FRAME_PROPERTY::THUMB_ALL_DATA:
                     thumb_pressure = payload;

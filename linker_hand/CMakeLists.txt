@@ -44,6 +44,11 @@ add_executable(linker_hand_example examples/Examples.cpp)
 # 链接库
 target_link_libraries(linker_hand_example linker_hand_lib pthread yaml-cpp)
 
+# 添加可执行文件
+add_executable(test examples/test.cpp)
+# 链接库
+target_link_libraries(test linker_hand_lib pthread yaml-cpp)
+
 # 安装规则
 install(TARGETS linker_hand_lib
     DESTINATION linker_hand_cpp_sdk/lib
