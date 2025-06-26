@@ -25,6 +25,8 @@
 
 using namespace std::chrono_literals;
 
+static std::string can_channel;
+
 std::string bytesToHex(const std::vector<uint8_t> &bytes)
 {
     std::string hexStr;
@@ -63,6 +65,7 @@ public:
         this->declare_parameter<std::string>("HAND_JOINTS", "L7");
         this->declare_parameter<int>("HAND_SPEED", 50);
         this->declare_parameter<int>("HAND_EFFORT", 200);
+        this->declare_parameter<std::string>("CAN_CHANNEL", "can0");
 
         this->declare_parameter<std::string>("HAND_SETTING_TOPIC", "/cb_hand_setting_cmd");
         this->declare_parameter<std::string>("HAND_CONTROL_TOPIC", "/cb_hand_control_cmd");
@@ -84,6 +87,7 @@ public:
         this->get_parameter("HAND_JOINTS", hand_joints);
         this->get_parameter("HAND_SPEED", hand_speed);
         this->get_parameter("HAND_EFFORT", hand_effort);
+        this->get_parameter("CAN_CHANNEL", can_channel);
 
         // std::cout << "LinkerHand SDK version: " << version << std::endl;
         std::cout << (hand_type == 0 ? "LEFT_HAND" : "RIGHT_HAND") << "  HAND_EXISTS:" << hand_exists << "  HAND_JOINTS:" << hand_joints << "  HAND_TOUCH:" << hand_touch << std::endl;
@@ -99,13 +103,17 @@ public:
             {"L25", LINKER_HAND::L25}
         };
 
+	COMM_TYPE channel;
+
+	(can_channel == "can0") ? channel = COMM_TYPE::COMM_CAN_0 : channel = COMM_TYPE::COMM_CAN_1;
+
         if (hand_exists) {
             auto it = linker_hand_map.find(hand_joints);
             if (it != linker_hand_map.end()) {
                 if (hand_type == 0) {
-                    hand_api = std::make_unique<LinkerHandApi>(it->second, HAND_TYPE::LEFT);
+                    hand_api = std::make_unique<LinkerHandApi>(it->second, HAND_TYPE::LEFT, channel);
                 } else if (hand_type == 1) {
-                    hand_api = std::make_unique<LinkerHandApi>(it->second, HAND_TYPE::RIGHT);
+                    hand_api = std::make_unique<LinkerHandApi>(it->second, HAND_TYPE::RIGHT, channel);
                 } else {
                     std::cout << "Invalid hand_type: " << hand_type << std::endl;
                 }
@@ -404,10 +412,10 @@ private:
 // signal
 void signalHandler(int signal) {
     if (signal == SIGINT) {
-        std::string command = "sudo ip link set can0 down"; // stop can0 interface
-        int result = system(command.c_str());
+        // stop can channel
+        int result = system(std::string("sudo ip link set " + can_channel + " down").c_str());
         if (result == 0) {
-            std::cout << "CAN interface stopped successfully." << std::endl;
+            std::cout << ((can_channel == "can0") ? "CAN0" : "CAN1") <<" interface stopped successfully." << std::endl;
         }
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Ctrl+C detected. Shutting down...");

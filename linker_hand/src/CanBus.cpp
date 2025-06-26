@@ -51,7 +51,7 @@ namespace Communication
         socket_fd = socket(PF_CAN, SOCK_RAW, CAN_RAW); // 打开套接字
         
         struct ifreq ifr = {0};
-        strcpy(ifr.ifr_name, "can0");            // 绑定 socket 到 can0 接口
+        strcpy(ifr.ifr_name, interface.c_str());            // 绑定 socket 到 can0 接口
         ioctl(socket_fd, SIOCGIFINDEX, &ifr); // 获取接口索引
 
         // 设置 CAN 接口的波特率, 替代命令行命令 sudo ip link set can0 up type can bitrate 1000000
@@ -67,19 +67,14 @@ namespace Communication
         //     return false;
         // }
         
-        std::string command = "sudo ip link set can0 down"; // 停止
-        int result = system(command.c_str());                                      // 使用 system 函数执行命令
-        
-        command = "sudo ip link set can0 up type can bitrate 1000000"; // 构造命令字符串
-        result = system(command.c_str());                                      // 使用 system 函数执行命令
-        if (result == 0)
-        {
-            std::cout << "CAN interface configured successfully." << std::endl;
-        }
-        else
-        {
+        // 停止
+        int result = system(std::string("sudo ip link set "+ interface +" down").c_str());
+
+        result = system(std::string("sudo ip link set " + interface + " up type can bitrate " + std::to_string(bitrate)).c_str());
+        if (result == 0) {
+            std::cout << ((interface == "can0") ? "CAN0" : "CAN1") << " interface configured successfully." << std::endl;
+        } else {
             std::cerr << "Failed to configure CAN interface." << std::endl;
-            
         }
 
         struct sockaddr_can addr;
@@ -89,14 +84,13 @@ namespace Communication
         {
             std::cerr << "Error in socket bind." << std::endl;
             close(socket_fd);
-            // return false;
         }
     }
 
     CanBus::~CanBus()
     {
-    	std::string command = "sudo ip link set can0 down"; // 停止CAN接口
-        int result = system(command.c_str());
+    	// 停止CAN接口
+        int result = system(std::string("sudo ip link set " + interface + " down").c_str());
     
         // 关闭 CAN 套接字
         close(socket_fd);
@@ -166,7 +160,7 @@ namespace Communication
 
         // updateSendRate();
 
-        #if 0
+        #if 1
         // 提前解锁
         lock.unlock();
 

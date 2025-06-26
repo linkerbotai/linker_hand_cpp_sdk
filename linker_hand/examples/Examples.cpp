@@ -37,11 +37,18 @@ const std::string REVERSE = "\033[7m";
 // 用于标记程序是否应该退出
 std::atomic<bool> running(true);
 
+COMM_TYPE channel;
+
 void exit()
 {
     std::cout << "Exit the program ..." << std::endl;
     running = false;
-    system("sudo /usr/sbin/ip link set can0 down");
+    std::string can_channel;
+    
+    if (channel == COMM_TYPE::COMM_CAN_0) can_channel = "can0";
+    if (channel == COMM_TYPE::COMM_CAN_1) can_channel = "can1";
+    
+    system(std::string("sudo /usr/sbin/ip link set " + can_channel + " down").c_str());
     exit(0);
 }
 
@@ -432,9 +439,41 @@ int main()
         }
         break;
     }
+    
+    while (true)
+    {
+        std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
+        std::cout << GREEN << "Run Choose CANBus:\n" << RESET;
+        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        std::cout << BLUE << "[1]: CAN0\n" << RESET;
+        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        std::cout << BLUE << "[2]: CAN1\n" << RESET;
+        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        std::cout << RED << "[0]: Exit\n" << RESET;
+        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        std::cout << GREEN << "Please enter options: " << RESET;
+        std::cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            channel = COMM_TYPE::COMM_CAN_0;
+            break;
+        case 2:
+            channel = COMM_TYPE::COMM_CAN_1;
+            break;
+        case 0:
+            exit();
+            break;
+        default:
+            std::cout << "Invalid option, please re-enter!\n";
+            continue;
+        }
+        break;
+    }
 
     // 调用API接口
-    LinkerHandApi hand(linkerhand, handType);
+    LinkerHandApi hand(linkerhand, handType, channel);
     // LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
 
     std::cout << "——————————————————————————————————————————————" << std::endl;
