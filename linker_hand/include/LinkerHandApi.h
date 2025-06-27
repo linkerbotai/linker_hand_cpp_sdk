@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-
 #include "HandFactory.h"
 
 class LinkerHandApi

@@ -1,20 +1,44 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(LinkerHandCppSDK)
-
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# 查找库
-find_library(RMAN_API_LIB NAMES api_cpp PATHS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/Robotic_Arm/lib")
+if(WIN32)
+    message(STATUS "Detected Windows system")
+    set(SYSTEM_ARCH "Windows")
+elseif(UNIX AND NOT APPLE)
+    message(STATUS "Detected Unix/Linux system")
+    set(SYSTEM_ARCH "Unix")
+elseif(APPLE)
+    message(STATUS "Detected macOS system")
+    set(SYSTEM_ARCH "macOS")
+else()
+    message(WARNING "Unknown system architecture")
+    set(SYSTEM_ARCH "Unknown")
+endif()
 
+if(WIN32)
+find_library(PCAN_API_LIB NAMES PCANBasic PATHS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/PCAN_Basic/x64/VC_LIB")
+if(NOT PCAN_API_LIB)
+    message(FATAL_ERROR "PCANBasic library not found")
+else()
+    message(STATUS "PCAN_API_LIB: ${PCAN_API_LIB}")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/third_party/PCAN_Basic/Include")
+endif()
+endif()
+
+# 查找库
+if(WIN32)
+    find_library(RMAN_API_LIB NAMES api_cpp PATHS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/Robotic_Arm/windows/win_mingw64_c++_v1.1.0")
+elseif(UNIX AND NOT APPLE)
+    find_library(RMAN_API_LIB NAMES api_cpp PATHS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/Robotic_Arm/linux/lib")
+endif()
 if(NOT RMAN_API_LIB)
     message(FATAL_ERROR "api_cpp library not found")
 else()
     message(STATUS "RMAN_API_LIB: ${RMAN_API_LIB}")
-    
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/third_party/Robotic_Arm/include")
-
 endif()
 
 # 包含目录
@@ -27,7 +51,11 @@ file(GLOB LINKER_HAND_SOURCES "src/*.cpp")
 
 # 静态库
 add_library(linker_hand_lib STATIC ${LINKER_HAND_SOURCES})
-target_link_libraries(linker_hand_lib ${RMAN_API_LIB})
+if(WIN32)
+target_link_libraries(linker_hand_lib ${RMAN_API_LIB} ${PCAN_API_LIB})
+else()
+    target_link_libraries(linker_hand_lib ${RMAN_API_LIB})
+endif()
 
 # 动态库
 # add_library(linker_hand_lib_shared SHARED ${LINKER_HAND_SOURCES})
@@ -36,18 +64,18 @@ target_link_libraries(linker_hand_lib ${RMAN_API_LIB})
 # 添加可执行文件
 add_executable(Demo_ModbusRTU examples/Demo_ModbusRTU.cpp)
 # 链接库
-target_link_libraries(Demo_ModbusRTU linker_hand_lib pthread yaml-cpp ${RMAN_API_LIB})
+target_link_libraries(Demo_ModbusRTU linker_hand_lib pthread ${RMAN_API_LIB})
 
 
 # 添加可执行文件
 add_executable(linker_hand_example examples/Examples.cpp)
 # 链接库
-target_link_libraries(linker_hand_example linker_hand_lib pthread yaml-cpp)
+target_link_libraries(linker_hand_example linker_hand_lib pthread)
 
 # 添加可执行文件
 add_executable(test examples/test.cpp)
 # 链接库
-target_link_libraries(test linker_hand_lib pthread yaml-cpp)
+target_link_libraries(test linker_hand_lib pthread)
 
 # 安装规则
 install(TARGETS linker_hand_lib

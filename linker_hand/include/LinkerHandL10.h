@@ -6,10 +6,11 @@
 #include <queue>
 #include <iostream>
 #include <sstream>
+#include <chrono>
 #include <condition_variable>
 
 #include "IHand.h"
-#include "CanBus.h"
+#include "CanBusFactory.h"
 
 namespace LinkerHandL10
 {
@@ -58,7 +59,7 @@ public:
     ~LinkerHand();
 
 	// 设置关节位置
-    void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+    void setJointPositions(const std::vector<uint8_t> &jointAngles) override;
     void setJointPositionArc(const std::vector<double> &jointAngles) override;
 	// 设置最大扭矩
 	void setTorque(const std::vector<uint8_t> &torque) override;
@@ -106,7 +107,7 @@ public:
 
 private:
     uint32_t handId;
-    Communication::CanBus bus;
+    std::unique_ptr<Communication::ICanBus> bus;
     std::thread receiveThread;
     bool running;
     std::mutex responseMutex;

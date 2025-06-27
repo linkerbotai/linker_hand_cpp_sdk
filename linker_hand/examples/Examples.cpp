@@ -39,6 +39,32 @@ std::atomic<bool> running(true);
 
 COMM_TYPE channel;
 
+// 封装函数
+void printColorLine2() {
+#ifdef _WIN32
+    std::cout << YELLOW << "----------------------------------------------\n" << RESET;
+#else
+    std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
+#endif
+}
+
+void printColorLine1() {
+#ifdef _WIN32
+    std::cout << YELLOW << "-------------------------\n" << RESET;
+#else
+    std::cout << YELLOW << "—————————————————————————\n" << RESET;
+#endif
+}
+
+void printNoColorLine() {
+#ifdef _WIN32
+    std::cout << "----------------------------------------------" << std::endl;
+#else
+    std::cout << "——————————————————————————————————————————————" << std::endl;
+#endif
+}
+
+
 void exit()
 {
     std::cout << "Exit the program ..." << std::endl;
@@ -156,7 +182,7 @@ void interactiveMode(LinkerHandApi &hand)
     {
         // std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
         std::cout << GREEN << "Run Choose Task:\n" << RESET;
-        std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
+        printColorLine2();
         std::cout << BLUE << " 1. Obtain version information\n" << RESET;
         std::cout << BLUE << " 2. Obtain temperature\n" << RESET;
         std::cout << BLUE << " 3. Obtain fault codes\n" << RESET;
@@ -169,12 +195,12 @@ void interactiveMode(LinkerHandApi &hand)
         std::cout << BLUE << "10. Loop to obtain the current finger joint status 10 times\n" << RESET;
         std::cout << BLUE << "11. Execute preset actions\n" << RESET;
         std::cout << RED << "0. Exit\n" << RESET;
-        std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
+        printColorLine2();
         std::cout << GREEN << "Please enter options: " << RESET;
         std::cin >> choice;
 
         if (choice != 1)
-            std::cout << "——————————————————————————————————————————————" << std::endl;
+            printNoColorLine();
 
         std::string pose_str;
         int arr[7];
@@ -349,7 +375,7 @@ void interactiveMode(LinkerHandApi &hand)
             std::cout << "Invalid option, please re-enter!\n";
         }
         if (choice != 1)
-            std::cout << "——————————————————————————————————————————————" << std::endl;
+            printNoColorLine();
     }
 }
 
@@ -358,25 +384,25 @@ int main()
     std::cout << YELLOW << "=========================\n" << RESET;
     std::cout << YELLOW << "        Example\n" << RESET;
     std::cout << YELLOW << "=========================\n" << RESET;
-
+    
     int choice;
     LINKER_HAND linkerhand;
     while (true)
     {
         std::cout << GREEN << "\nRun Choose LinkerHand:\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[1]: L7\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[2]: L10\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[3]: L20\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[4]: L21\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[5]: L25\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << RED << "[0]: Exit\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << GREEN << "Please enter options: " << RESET;
         std::cin >> choice;
         
@@ -410,15 +436,15 @@ int main()
     HAND_TYPE handType;
     while (true)
     {
-        std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
+        printColorLine2();
         std::cout << GREEN << "Run Choose Hand Direction:\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[1]: Left Hand\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[2]: Right Hand\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << RED << "[0]: Exit\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << GREEN << "Please enter options: " << RESET;
         std::cin >> choice;
 
@@ -442,15 +468,15 @@ int main()
     
     while (true)
     {
-        std::cout << YELLOW << "——————————————————————————————————————————————\n" << RESET;
+        printColorLine2();
         std::cout << GREEN << "Run Choose CANBus:\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[1]: CAN0\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << BLUE << "[2]: CAN1\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << RED << "[0]: Exit\n" << RESET;
-        std::cout << YELLOW << "—————————————————————————\n" << RESET;
+        printColorLine1();
         std::cout << GREEN << "Please enter options: " << RESET;
         std::cin >> choice;
 
@@ -476,7 +502,7 @@ int main()
     LinkerHandApi hand(linkerhand, handType, channel);
     // LinkerHandApi hand(LINKER_HAND::L10, HAND_TYPE::RIGHT);
 
-    std::cout << "——————————————————————————————————————————————" << std::endl;
+    printNoColorLine();
     // 启动交互模式
     interactiveMode(hand);
 

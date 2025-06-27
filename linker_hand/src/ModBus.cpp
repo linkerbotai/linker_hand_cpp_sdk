@@ -1,13 +1,9 @@
 #include "ModBus.h"
 
-
 namespace Communication
 {
-
 ModBus::ModBus(uint32_t handId): handId(handId)
 {
-    
-    
     // robotic_arm.rm_set_log_call_back(custom_api_log, 3);
     result = robotic_arm.rm_init(RM_TRIPLE_MODE_E);
     if (result != 0) {
@@ -93,6 +89,5 @@ std::vector<uint8_t> ModBus::readHoldingRegister(const int &id, const int &start
 	}
 	return data;
 }
-
 
 }

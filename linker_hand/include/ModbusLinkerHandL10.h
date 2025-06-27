@@ -22,7 +22,7 @@ public:
     ~LinkerHand();
 
 	// 设置关节位置
-    void setJointPositions(const std::vector<u_int8_t> &jointAngles) override;
+    void setJointPositions(const std::vector<uint8_t> &jointAngles) override;
     void setJointPositionArc(const std::vector<double> &jointAngles) override;
 	// 设置最大扭矩
 	void setTorque(const std::vector<uint8_t> &torque) override;

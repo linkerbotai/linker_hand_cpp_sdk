@@ -11,7 +11,7 @@ LinkerHand::~LinkerHand() {
 
 }
 
-void LinkerHand::setJointPositions(const std::vector<u_int8_t> &data) {
+void LinkerHand::setJointPositions(const std::vector<uint8_t> &data) {
 	if(data.size() == 10) {
 		bus.send(data, handId, 0, 10);
 	} else {

@@ -2,9 +2,10 @@
 
 namespace LinkerHandL25
 {
-
-LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), bus(canChannel, baudrate, currentHandType == 0 ? LINKER_HAND::L25 : LINKER_HAND::L21), running(true), current_hand_type(currentHandType)
+LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate, const int currentHandType) : handId(handId), running(true), current_hand_type(currentHandType)
 {
+    bus = Communication::CanBusFactory::createCanBus(canChannel, baudrate, currentHandType == 0 ? LINKER_HAND::L25 : LINKER_HAND::L21);
+
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
     middle_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -13,8 +14,8 @@ LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudr
 
     receiveThread = std::thread(&LinkerHand::receiveResponse, this);
     
-    bus.send({TOUCH_SENSOR_TYPE}, handId);
-    bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
+    bus->send({TOUCH_SENSOR_TYPE}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
 }
 
 LinkerHand::~LinkerHand()
@@ -26,7 +27,7 @@ LinkerHand::~LinkerHand()
     }
 }
 
-void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
+void LinkerHand::setJointPositions(const std::vector<uint8_t> &jointAngles)
 {
     if (jointAngles.size() == 25)
     {
@@ -86,7 +87,7 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
                     joint_position.insert(joint_position.begin(), FRAME_PROPERTY::LITTLE_POS);
                     break;
             }
-            bus.send(joint_position, handId);
+            bus->send(joint_position, handId);
             i += 6;
 
             // for (auto &item : joint_position)
@@ -143,11 +144,11 @@ std::vector<uint8_t> LinkerHand::state_to_cmd(const std::vector<uint8_t>& l25_st
 
 std::vector<uint8_t> LinkerHand::getCurrentStatus()
 {
-    bus.send({FRAME_PROPERTY::THUMB_POS}, handId);
-    bus.send({FRAME_PROPERTY::INDEX_POS}, handId);
-    bus.send({FRAME_PROPERTY::MIDDLE_POS}, handId);
-    bus.send({FRAME_PROPERTY::RING_POS}, handId);
-    bus.send({FRAME_PROPERTY::LITTLE_POS}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_POS}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_POS}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_POS}, handId);
+    bus->send({FRAME_PROPERTY::RING_POS}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_POS}, handId);
 
     std::vector<uint8_t> result_vec;
     std::vector<uint8_t> joint_position;
@@ -199,11 +200,11 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
         joint_speed4.insert(joint_speed4.begin(), FRAME_PROPERTY::RING_SPEED);
         joint_speed5.insert(joint_speed5.begin(), FRAME_PROPERTY::LITTLE_SPEED);
 
-        bus.send(joint_speed1, handId);
-        bus.send(joint_speed2, handId);
-        bus.send(joint_speed3, handId);
-        bus.send(joint_speed4, handId);
-        bus.send(joint_speed5, handId);
+        bus->send(joint_speed1, handId);
+        bus->send(joint_speed2, handId);
+        bus->send(joint_speed3, handId);
+        bus->send(joint_speed4, handId);
+        bus->send(joint_speed5, handId);
     } else {
         std::cout << "Joint speed size is not 25" << std::endl;
     }
@@ -211,11 +212,11 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 
 std::vector<uint8_t> LinkerHand::getSpeed() 
 {
-    bus.send({FRAME_PROPERTY::THUMB_SPEED}, handId);
-    bus.send({FRAME_PROPERTY::INDEX_SPEED}, handId);
-    bus.send({FRAME_PROPERTY::MIDDLE_SPEED}, handId);
-    bus.send({FRAME_PROPERTY::RING_SPEED}, handId);
-    bus.send({FRAME_PROPERTY::LITTLE_SPEED}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_SPEED}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_SPEED}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_SPEED}, handId);
+    bus->send({FRAME_PROPERTY::RING_SPEED}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_SPEED}, handId);
 
     std::vector<uint8_t> result_vec;
     std::vector<uint8_t> joint_speed;
@@ -250,11 +251,11 @@ void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
         joint_torque4.insert(joint_torque4.begin(), FRAME_PROPERTY::RING_TORQUE);
         joint_torque5.insert(joint_torque5.begin(), FRAME_PROPERTY::LITTLE_TORQUE);
 
-        bus.send(joint_torque1, handId);
-        bus.send(joint_torque2, handId);
-        bus.send(joint_torque3, handId);
-        bus.send(joint_torque4, handId);
-        bus.send(joint_torque5, handId);
+        bus->send(joint_torque1, handId);
+        bus->send(joint_torque2, handId);
+        bus->send(joint_torque3, handId);
+        bus->send(joint_torque4, handId);
+        bus->send(joint_torque5, handId);
     } else {
         std::cout << "Joint torque size is not 25" << std::endl;
     }
@@ -262,11 +263,11 @@ void LinkerHand::setTorque(const std::vector<uint8_t> &torque)
 
 std::vector<uint8_t> LinkerHand::getTorque() 
 {
-    bus.send({FRAME_PROPERTY::THUMB_TORQUE}, handId);
-    bus.send({FRAME_PROPERTY::INDEX_TORQUE}, handId);
-    bus.send({FRAME_PROPERTY::MIDDLE_TORQUE}, handId);
-    bus.send({FRAME_PROPERTY::RING_TORQUE}, handId);
-    bus.send({FRAME_PROPERTY::LITTLE_TORQUE}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_TORQUE}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_TORQUE}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_TORQUE}, handId);
+    bus->send({FRAME_PROPERTY::RING_TORQUE}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_TORQUE}, handId);
 
     std::vector<uint8_t> result_vec;
     std::vector<uint8_t> joint_torque;
@@ -289,11 +290,11 @@ std::vector<uint8_t> LinkerHand::getTorque()
 
 std::vector<uint8_t> LinkerHand::getFaultCode() 
 {
-    bus.send({FRAME_PROPERTY::THUMB_FAULT}, handId);
-    bus.send({FRAME_PROPERTY::INDEX_FAULT}, handId);
-    bus.send({FRAME_PROPERTY::MIDDLE_FAULT}, handId);
-    bus.send({FRAME_PROPERTY::RING_FAULT}, handId);
-    bus.send({FRAME_PROPERTY::LITTLE_FAULT}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_FAULT}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_FAULT}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_FAULT}, handId);
+    bus->send({FRAME_PROPERTY::RING_FAULT}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_FAULT}, handId);
 
     std::vector<uint8_t> fault_code;
     if (thumb_fault.size() > 1 && index_fault.size() > 1 && middle_fault.size() > 1 && ring_fault.size() > 1 && little_fault.size() > 1)
@@ -309,11 +310,11 @@ std::vector<uint8_t> LinkerHand::getFaultCode()
 
 std::vector<uint8_t> LinkerHand::getTemperature()
 {
-    bus.send({FRAME_PROPERTY::THUMB_TEMPERATURE}, handId);
-    bus.send({FRAME_PROPERTY::INDEX_TEMPERATURE}, handId);
-    bus.send({FRAME_PROPERTY::MIDDLE_TEMPERATURE}, handId);
-    bus.send({FRAME_PROPERTY::RING_TEMPERATURE}, handId);
-    bus.send({FRAME_PROPERTY::LITTLE_TEMPERATURE}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_TEMPERATURE}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_TEMPERATURE}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_TEMPERATURE}, handId);
+    bus->send({FRAME_PROPERTY::RING_TEMPERATURE}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_TEMPERATURE}, handId);
 
     std::vector<uint8_t> temperature;
     if (thumb_temperature.size() > 1 && index_temperature.size() > 1 && middle_temperature.size() > 1 && ring_temperature.size() > 1 && little_temperature.size() > 1)
@@ -342,11 +343,11 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
     if (current_hand_type == 1) // L21
     {
         if (sensor_type == 0x02) { 
-            bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
-            bus.send({FRAME_PROPERTY::INDEX_TOUCH, 0xC6}, handId);
-            bus.send({FRAME_PROPERTY::MIDDLE_TOUCH, 0xC6}, handId);
-            bus.send({FRAME_PROPERTY::RING_TOUCH, 0xC6}, handId);
-            bus.send({FRAME_PROPERTY::LITTLE_TOUCH, 0xC6}, handId);
+            bus->send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
+            bus->send({FRAME_PROPERTY::INDEX_TOUCH, 0xC6}, handId);
+            bus->send({FRAME_PROPERTY::MIDDLE_TOUCH, 0xC6}, handId);
+            bus->send({FRAME_PROPERTY::RING_TOUCH, 0xC6}, handId);
+            bus->send({FRAME_PROPERTY::LITTLE_TOUCH, 0xC6}, handId);
 
             result_vec.push_back(thumb_pressure);
             result_vec.push_back(index_finger_pressure);
@@ -374,62 +375,62 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 
 std::vector<uint8_t> LinkerHand::getThumbForce()
 {
-    bus.send({FRAME_PROPERTY::THUMB_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_ALL_DATA}, handId);
     return thumb_pressure;
 }
 
 std::vector<uint8_t> LinkerHand::getIndexForce()
 {
-    bus.send({FRAME_PROPERTY::INDEX_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_ALL_DATA}, handId);
     return index_finger_pressure;
 }
 
 std::vector<uint8_t> LinkerHand::getMiddleForce()
 {
-    bus.send({FRAME_PROPERTY::MIDDLE_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_ALL_DATA}, handId);
     return middle_finger_pressure;
 }
 
 std::vector<uint8_t> LinkerHand::getRingForce()
 {
-    bus.send({FRAME_PROPERTY::RING_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::RING_ALL_DATA}, handId);
     return ring_finger_pressure;
 }
 
 std::vector<uint8_t> LinkerHand::getLittleForce()
 {
-    bus.send({FRAME_PROPERTY::LITTLE_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_ALL_DATA}, handId);
     return little_finger_pressure;
 }
 
 std::vector<uint8_t> LinkerHand::getNormalForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId);
+    bus->send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId);
     return normal_force;
 }
 
 std::vector<uint8_t> LinkerHand::getTangentialForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId);
+    bus->send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId);
     return tangential_force;
 }
 
 std::vector<uint8_t> LinkerHand::getTangentialForceDir()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId);
+    bus->send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId);
     return tangential_force_dir;
 }
 
 std::vector<uint8_t> LinkerHand::getApproachInc()
 {
-    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId);
+    bus->send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId);
     return approach_inc;
 }
 
 std::string LinkerHand::getVersion()
 {
-    bus.send({FRAME_PROPERTY::HAND_HARDWARE_VERSION}, handId);
-    bus.send({FRAME_PROPERTY::HAND_SOFTWARE_VERSION}, handId);
+    bus->send({FRAME_PROPERTY::HAND_HARDWARE_VERSION}, handId);
+    bus->send({FRAME_PROPERTY::HAND_SOFTWARE_VERSION}, handId);
 
     // getUID();
     getCommID();
@@ -460,36 +461,36 @@ void LinkerHand::setMotorEnable(const std::vector<uint8_t> &enable)
 {
     std::vector<uint8_t> result = {FRAME_PROPERTY::MOTOR_ENABLE};
     result.insert(result.end(), enable.begin(), enable.end());
-    bus.send(result, handId);
+    bus->send(result, handId);
 }
 
 void LinkerHand::setMotorDisable(const std::vector<uint8_t> &disable)
 {
     std::vector<uint8_t> result = {FRAME_PROPERTY::MOTOR_ENABLE};
     result.insert(result.end(), disable.begin(), disable.end());
-    bus.send(result, handId);
+    bus->send(result, handId);
 }
 
 std::vector<uint8_t> LinkerHand::getUID()
 {
-    bus.send({FRAME_PROPERTY::HAND_UID}, handId);
+    bus->send({FRAME_PROPERTY::HAND_UID}, handId);
     return hand_uid;
 }
 
 std::vector<uint8_t> LinkerHand::getCommID()
 {
-    bus.send({FRAME_PROPERTY::HAND_COMM_ID}, handId);
+    bus->send({FRAME_PROPERTY::HAND_COMM_ID}, handId);
     return hand_comm_id;
 }
 
 void LinkerHand::factoryReset()
 {
-    bus.send({FRAME_PROPERTY::HAND_FACTORY_RESET}, handId);
+    bus->send({FRAME_PROPERTY::HAND_FACTORY_RESET}, handId);
 }
 
 void LinkerHand::saveParameter()
 {
-    bus.send({FRAME_PROPERTY::HAND_SAVE_PARAMETER}, handId);
+    bus->send({FRAME_PROPERTY::HAND_SAVE_PARAMETER}, handId);
 }
 
 void LinkerHand::receiveResponse()
@@ -498,7 +499,7 @@ void LinkerHand::receiveResponse()
     {
         try
         {
-            auto frame = bus.recv(handId);
+            auto frame = bus->recv(handId);
             std::vector<uint8_t> data(frame.data, frame.data + frame.can_dlc);
             if (data.size() <= 0) continue;
             

@@ -2,9 +2,10 @@
 
 namespace LinkerHandL20
 {
-
-LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate) : handId(handId), bus(canChannel, baudrate, LINKER_HAND::L20), running(true)
+LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudrate) : handId(handId), running(true)
 {
+    bus = Communication::CanBusFactory::createCanBus(canChannel, baudrate, LINKER_HAND::L20);
+
     thumb_pressure = std::vector<uint8_t>(72, 0);
     index_finger_pressure = std::vector<uint8_t>(72, 0);
     middle_finger_pressure = std::vector<uint8_t>(72, 0);
@@ -13,8 +14,8 @@ LinkerHand::LinkerHand(uint32_t handId, const std::string &canChannel, int baudr
 
     receiveThread = std::thread(&LinkerHand::receiveResponse, this);
 
-    bus.send({TOUCH_SENSOR_TYPE}, handId);
-    bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
+    bus->send({TOUCH_SENSOR_TYPE}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
 }
 
 LinkerHand::~LinkerHand()
@@ -26,7 +27,7 @@ LinkerHand::~LinkerHand()
     }
 }
 
-void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
+void LinkerHand::setJointPositions(const std::vector<uint8_t> &jointAngles)
 {
     if (jointAngles.size() == 20)
     {
@@ -41,10 +42,10 @@ void LinkerHand::setJointPositions(const std::vector<u_int8_t> &jointAngles)
         joint_position1.insert(joint_position1.begin(), FRAME_PROPERTY::JOINT_PITCH_R);
         joint_position2.insert(joint_position2.begin(), FRAME_PROPERTY::JOINT_YAW_R);
 
-        bus.send(joint_position3, handId);
-        bus.send(joint_position4, handId);
-        bus.send(joint_position1, handId);
-        bus.send(joint_position2, handId);
+        bus->send(joint_position3, handId);
+        bus->send(joint_position4, handId);
+        bus->send(joint_position1, handId);
+        bus->send(joint_position2, handId);
     } else {
         std::cout << "Joint position size is not 20" << std::endl;
     }
@@ -69,7 +70,7 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
         std::vector<uint8_t> data;
         data.push_back(FRAME_PROPERTY::JOINT_SPEED_R);
         data.insert(data.end(), speed.begin(), speed.end());
-        bus.send(data, handId); 
+        bus->send(data, handId); 
     } else {
         std::cout << "Speed size is not 5" << std::endl;
     }
@@ -77,18 +78,18 @@ void LinkerHand::setSpeed(const std::vector<uint8_t> &speed)
 
 std::vector<uint8_t> LinkerHand::getSpeed()
 {
-    bus.send({FRAME_PROPERTY::JOINT_SPEED_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_SPEED_R}, handId);
     return IHand::getSubVector(motor_speed);
 }
 
 std::vector<uint8_t> LinkerHand::getCurrentStatus()
 {
-    // bus.send({FRAME_PROPERTY::REQUEST_DATA_RETURN}, handId); // callback 1 2 3
+    // bus->send({FRAME_PROPERTY::REQUEST_DATA_RETURN}, handId); // callback 1 2 3
     
-    bus.send({FRAME_PROPERTY::JOINT_PITCH_R}, handId);
-    bus.send({FRAME_PROPERTY::JOINT_YAW_R}, handId);
-    bus.send({FRAME_PROPERTY::JOINT_ROLL_R}, handId);
-    bus.send({FRAME_PROPERTY::JOINT_TIP_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_PITCH_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_YAW_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_ROLL_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_TIP_R}, handId);
 
     std::vector<uint8_t> joint_position;
     std::vector<uint8_t> joint_position1_ = IHand::getSubVector(joint_position1);
@@ -118,11 +119,11 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 {
     std::vector<std::vector<uint8_t>> result_vec;
     if (sensor_type == 0x02) { 
-        bus.send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
-        bus.send({FRAME_PROPERTY::INDEX_TOUCH, 0xC6}, handId);
-        bus.send({FRAME_PROPERTY::MIDDLE_TOUCH, 0xC6}, handId);
-        bus.send({FRAME_PROPERTY::RING_TOUCH, 0xC6}, handId);
-        bus.send({FRAME_PROPERTY::LITTLE_TOUCH, 0xC6}, handId);
+        bus->send({FRAME_PROPERTY::THUMB_TOUCH, 0xC6}, handId);
+        bus->send({FRAME_PROPERTY::INDEX_TOUCH, 0xC6}, handId);
+        bus->send({FRAME_PROPERTY::MIDDLE_TOUCH, 0xC6}, handId);
+        bus->send({FRAME_PROPERTY::RING_TOUCH, 0xC6}, handId);
+        bus->send({FRAME_PROPERTY::LITTLE_TOUCH, 0xC6}, handId);
 
         result_vec.push_back(thumb_pressure);
         result_vec.push_back(index_finger_pressure);
@@ -150,31 +151,31 @@ std::vector<std::vector<uint8_t>> LinkerHand::getForce(const int type)
 #if 0
 std::vector<uint8_t> LinkerHand::getThumbForce()
 {
-    bus.send({FRAME_PROPERTY::THUMB_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::THUMB_ALL_DATA}, handId);
     return IHand::getSubVector(thumb_pressure);
 }
 
 std::vector<uint8_t> LinkerHand::getIndexForce()
 {
-    bus.send({FRAME_PROPERTY::INDEX_FINGER_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::INDEX_FINGER_ALL_DATA}, handId);
     return IHand::getSubVector(index_finger_pressure);
 }
 
 std::vector<uint8_t> LinkerHand::getMiddleForce()
 {
-    bus.send({FRAME_PROPERTY::MIDDLE_FINGER_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::MIDDLE_FINGER_ALL_DATA}, handId);
     return IHand::getSubVector(middle_finger_pressure);
 }
 
 std::vector<uint8_t> LinkerHand::getRingForce()
 {
-    bus.send({FRAME_PROPERTY::RING_FINGER_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::RING_FINGER_ALL_DATA}, handId);
     return IHand::getSubVector(ring_finger_pressure);
 }
 
 std::vector<uint8_t> LinkerHand::getLittleForce()
 {
-    bus.send({FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA}, handId);
+    bus->send({FRAME_PROPERTY::LITTLE_FINGER_ALL_DATA}, handId);
     return IHand::getSubVector(little_finger_pressure);
 }
 #endif
@@ -182,40 +183,40 @@ std::vector<uint8_t> LinkerHand::getLittleForce()
 // 获取五指法向压力
 std::vector<uint8_t> LinkerHand::getNormalForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId);
+    bus->send({FRAME_PROPERTY::HAND_NORMAL_FORCE}, handId);
     return normal_force;
 }
 
 // 获取五指切向压力
 std::vector<uint8_t> LinkerHand::getTangentialForce()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId);
+    bus->send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE}, handId);
     return tangential_force;
 }
 
 // 获取五指切向方向
 std::vector<uint8_t> LinkerHand::getTangentialForceDir()
 {
-    bus.send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId);
+    bus->send({FRAME_PROPERTY::HAND_TANGENTIAL_FORCE_DIR}, handId);
     return tangential_force_dir;
 }
 
 // 获取五指接近感应
 std::vector<uint8_t> LinkerHand::getApproachInc()
 {
-    bus.send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId);
+    bus->send({FRAME_PROPERTY::HAND_APPROACH_INC}, handId);
     return approach_inc;
 }
 
 std::vector<uint8_t> LinkerHand::getFaultCode()
 {
-    bus.send({FRAME_PROPERTY::JOINT_FAULT_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_FAULT_R}, handId);
     return IHand::getSubVector(motor_fault_code);
 }
 
 std::vector<uint8_t> LinkerHand::getCurrent()
 {
-    bus.send({FRAME_PROPERTY::JOINT_CURRENT_R}, handId);
+    bus->send({FRAME_PROPERTY::JOINT_CURRENT_R}, handId);
     return IHand::getSubVector(motor_current);
 }
 
@@ -225,7 +226,7 @@ void LinkerHand::clearFaultCode(const std::vector<uint8_t> &code)
         std::vector<uint8_t> data;
         data.push_back(FRAME_PROPERTY::JOINT_FAULT_R);
         data.insert(data.end(), code.begin(), code.end());
-        bus.send(data, handId);
+        bus->send(data, handId);
     } else {
         std::cout << "clearFaultCode size is not 5" << std::endl;
     }
@@ -237,7 +238,7 @@ void LinkerHand::setCurrent(const std::vector<uint8_t> &current)
         std::vector<uint8_t> data;
         data.push_back(FRAME_PROPERTY::JOINT_CURRENT_R);
         data.insert(data.end(), current.begin(), current.end());
-        bus.send(data, handId);
+        bus->send(data, handId);
     } else {
         std::cout << "Current size is not 5" << std::endl;
     }
@@ -245,9 +246,9 @@ void LinkerHand::setCurrent(const std::vector<uint8_t> &current)
 
 std::string LinkerHand::getVersion()
 {
-    bus.send({FRAME_PROPERTY::HAND_HARDWARE_VERSION}, handId);
-    bus.send({FRAME_PROPERTY::HAND_SOFTWARE_VERSION}, handId);
-    bus.send({FRAME_PROPERTY::HAND_COMM_ID}, handId);
+    bus->send({FRAME_PROPERTY::HAND_HARDWARE_VERSION}, handId);
+    bus->send({FRAME_PROPERTY::HAND_SOFTWARE_VERSION}, handId);
+    bus->send({FRAME_PROPERTY::HAND_COMM_ID}, handId);
 
     // IHand::getSubVector(hand_software_version, hand_hardware_version);
 
@@ -268,13 +269,13 @@ std::string LinkerHand::getVersion()
 
 std::vector<uint8_t> LinkerHand::getUID()
 {
-    bus.send({FRAME_PROPERTY::HAND_UID}, handId);
+    bus->send({FRAME_PROPERTY::HAND_UID}, handId);
     return IHand::getSubVector(hand_uid);
 }
 
 std::vector<uint8_t> LinkerHand::getRotorLockCount()
 {
-    bus.send({FRAME_PROPERTY::ROTOR_LOCK_COUNT}, handId);
+    bus->send({FRAME_PROPERTY::ROTOR_LOCK_COUNT}, handId);
     return IHand::getSubVector(rotor_lock_count);
 }
 
@@ -284,7 +285,7 @@ void LinkerHand::receiveResponse()
     {
         try
         {
-            auto frame = bus.recv(handId);
+            auto frame = bus->recv(handId);
             std::vector<uint8_t> data(frame.data, frame.data + frame.can_dlc);
             if (data.size() <= 0) continue;
             

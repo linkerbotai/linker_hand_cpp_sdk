@@ -1,10 +1,6 @@
+
+#ifdef __linux__
 #include "CanBus.h"
-#include <cstring>
-#include <cerrno>
-#include <unistd.h>
-#include <iostream>
-#include <thread>
-#include <chrono>
 
 namespace Communication
 {
@@ -202,7 +198,7 @@ namespace Communication
         #endif
     }
 
-    can_frame CanBus::recv(uint32_t& id)
+    CANFrame CanBus::recv(uint32_t& id)
     {
         struct can_frame frame;
         if (read(socket_fd, &frame, sizeof(frame)) != sizeof(frame)) {
@@ -210,9 +206,15 @@ namespace Communication
         }
 
 		if(frame.can_id == id) {
-			return frame;
+			CANFrame result;
+			result.can_id = frame.can_id;
+			result.can_dlc = frame.can_dlc;
+			for (int i = 0; i < frame.can_dlc; ++i){
+                result.data[i] = frame.data[i];
+            }
+			return result;
 		}
-		return frame;
+		return CANFrame{};
     }
 
     void CanBus::updateSendRate() {
@@ -257,4 +259,4 @@ namespace Communication
         }
     }
 }
-
+#endif

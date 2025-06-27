@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cmath>
+#include <condition_variable>
 
 //---------------------------------------------------------------------------------------------------
 // L7 L OK

@@ -5,11 +5,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <sys/socket.h>
-#include <linux/can.h>
-#include <linux/can/raw.h>
-#include <net/if.h>  // 包含 ifreq 和 IFNAMSIZ
-#include <sys/ioctl.h>  // 包含 ioctl
 #include <mutex>
 #include <atomic>
 

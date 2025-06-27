@@ -1,45 +1,40 @@
+#ifdef __linux__
 #ifndef CAN_BUS_H
 #define CAN_BUS_H
 
-#include <cstdint>
-#include <vector>
-#include <string>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <unistd.h>
+#include <chrono>
+#include <thread>
+#include <queue>
+#include <fcntl.h>
+#include <mutex>
+#include <atomic>
+#include <cstring>
+#include <cerrno>
+
+#include "Common.h"
+
 #include <sys/socket.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <net/if.h>  // 包含 ifreq 和 IFNAMSIZ
 #include <sys/ioctl.h>  // 包含 ioctl
-#include <mutex>
-#include <atomic>
 
-#include <unistd.h>
-#include <chrono>
-#include <thread>
-#include <queue>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <chrono>
-
-#include "Common.h"
-
+#include "ICanBus.h"
 
 namespace Communication //Communicator
 {
-    class CanBus
+    class CanBus : public ICanBus
     {
     public:
         CanBus(const std::string& interface, int bitrate, const LINKER_HAND linkerhand);
         ~CanBus();
         
-        void send(const std::vector<uint8_t>& data, uint32_t can_id, const bool wait = false);
-        // void send(const uint8_t send_data[8], const size_t size, uint32_t id);
-        // std::vector<uint8_t> receive(uint32_t& id);
-        can_frame recv(uint32_t& id);
+        void send(const std::vector<uint8_t>& data, uint32_t can_id, const bool wait = false) override;
+        CANFrame recv(uint32_t& id) override;
         
         void setReceiveTimeout(int seconds, int microseconds);
         void updateSendRate();
@@ -68,6 +63,6 @@ namespace Communication //Communicator
         LINKER_HAND linker_hand;
     };
 }
-
+#endif
 #endif // CAN_BUS_H
 
