@@ -19,6 +19,10 @@ git clone https://github.com/linkerbotai/linker_hand_cpp_sdk.git
 
 - 编译：
 
+    - 1、拷贝 linker_hand_cpp_sdk/linker_hand/third_party/PCAN_Basic/x64/PCANBasic.dll 到 C:\Windows\System32 目录下
+
+    - 2、拷贝 linker_hand_cpp_sdk/linker_hand/third_party/Robotic_Arm/windows/win_mingw64_c++_v1.1.0/libapi_cpp.dll 到 C:\Windows\System32 目录下
+
 ```bash
 cd linker_hand_cpp_sdk/linker_hand
 mkdir build
