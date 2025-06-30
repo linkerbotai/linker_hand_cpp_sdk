@@ -20,9 +20,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 
 # ----------------------------------------------------------------------
 # 查找 liblinker_hand_lib.a 库
@@ -31,14 +28,6 @@ find_library(LINKER_HAND_LIB
     PATHS /usr/local/linker_hand_cpp_sdk/lib
     NO_DEFAULT_PATH
 )
-
-# 检查是否找到库
-if(NOT LINKER_HAND_LIB)
-    message(FATAL_ERROR "liblinker_hand_lib.a not found!")
-else()
-    message(STATUS "liblinker_hand_lib.a found at ${LINKER_HAND_LIB}")
-endif()
-
 # 包含目录
 include_directories(
   /usr/local/linker_hand_cpp_sdk/include
@@ -51,22 +40,11 @@ find_library(RMAN_API_LIB
     PATHS /usr/local/linker_hand_cpp_sdk/third_party/Robotic_Arm/lib
     NO_DEFAULT_PATH
 )
-
-# 检查是否找到库
-if(NOT RMAN_API_LIB)
-    message(FATAL_ERROR "libapi_cpp.so not found!")
-else()
-    message(STATUS "libapi_cpp.a found at ${RMAN_API_LIB}")
-endif()
-
 # 包含目录
 include_directories(
   /usr/local/linker_hand_cpp_sdk/third_party/Robotic_Arm/include
 )
 # ----------------------------------------------------------------------
-
-
-
 add_executable(linker_hand_node src/linker_hand_node.cpp)
 target_include_directories(linker_hand_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -74,10 +52,15 @@ target_include_directories(linker_hand_node PUBLIC
 ament_target_dependencies(linker_hand_node rclcpp std_msgs sensor_msgs)
 
 # 链接库
-target_link_libraries(linker_hand_node ${LINKER_HAND_LIB} ${RMAN_API_LIB} pthread yaml-cpp)
+target_link_libraries(linker_hand_node ${LINKER_HAND_LIB} ${RMAN_API_LIB} pthread)
+
 
 install(TARGETS linker_hand_node
   DESTINATION lib/${PROJECT_NAME})
+
+install (DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 # install(DIRECTORY config
 #   DESTINATION share/${PROJECT_NAME}
@@ -90,7 +73,6 @@ install(TARGETS linker_hand_node
 set_target_properties(linker_hand_node PROPERTIES
     INSTALL_RPATH "/usr/local/linker_hand_cpp_sdk/third_party/Robotic_Arm/lib"
 )
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

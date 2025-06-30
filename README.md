@@ -6,6 +6,35 @@ LinkerHand-CPP-SDK 是由灵心巧手（北京）科技有限公司开发，用�
 
 ## 安装
 
+### windows
+
+系统：windows 11 64 位系统
+
+环境：cmake 4.0.3、MinGW x86_64 15.1.0
+- 下载 SDK
+
+```bash
+git clone https://github.com/linkerbotai/linker_hand_cpp_sdk.git
+```
+
+- 编译：
+
+```bash
+cd linker_hand_cpp_sdk/linker_hand
+mkdir build
+cd build
+cmake -G "MinGW Makefiles" ..
+cmake --build .
+```
+
+- 运行示例
+
+```bash
+./linker_hand_example.exe
+```
+
+### ubuntu
+
 - 下载 SDK
 
 ```bash

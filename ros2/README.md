@@ -22,11 +22,13 @@ LinkerHand-CPP-ROS2 是灵心巧手科技有限公司开发，基于 LinkerHand-
   <arg name="LEFT_HAND_EXISTS" default="true" description="是否存在左手"/>
   <arg name="LEFT_TOUCH" default="true" description="是否有压力传感器"/>
   <arg name="LEFT_JOINTS" default="L10" description="左手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
+  <arg name="LEFT_CANBUS" default="can0" description="can0 \ can1"/>
 
   <!-- 右手配置 -->
   <arg name="RIGHT_HAND_EXISTS" default="false" description="是否存在右手"/>
-  <arg name="RIGHT_TOUCH" default="true" description="是否有压力传感器"/>
+  <arg name="RIGHT_TOUCH" default="false" description="是否有压力传感器"/>
   <arg name="RIGHT_JOINTS" default="L10" description="右手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
+  <arg name="RIGHT_CANBUS" default="can0" description="can0 \ can1"/>
 
   <!-- 通用配置 -->
   <arg name="HAND_SPEED" default="100" description="关节速度 0 ~ 255"/>
@@ -39,7 +41,7 @@ LinkerHand-CPP-ROS2 是灵心巧手科技有限公司开发，基于 LinkerHand-
 
 #### 运行
     source install/setup.bash
-    ros2 launch linker_hand_cpp_ros2/run.xml
+    ros2 launch linker_hand_cpp_ros2 run.xml
 
 
 #### 话题
@@ -136,7 +138,6 @@ L25: ["大拇指根部", "食指根部", "中指根部","无名指根部","小�
 - 左手基本信息 /left_hand_info
 
 ```bash
-
 $ ros2 topic echo /left_hand_info
 
 data: 'Hand direction: Left hand
@@ -147,58 +148,34 @@ data: 'Hand direction: Left hand
 
   Temperature: 47 49 40 41 0 39 0 46 42 0 0 39 0 49...'
 ```
+- 压感数据 /left_hand_touch
 
-<!-- 
-<table>
-<tbody>
-    <tr>
-        <th>话题名称</th><th>字段</th><th>描述</th>
-    <tr>
-        <td rowspan="4">/cb_left_hand_control_cmd</td>
-        <td>header</td>
-        <td>标准消息头</td>
-    </tr>
-    <tr>
-        <td>position</td>
-        <td>[Joint1_position, Joint2_position, Joint3_position, Joint4_position, Joint5_position, Joint6_position, Joint7_position . . . . . .]</td>
-    </tr>
-    <tr>
-        <td>velocity</td>
-        <td>[Joint1_velocity, Joint2_velocity, Joint3_velocity, Joint4_velocity, Joint5_velocity, Joint6_velocity, Joint7_velocity . . . . . .]</td>
-    </tr>
-    <tr>
-        <td>effort</td>
-        <td>[Joint1_effort, Joint2_effort, Joint3_effort, Joint4_effort, Joint5_effort, Joint6_effort, Joint7_effort . . . . . .]</td>
-    </tr>
-    <tr>
-        <td rowspan="2">/cb_left_hand_touch</td>
-        <td>header</td>
-        <td>标准消息头</td>
-    </tr>
-    <tr>
-        <td>data</td>
-        <td>[Joint1_touch, Joint2_touch, Joint3_touch, Joint4_touch, Joint5_touch . . . . . .]</td>
-    </tr>
-    <tr>
-        <td rowspan="2">/cb_left_hand_info</td>
-        <td>header</td>
-        <td>标准消息头</td>
-    </tr>
-    <tr>
-        <td>data</td>
-        <td>[Joint1_touch, Joint2_touch, Joint3_touch, Joint4_touch, Joint5_touch . . . . . .]</td>
-    </tr>
-    <tr>
-        <td>行1列1</td>
-        <td>行1列2</td>
-        <td>行1列3</td>
-    </tr>
-    <tr>
-        <td rowspan="2">合并两列</td>
-        <td colspan="2">合并两行</td>
-    </tr>
-    <tr>
-        <td>行3列2</td>
-        <td>行3列3</td>
-    </tr>
-</table> -->
+  注意：反馈数据为一个一维数组，长度为360，由每个手指的压感数据组成。单个指头压感数据长度是72（6*12矩阵），每个手指压感数据需要单独拆分。（仅适用点阵式传感器）
+
+```bash
+$ ros2 topic echo /left_hand_touch 
+layout:
+  dim: []
+  data_offset: 0
+data:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- '...'
+```
+
+## 示例
+
+| 序号 | 文件名称  | 描述                                           |
+| :--- | :-------- | :--------------------------------------------- |
+| 1    | examples/src/action_group_show_l7  | L7型号手指舞示例 |
+| 2    | examples/src/action_group_show_l10  | L10型号手指舞示例 |
+| 3    | examples/src/action_group_show_l20  | L20型号手指舞示例 |
+| 4    | examples/src/loop_l20  | L20型号手势张开握拳示例 |
+| 5    | examples/src/show_ok_l20  | L20型号手势ok示例 |
+| 6    | examples/src/show_surround_index_finger_l20  | L20型号单指手势示例 |
+| 7    | examples/src/show_wave_l20  | L20型号wave手势示例 |
+| 8    | examples/src/action_group_show_l25  | L25型号手指舞示例 |
+| 9    | examples/src/loop_l25  | L25型号手势张开握拳示例 |

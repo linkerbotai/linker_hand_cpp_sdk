@@ -4,7 +4,7 @@
   <arg name="VERSION" default="1.1.6" description="版本号"/>
 
   <!-- 左手配置 -->
-  <arg name="LEFT_HAND_EXISTS" default="true" description="是否存在左手"/>
+  <arg name="LEFT_HAND_EXISTS" default="false" description="是否存在左手"/>
   <arg name="LEFT_TOUCH" default="true" description="是否有压力传感器"/>
   <arg name="LEFT_JOINTS" default="L21" description="左手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
   <arg name="LEFT_CANBUS" default="can0" description="can0 \ can1"/>
@@ -12,8 +12,8 @@
   <!-- 右手配置 -->
   <arg name="RIGHT_HAND_EXISTS" default="true" description="是否存在右手"/>
   <arg name="RIGHT_TOUCH" default="true" description="是否有压力传感器"/>
-  <arg name="RIGHT_JOINTS" default="L21" description="右手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
-  <arg name="RIGHT_CANBUS" default="can1" description="can0 \ can1"/>
+  <arg name="RIGHT_JOINTS" default="L10" description="右手型号 L7 \ L10 \ L20 \ L21 \ L25"/>
+  <arg name="RIGHT_CANBUS" default="can0" description="can0 \ can1"/>
 
   <!-- 通用配置 -->
   <arg name="HAND_SPEED" default="100" description="关节速度 0 ~ 255"/>

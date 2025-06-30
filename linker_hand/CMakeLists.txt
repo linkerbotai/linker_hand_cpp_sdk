@@ -61,21 +61,19 @@ endif()
 # add_library(linker_hand_lib_shared SHARED ${LINKER_HAND_SOURCES})
 # target_link_libraries(linker_hand_lib_shared ${RMAN_API_LIB})
 
-# 添加可执行文件
+
 add_executable(Demo_ModbusRTU examples/Demo_ModbusRTU.cpp)
-# 链接库
 target_link_libraries(Demo_ModbusRTU linker_hand_lib pthread ${RMAN_API_LIB})
 
-
-# 添加可执行文件
 add_executable(linker_hand_example examples/Examples.cpp)
-# 链接库
 target_link_libraries(linker_hand_example linker_hand_lib pthread)
 
-# 添加可执行文件
 add_executable(test examples/test.cpp)
-# 链接库
 target_link_libraries(test linker_hand_lib pthread)
+
+add_executable(action_group_show examples/L10/action_group_show.cpp)
+target_link_libraries(action_group_show linker_hand_lib pthread)
+
 
 # 安装规则
 install(TARGETS linker_hand_lib
